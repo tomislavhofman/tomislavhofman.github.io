@@ -887,7 +887,7 @@ svg {
 	}
 
 	select {
-		background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="37" height="7"><path fill="rgb(23,23,23)" d="M14.022 0l5.978 6 6-6z"/></svg>');
+		background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="https://www.w3.org/2000/svg" width="37" height="7"><path fill="rgb(23,23,23)" d="M14.022 0l5.978 6 6-6z"/></svg>');
 		background-repeat: no-repeat;
   	background-position: right;
 	  -webkit-appearance: none;

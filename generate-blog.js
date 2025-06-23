@@ -60,17 +60,15 @@ const postsHtml = posts.map(post => `
 </li>
 `).join('\n');
 
-// Inject into template
+// Only replace the blog-list (<!-- BLOG_POSTS -->) in the template
 const output = template.replace('<!-- BLOG_POSTS -->', postsHtml);
 
 fs.writeFileSync(BLOG_HTML, output);
 
 // Generate individual post pages
 posts.forEach(post => {
-  const postHtml = postTemplate
-    .replace('<!-- BLOG_POST_CONTENT -->', post.html)
-    // Do NOT touch nav or header/footer in the template!
-    .replace('<title>Blog – Tomislav Hofman</title>', `<title>${post.title} – Blog – Tomislav Hofman</title>`);
+  // Only replace <!-- BLOG_POST_CONTENT --> in the post template
+  const postHtml = postTemplate.replace('<!-- BLOG_POST_CONTENT -->', post.html);
   fs.writeFileSync(path.join(__dirname, 'posts', `${post.slug}.html`), postHtml);
 });
 

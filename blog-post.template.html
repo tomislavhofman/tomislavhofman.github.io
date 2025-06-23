@@ -4,44 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blog – Tomislav Hofman</title>
-    <!-- Tailwind CSS CDN for prototyping. For production, use a build step for purging unused styles. -->
-    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
-    <script>
-      tailwind.config = {
-        darkMode: 'media',
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Inter', 'Segoe UI', 'Arial', 'sans-serif'],
-            },
-          },
-        },
-      }
-    </script>
-    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap">
-    <link rel="stylesheet" href="/css/custom.css">
-    <link rel="icon" href="/favicon.ico">
-    <script src="https://unpkg.com/kotlin-playground@1" defer></script>
+    <link rel="stylesheet" href="css/custom.css">
+    <link rel="icon" href="favicon.ico">
 </head>
-<body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 font-sans min-h-screen">
-  <a href="#main-content" class="visually-hidden focusable">Skip to main content</a>
-  <header>
-    <nav class="flex justify-center gap-8 bg-white dark:bg-gray-800 shadow-md py-4 rounded-b-2xl mb-10 text-base font-semibold" aria-label="Main navigation">
-      <a href="../index.html" class="px-4 py-1 rounded-full transition-colors duration-200 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">Home</a>
-      <a href="../blog.html" class="active px-4 py-1 rounded-full transition-colors duration-200 text-gray-900 dark:text-gray-100 bg-gradient-to-r from-blue-600 to-blue-400 shadow-md font-bold" aria-current="page">Blog</a>
+<body>
+<a href="#main-content" class="visually-hidden focusable">Skip to main content</a>
+<header>
+    <nav aria-label="Main navigation">
+        <a href="../index.html">Home</a>
+        <a href="../blog.html" class="active" aria-current="page">Blog</a>
     </nav>
-  </header>
-  <main id="main-content" tabindex="-1">
-    <article class="prose">
-      <!-- BLOG_POST_CONTENT -->
-    </article>
-    <div style="margin-top:2.5rem;">
-      <a href="../blog.html">← Back to Blog</a>
-    </div>
-  </main>
-  <footer>
+</header>
+<main id="main-content" tabindex="-1">
+  <article class="blog-post">
+    <!-- BLOG_POST_CONTENT -->
+  </article>
+  <div style="margin-top:2.5rem;">
+    <a href="../blog.html">← Back to Blog</a>
+  </div>
+</main>
+<footer>
     &copy; 2025 Tomislav Hofman
-  </footer>
+</footer>
 </body>
 </html>

@@ -72,4 +72,24 @@ posts.forEach(post => {
   fs.writeFileSync(path.join(__dirname, 'posts', `${post.slug}.html`), postHtml);
 });
 
+// Configure marked to add language- prefix for code blocks
+const escapeHtml = (str) => str
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
+const renderer = new marked.Renderer();
+renderer.code = (code, infostring, escaped) => {
+  const lang = (infostring || '').match(/\S*/)[0];
+  const escapedCode = escapeHtml(code);
+  if (lang === 'kotlin') {
+    return `<pre><code class="language-kotlin" data-lang="kotlin">${escapedCode}</code></pre>\n`;
+  }
+  const langClass = lang ? `language-${lang}` : '';
+  return `<pre><code class="${langClass}">${escapedCode}</code></pre>\n`;
+};
+marked.setOptions({ renderer });
+
 console.log('blog.html and individual post pages generated with', posts.length, 'posts.');

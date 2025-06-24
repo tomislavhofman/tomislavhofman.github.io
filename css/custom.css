@@ -1,8 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
 /* Reset and base styles */
 html {
   box-sizing: border-box;
   font-size: 16px;
   scroll-behavior: smooth;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
 }
 *, *:before, *:after {
   box-sizing: inherit;
@@ -11,9 +14,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-  background: radial-gradient(ellipse at 80% 20%, #ffe3e3 0%, transparent 60%),
-              radial-gradient(ellipse at 20% 80%, #fff6d6 0%, transparent 70%),
-              linear-gradient(120deg, #eafff9 0%, #eaeaff 100%);
+  background: linear-gradient(120deg, #f5f7fa 0%, #e9eff5 100%);
   color: #18181b;
   min-height: 100vh;
   line-height: 1.6;
@@ -57,18 +58,23 @@ nav a {
   color: #334155;
   text-decoration: none;
   padding: 0.25em 1em;
-  border-radius: 999px;
+  border-radius: 0.5em;
+  background: transparent;
+  color: #334155;
+  box-shadow: none;
+  font-weight: 600;
   transition: background 0.2s, color 0.2s;
 }
 nav a.active, nav a[aria-current="page"] {
-  background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%);
-  color: #fff;
-  font-weight: 700;
-  box-shadow: 0 2px 8px rgba(37,99,235,0.10);
+  background: #e2e8f0;
+  color: #2563eb;
+  box-shadow: none;
+  transform: none;
 }
 nav a:hover {
   color: #2563eb;
-  background: #e0e7ef;
+  background: #f1f5f9;
+  transform: none;
 }
 @media (prefers-color-scheme: dark) {
   nav a {
@@ -86,8 +92,10 @@ nav a:hover {
 
 main {
   background: #fff;
-  border-radius: 1.5rem;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+  border-radius: 1.25rem;
+  box-shadow: 0 2px 12px rgba(30,41,59,0.07);
+  background: #fff;
+  animation: none;
   padding: 2.5rem 1.5rem;
   margin-bottom: 2.5rem;
   display: flex;
@@ -97,6 +105,10 @@ main {
   max-width: 40rem;
   margin-left: auto;
   margin-right: auto;
+}
+@keyframes popin {
+  0% { transform: scale(0.95) translateY(30px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
 }
 @media (prefers-color-scheme: dark) {
   main {
@@ -114,11 +126,13 @@ main {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: inherit;
-  font-weight: 800;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  font-weight: 700;
   margin-top: 0;
   margin-bottom: 0.5em;
   line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: #1e293b;
 }
 h1 {
   font-size: 2.25rem;
@@ -400,4 +414,22 @@ code {
 pre {
   word-break: break-word;
   white-space: pre-wrap;
+}
+
+button, .btn {
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 0.5em;
+  padding: 0.5em 1.25em;
+  font-size: 1em;
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(30,41,59,0.07);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+button:hover, .btn:hover {
+  background: #1e40af;
+  color: #fff;
 }

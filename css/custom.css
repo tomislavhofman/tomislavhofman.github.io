@@ -11,9 +11,9 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-  background: radial-gradient(ellipse at 80% 20%, #e3f0ff 0%, transparent 60%),
-              radial-gradient(ellipse at 20% 80%, #d6f3ff 0%, transparent 70%),
-              linear-gradient(120deg, #f9fbff 0%, #eaf6ff 100%);
+  background: radial-gradient(ellipse at 80% 20%, #ffe3e3 0%, transparent 60%),
+              radial-gradient(ellipse at 20% 80%, #fff6d6 0%, transparent 70%),
+              linear-gradient(120deg, #eafff9 0%, #eaeaff 100%);
   color: #18181b;
   min-height: 100vh;
   line-height: 1.6;

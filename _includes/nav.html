@@ -1,0 +1,5 @@
+<nav aria-label="Main navigation">
+  <a href="{{ '/' | relative_url }}">Home</a>
+  <a href="{{ '/blog.html' | relative_url }}" {% if page.url == '/blog.html' %}class="active" aria-current="page"{% endif %}>Blog</a>
+</nav>
+

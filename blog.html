@@ -1,38 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog – Tomislav Hofman</title>
-    <link rel="stylesheet" href="css/custom.css">
-    <link rel="icon" href="favicon.ico">
-</head>
-<body>
-<a href="#main-content" class="visually-hidden focusable">Skip to main content</a>
-<header>
-    <nav aria-label="Main navigation">
-        <a href="index.html">Home</a>
-        <a href="blog.html" class="active" aria-current="page">Blog</a>
-    </nav>
-</header>
-<main id="main-content" tabindex="-1">
-  <h1>Blog</h1>
-  <section aria-label="Blog posts">
-    <ul class="blog-list">
-      
-<li>
-  <article class="blog-post">
-    <h2><a href="posts/hello-world.html">Hello World</a> – 2025-06-23</h2>
-    <div><p>Learn how to print &quot;Hello, World!&quot; in Kotlin directly in your browser. This quick guide shows you the basics of running Kotlin code interactively.</p>
-</div>
-  </article>
-</li>
-
-    </ul>
-  </section>
-</main>
-<footer>
-    &copy; 2025 Tomislav Hofman
-</footer>
-</body>
-</html>
+---
+layout: default
+title: Blog
+---
+<h1>Blog</h1>
+<section aria-label="Blog posts">
+  <ul class="blog-list">
+    {% for post in site.posts %}
+    <li>
+      <article class="blog-post">
+        <h2><a href="{{ post.url | relative_url }}">{{ post.title }}</a> – {{ post.date | date: '%Y-%m-%d' }}</h2>
+        <div>{{ post.excerpt }}</div>
+      </article>
+    </li>
+    {% endfor %}
+  </ul>
+</section>

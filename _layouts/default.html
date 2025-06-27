@@ -10,8 +10,19 @@
 <body>
   <a href="#main-content" class="visually-hidden focusable">Skip to main content</a>
   {% include nav.html %}
+  {% if page.url == "/" %}
+    <div class="game-card-wrapper">
+      {% capture game_card %}{{ content | split: '<div class="retro-console">' | last | split: '</div>' | first }}{% endcapture %}
+      <div class="retro-console">
+        {{ game_card }}</div>
+    </div>
+  {% endif %}
   <main id="main-content" tabindex="-1">
-    {{ content }}
+    {% if page.url == "/" %}
+      {{ content | remove_first: '<div class="retro-console">' | remove_first: game_card | remove_first: '</div>' }}
+    {% else %}
+      {{ content }}
+    {% endif %}
   </main>
   <footer>
     &copy; {{ site.time | date: '%Y' }} Tomislav Hofman

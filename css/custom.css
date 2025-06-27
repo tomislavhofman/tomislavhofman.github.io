@@ -554,16 +554,16 @@ button:hover, .btn:hover {
 
 /* --- Retro Console Styles --- */
 .retro-console {
-  background: #181c1b;
-  border: 4px solid #00ff99;
-  border-radius: 18px;
-  box-shadow: 0 0 32px #00ff99a0, 0 2px 24px #000b;
+  background: #181c23;
+  border-radius: 1.5rem;
+  box-shadow: 0 0 24px 0 #0f0a, 0 2px 24px 0 #0f0a;
   max-width: 640px;
   margin: 2.5em auto 2em auto;
-  padding: 1.5em 1.2em 2em 1.2em;
+  padding: 1.5em 1em 2em 1em;
+  font-family: 'VT323', 'Fira Mono', 'Menlo', monospace;
   position: relative;
-  font-family: 'VT323', 'Fira Mono', 'Menlo', 'Consolas', monospace;
-  overflow: hidden;
+  border: 2.5px solid #22ff55;
+  box-sizing: border-box;
 }
 .retro-console:before {
   content: '';
@@ -576,43 +576,148 @@ button:hover, .btn:hover {
   );
   z-index: 1;
 }
-.retro-score-bar {
+.retro-ui-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #101312;
-  border: 2px solid #00ff99;
-  border-radius: 8px;
-  font-family: 'VT323', 'Fira Mono', 'Menlo', 'Consolas', monospace;
-  font-size: 1.35em;
-  color: #00ff99;
+  gap: 0.5em;
+  background: #10141a;
+  border-radius: 0.7em;
+  box-shadow: 0 0 8px #22ff55cc, 0 0 1px #22ff55;
+  padding: 0.5em 1em;
   margin-bottom: 1.2em;
-  padding: 0.3em 1.1em 0.2em 1.1em;
-  box-shadow: 0 0 8px #00ff99a0;
-  position: relative;
-  z-index: 2;
-  min-height: 2.2em;
+  font-size: 1.25em;
+  color: #22ff55;
+  font-family: 'VT323', 'Fira Mono', 'Menlo', monospace;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 6px #22ff55cc, 0 0 2px #22ff55;
 }
 .score-item {
   display: flex;
   align-items: center;
   gap: 0.3em;
-  margin: 0 0.5em;
-  white-space: nowrap;
+  font-size: 1em;
+  background: rgba(34,255,85,0.07);
+  border-radius: 0.4em;
+  padding: 0.1em 0.5em;
+  box-shadow: 0 0 4px #22ff5544;
 }
 .score-icon {
   font-size: 1.1em;
   margin-right: 0.1em;
-  filter: drop-shadow(0 0 2px #00ff99cc);
+  filter: drop-shadow(0 0 2px #22ff55cc);
+}
+.score-label {
+  font-size: 0.85em;
+  color: #aaffcc;
+  margin-right: 0.2em;
+  letter-spacing: 0.03em;
 }
 .score-value {
   font-weight: bold;
   color: #fff;
-  text-shadow: 0 0 2px #00ff99, 0 0 6px #00ff9944;
+  text-shadow: 0 0 4px #22ff55cc;
+  margin-left: 0.1em;
 }
-.score-best {
-  color: #00ff99;
-  font-size: 0.85em;
-  margin-left: 0.2em;
-  opacity: 0.7;
+.retro-game-container {
+  background: #10141a;
+  border-radius: 1em;
+  box-shadow: 0 0 16px #22ff5544, 0 1px 4px #0002;
+  padding: 0.7em 0.5em 0.5em 0.5em;
+  margin-bottom: 1.2em;
+}
+#dino-game {
+  width: 100%;
+  background: #181c23;
+  border-radius: 1em;
+  box-shadow: 0 0 12px #22ff5533, 0 1px 4px #0002;
+  border: 2px solid #22ff55;
+  display: block;
+}
+.retro-ui-hint {
+  text-align: center;
+  margin-top: 0.5em;
+  color: #aaffcc;
+  font-size: 1em;
+  font-family: 'VT323', 'Fira Mono', 'Menlo', monospace;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 4px #22ff5599;
+}
+.key {
+  display: inline-block;
+  background: #181c23;
+  color: #22ff55;
+  border: 1.5px solid #22ff55;
+  border-radius: 0.3em;
+  padding: 0.05em 0.5em;
+  margin: 0 0.1em;
+  font-size: 1em;
+  font-family: inherit;
+  box-shadow: 0 0 4px #22ff5599;
+}
+.retro-highscore-list {
+  background: #10141a;
+  border-radius: 0.7em;
+  box-shadow: 0 0 8px #22ff55cc, 0 0 1px #22ff55;
+  padding: 0.7em 1em 0.7em 1em;
+  margin: 0 auto;
+  max-width: 340px;
+  color: #22ff55;
+  font-family: 'VT323', 'Fira Mono', 'Menlo', monospace;
+  font-size: 1.1em;
+  text-align: center;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 6px #22ff55cc, 0 0 2px #22ff55;
+}
+.highscore-title {
+  font-size: 1.1em;
+  color: #aaffcc;
+  margin-bottom: 0.2em;
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 6px #22ff55cc;
+}
+.highscore-ol {
+  list-style: none;
+  padding: 0;
+  margin: 0.2em 0 0 0;
+}
+.highscore-ol li {
+  background: rgba(34,255,85,0.09);
+  border-radius: 0.4em;
+  margin: 0.15em 0;
+  padding: 0.1em 0.5em;
+  color: #fff;
+  font-weight: bold;
+  text-shadow: 0 0 4px #22ff55cc;
+  font-size: 1.05em;
+}
+@media (max-width: 700px) {
+  .retro-console {
+    padding: 1em 0.2em 1.2em 0.2em;
+    max-width: 99vw;
+  }
+  .retro-ui-bar, .retro-highscore-list {
+    font-size: 1em;
+    padding: 0.4em 0.5em;
+  }
+  .retro-game-container {
+    padding: 0.3em 0.1em 0.3em 0.1em;
+  }
+}
+@media (max-width: 480px) {
+  .retro-console {
+    border-radius: 0.7em;
+    padding: 0.5em 0.05em 0.7em 0.05em;
+  }
+  .retro-ui-bar, .retro-highscore-list {
+    font-size: 0.95em;
+    padding: 0.2em 0.2em;
+  }
+  .retro-game-container {
+    border-radius: 0.5em;
+    padding: 0.1em 0.01em 0.1em 0.01em;
+  }
+  #dino-game {
+    border-radius: 0.5em;
+  }
 }

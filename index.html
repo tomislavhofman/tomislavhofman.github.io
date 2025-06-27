@@ -37,14 +37,12 @@ title: Tomislav Hofman
     "email": "mailto:tomislav@hofman.tech"
 }</script>
 <div class="retro-console">
-  <div id="score-tracker" class="retro-score-bar"></div>
-  <div id="dino-game-container" style="max-width: 600px; margin: 2em auto;">
-      <canvas id="dino-game" width="600" height="150"
-              style="width:100%;background:#fff;border-radius:1rem;box-shadow:0 1px 4px rgba(0,0,0,0.04);"></canvas>
-      <div style="text-align:center;margin-top:0.5em;color:#64748b;font-size:0.98em;">Press space or tap to jump</div>
+  <div id="score-tracker" class="retro-score-bar retro-ui-bar"></div>
+  <div id="dino-game-container" class="retro-game-container">
+      <canvas id="dino-game" width="600" height="150"></canvas>
+      <div class="retro-ui-hint">Press <span class="key">space</span> or <span class="key">tap</span> to jump</div>
   </div>
-  <div id="highscore-list"
-       style="max-width: 600px; margin: 1em auto; text-align: center; font-family: Inter, Arial, sans-serif; color: #64748b;"></div>
+  <div id="highscore-list" class="retro-highscore-list"></div>
 </div>
 <script>
     (function () {
@@ -313,13 +311,13 @@ title: Tomislav Hofman
             const tracker = document.getElementById('score-tracker');
             tracker.style.minHeight = '';
 
-            // Compact, retro style with icons
+            // Compact, retro style with icons and pixel font
             const effectiveSpeedBoost = 1 + speedBoost;
             const distanceValue = Math.floor(effectiveSpeedBoost * highscore);
             tracker.innerHTML = `
-              <span class="score-item" title="Distance"><span class="score-icon">🏁</span> <span class="score-value">${distanceValue}</span></span>
-              <span class="score-item" title="Speed Boost"><span class="score-icon">⚡</span> <span class="score-value">${speedBoost}</span> <span class="score-best">(${greenHighScore})</span></span>
-              <span class="score-item" title="Time"><span class="score-icon">⏱</span> <span class="score-value">${Math.floor(highscore)}</span> <span class="score-best">(${timeHighScore})</span></span>
+              <span class="score-item" title="Distance"><span class="score-icon">🏁</span><span class="score-label">DIST</span><span class="score-value">${distanceValue}</span></span>
+              <span class="score-item" title="Speed Boost"><span class="score-icon">⚡</span><span class="score-label">SPD</span><span class="score-value">${speedBoost}</span></span>
+              <span class="score-item" title="Time"><span class="score-icon">⏱</span><span class="score-label">TIME</span><span class="score-value">${Math.floor(highscore)}</span></span>
             `;
         }
 
@@ -366,9 +364,9 @@ title: Tomislav Hofman
         function updateHighscoreList() {
             const listElement = document.getElementById('highscore-list');
             if (highscoreList.length > 0) {
-                let listHTML = '<h3>Top 5 Distances</h3><ol style="list-style-position: inside; padding-left: 0; -webkit-padding-start: 0;">';
+                let listHTML = '<div class="highscore-title">TOP SCORES</div><ol class="highscore-ol">';
                 for (const score of highscoreList) {
-                    listHTML += `<li style="margin: 0.2em 0;">${score}</li>`;
+                    listHTML += `<li>${score}</li>`;
                 }
                 listHTML += '</ol>';
                 listElement.innerHTML = listHTML;

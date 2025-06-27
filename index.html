@@ -268,17 +268,21 @@ title: Tomislav Hofman
             const coreRadius = baseR * pulse;
             const haloPulse = 1 + 0.13 * Math.sin(t * 2.2 + 1.2);
             const haloRadius = baseR * 1.8 * haloPulse;
-            // Color shift between magenta and blue
-            const colorShift = (Math.sin(t * 2.2) + 1) / 2; // 0..1
-            const coreColor = `rgb(${Math.round(255 * (1 - colorShift))},0,${Math.round(255 * colorShift)})`;
+            // Color shift between magenta and blue, but override with green transition for both core and glow
+            const greenProgress = Math.max(0, Math.min(1, speedBoost / 100));
+            const interp = (a, b, t) => Math.round(a + (b - a) * t);
+            const r = interp(255, 34, greenProgress);
+            const g = interp(0, 197, greenProgress);
+            const b = interp(128, 94, greenProgress);
+            const coreColor = `rgb(${r},${g},${b})`;
             // Rotating arc
             const arcAngle = t * 1.2;
 
             ctx.save();
-            // Strong animated outer glow (magenta/blue)
+            // Strong animated outer glow (magenta/blue to green based on speedBoost)
             let gradient = ctx.createRadialGradient(ball.x, ball.y, coreRadius, ball.x, ball.y, haloRadius);
-            gradient.addColorStop(0, `rgba(255,0,128,0.32)`);
-            gradient.addColorStop(0.5, `rgba(0,128,255,0.13)`);
+            gradient.addColorStop(0, `rgba(${r},${g},${b},0.32)`);
+            gradient.addColorStop(0.5, `rgba(${r},${g},${b},0.13)`);
             gradient.addColorStop(1, 'rgba(0,0,0,0)');
             ctx.beginPath();
             ctx.arc(ball.x, ball.y, haloRadius, 0, 2 * Math.PI);

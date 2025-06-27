@@ -228,6 +228,36 @@ title: Tomislav Hofman
         }
 
         function drawBall() {
+            // Draw platform if game hasn't started
+            if (!gameStarted) {
+                // Platform parameters
+                const platformY = ball.y + ball.r * 0.85;
+                const platformW = ball.r * 2.2;
+                const platformH = ball.r * 0.55;
+                // Glowing ellipse (sci-fi pad)
+                ctx.save();
+                let platGrad = ctx.createRadialGradient(ball.x, platformY, platformH * 0.2, ball.x, platformY, platformW * 0.6);
+                platGrad.addColorStop(0, 'rgba(0,255,255,0.45)');
+                platGrad.addColorStop(0.4, 'rgba(0,128,255,0.22)');
+                platGrad.addColorStop(0.7, 'rgba(128,0,255,0.13)');
+                platGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.beginPath();
+                ctx.ellipse(ball.x, platformY, platformW, platformH, 0, 0, 2 * Math.PI);
+                ctx.fillStyle = platGrad;
+                ctx.shadowColor = '#0ff';
+                ctx.shadowBlur = 18;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                // Platform rim
+                ctx.beginPath();
+                ctx.ellipse(ball.x, platformY, platformW * 0.92, platformH * 0.7, 0, 0, 2 * Math.PI);
+                ctx.strokeStyle = '#172554';
+                ctx.lineWidth = 3.2;
+                ctx.globalAlpha = 0.7;
+                ctx.stroke();
+                ctx.globalAlpha = 1.0;
+                ctx.restore();
+            }
             // --- Animated Retro Sci-Fi Core (smaller, animated, rotating arc) ---
             // Neon magenta/blue core, dark blue rim, strong animated glow
             const t = performance.now() * 0.002;

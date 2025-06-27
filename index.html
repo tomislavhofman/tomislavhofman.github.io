@@ -55,7 +55,6 @@ title: Tomislav Hofman
         // Ball properties
         let ball = {x: 80, y: height / 2, r: 9, vy: 0};
         let gravity = 0.5;
-        let upAccel = -0.5;
         let maxVy = 5;
         let minVy = -5;
         let upHoldAccel = -0.22; // gentle upward acceleration when holding
@@ -65,8 +64,7 @@ title: Tomislav Hofman
         let frame = 0;
         let score = 0;
         let highscore = 0;
-        let greenScore = 0;
-        let redScore = 0;
+        let speedBoost = 0;
         let gameOver = false;
         let gameStarted = false;
         const platformMinW = 60;
@@ -198,14 +196,14 @@ title: Tomislav Hofman
             frame = 0;
             score = 0;
             highscore = 0;
-            greenScore = 0;
+            speedBoost = 0;
             currentGrandTotal = 0;
             gameOver = false;
             gameStarted = false;
             backgroundLayers = generateBackgroundLayers();
             backgroundOffsets = {sun: 0, cloudsFar: 0, cloudsNear: 0, hills: [0, 0], meadow: 0};
             flyingSegments = [];
-            greenHighScore = Math.max(greenHighScore, greenScore);
+            greenHighScore = Math.max(greenHighScore, speedBoost);
             timeHighScore = Math.max(timeHighScore, highscore);
             gameSpeed = 4;
             if (timeIntervalId) clearInterval(timeIntervalId);
@@ -223,7 +221,7 @@ title: Tomislav Hofman
             timeIntervalId = setInterval(() => {
                 if (!gameStarted || gameOver) return;
                 highscore += 0.1;
-                currentGrandTotal += greenScore * 0.1;
+                currentGrandTotal += speedBoost * 0.1;
                 grandTotalHighScore = Math.max(grandTotalHighScore, currentGrandTotal);
             }, 100);
         }
@@ -316,9 +314,9 @@ title: Tomislav Hofman
 
             // New labels
             // Calculate distance: base value (1) + speed boosts, times time
-            const effectiveSpeedBoost = 1 + greenScore;
+            const effectiveSpeedBoost = 1 + speedBoost;
             const distanceValue = Math.floor(effectiveSpeedBoost * highscore);
-            const speedBoostText = `Speed Boost: ${greenScore} (Best: ${greenHighScore})`;
+            const speedBoostText = `Speed Boost: ${speedBoost} (Best: ${greenHighScore})`;
             const timeText = `Time: ${Math.floor(highscore)} (Best: ${timeHighScore})`;
             const distanceText = `Distance: ${distanceValue}`;
 
@@ -350,7 +348,7 @@ title: Tomislav Hofman
 
         function endGameAndTrackScores() {
             if (timeIntervalId) clearInterval(timeIntervalId);
-            greenHighScore = Math.max(greenHighScore, greenScore);
+            greenHighScore = Math.max(greenHighScore, speedBoost);
             timeHighScore = Math.max(timeHighScore, Math.floor(highscore));
 
             const finalScore = Math.floor(currentGrandTotal);
@@ -364,7 +362,7 @@ title: Tomislav Hofman
             }
             currentGrandTotal = 0;
             grandTotalHighScore = 0;
-            greenScore = 0;
+            speedBoost = 0;
             highscore = 0;
         }
 
@@ -429,7 +427,7 @@ title: Tomislav Hofman
                     let [p, idx, colorType] = seg.seg;
                     if (colorType === 'green' && p && p.touchedGreenSegments) p.touchedGreenSegments[idx] = true;
                     flyingSegments.splice(i, 1);
-                    if (colorType === 'green') greenScore++;
+                    if (colorType === 'green') speedBoost++;
                 } else {
                     seg.x = seg.x + (seg.tx - seg.x) * seg.progress * 0.25;
                     seg.y = seg.y + (seg.ty - seg.y) * seg.progress * 0.25;

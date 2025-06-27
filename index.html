@@ -98,6 +98,9 @@ title: Tomislav Hofman
         // Warp platforms for speed effect
         let warpPlatforms = [];
 
+        // Ball red-out animation state
+        let gameOverRedAnim = { active: false, start: 0, progress: 0 };
+
         function generateBackgroundLayers() {
             // Layer speeds (from farthest to nearest)
             const speeds = [0.1, 0.2, 0.4, 0.7];
@@ -214,6 +217,9 @@ title: Tomislav Hofman
             updateHighscoreList();
             // Reset warp platforms
             warpPlatforms = [];
+            // Reset red-out animation
+            gameOverRedAnim.active = false;
+            gameOverRedAnim.progress = 0;
         }
 
         function startTimer() {
@@ -228,6 +234,10 @@ title: Tomislav Hofman
         }
 
         function drawBall() {
+            // Don't draw if game over and red-out finished
+            if (gameOverRedAnim.active && gameOverRedAnim.progress >= 1.0) {
+                return;
+            }
             // Draw platform if game hasn't started (but not if game over)
             if (!gameStarted && !gameOver) {
                 // Platform parameters
@@ -269,62 +279,99 @@ title: Tomislav Hofman
             const haloPulse = 1 + 0.13 * Math.sin(t * 2.2 + 1.2);
             const haloRadius = baseR * 1.8 * haloPulse;
             // Color shift between magenta and blue, but override with green transition for both core and glow
-            const greenProgress = Math.max(0, Math.min(1, speedBoost / 100));
-            const interp = (a, b, t) => Math.round(a + (b - a) * t);
-            const r = interp(255, 34, greenProgress);
-            const g = interp(0, 197, greenProgress);
-            const b = interp(128, 94, greenProgress);
+            let r, g, b;
+            let redOut = false;
+            if (gameOverRedAnim.active) {
+                // Animate to red on game over
+                const t = Math.min(1, gameOverRedAnim.progress);
+                r = 239;
+                g = Math.round(68 * (1 - t));
+                b = Math.round(68 * (1 - t));
+                if (t >= 0.99) redOut = true;
+            } else {
+                const greenProgress = Math.max(0, Math.min(1, speedBoost / 100));
+                const interp = (a, b, t) => Math.round(a + (b - a) * t);
+                r = interp(255, 34, greenProgress);
+                g = interp(0, 197, greenProgress);
+                b = interp(128, 94, greenProgress);
+            }
             const coreColor = `rgb(${r},${g},${b})`;
             // Rotating arc
             const arcAngle = t * 1.2;
 
             ctx.save();
-            // Strong animated outer glow (magenta/blue to green based on speedBoost)
-            let gradient = ctx.createRadialGradient(ball.x, ball.y, coreRadius, ball.x, ball.y, haloRadius);
-            gradient.addColorStop(0, `rgba(${r},${g},${b},0.32)`);
-            gradient.addColorStop(0.5, `rgba(${r},${g},${b},0.13)`);
-            gradient.addColorStop(1, 'rgba(0,0,0,0)');
-            ctx.beginPath();
-            ctx.arc(ball.x, ball.y, haloRadius, 0, 2 * Math.PI);
-            ctx.fillStyle = gradient;
-            ctx.fill();
+            // --- OUTER GLOW ---
+            if (gameOverRedAnim.active) {
+                // Red glow
+                let redGlow = ctx.createRadialGradient(ball.x, ball.y, coreRadius, ball.x, ball.y, haloRadius);
+                redGlow.addColorStop(0, 'rgba(239,0,0,0.32)');
+                redGlow.addColorStop(0.5, 'rgba(239,0,0,0.13)');
+                redGlow.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.beginPath();
+                ctx.arc(ball.x, ball.y, haloRadius, 0, 2 * Math.PI);
+                ctx.fillStyle = redGlow;
+                ctx.fill();
+            } else {
+                let gradient = ctx.createRadialGradient(ball.x, ball.y, coreRadius, ball.x, ball.y, haloRadius);
+                gradient.addColorStop(0, `rgba(${r},${g},${b},0.32)`);
+                gradient.addColorStop(0.5, `rgba(${r},${g},${b},0.13)`);
+                gradient.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.beginPath();
+                ctx.arc(ball.x, ball.y, haloRadius, 0, 2 * Math.PI);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+            }
 
-            // Rotating neon arc overlay
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(ball.x, ball.y, baseR * 1.25, arcAngle, arcAngle + Math.PI * 0.7);
-            ctx.strokeStyle = 'rgba(0,255,255,0.45)';
-            ctx.lineWidth = 2.2;
-            ctx.shadowColor = '#0ff';
-            ctx.shadowBlur = 8;
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-            ctx.restore();
-
-            // Dark blue rim for contrast
+            // --- OUTER RIM ---
             ctx.beginPath();
             ctx.arc(ball.x, ball.y, baseR * 1.18, 0, 2 * Math.PI);
-            ctx.strokeStyle = '#172554'; // dark blue
+            if (gameOverRedAnim.active) {
+                ctx.strokeStyle = 'rgba(239,0,0,0.95)';
+            } else {
+                ctx.strokeStyle = '#172554'; // dark blue
+            }
             ctx.lineWidth = 4.2;
-            ctx.shadowColor = '#172554';
+            ctx.shadowColor = gameOverRedAnim.active ? 'rgba(239,0,0,0.7)' : '#172554';
             ctx.shadowBlur = 0;
             ctx.stroke();
 
-            // Neon core with color shift
-            let coreGradient = ctx.createRadialGradient(ball.x, ball.y, coreRadius * 0.18, ball.x, ball.y, coreRadius);
-            coreGradient.addColorStop(0, '#fff');
-            coreGradient.addColorStop(0.3, '#b3e6ff');
-            coreGradient.addColorStop(1, coreColor);
+            // --- Rotating arc overlay ---
+            if (!gameOverRedAnim.active) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(ball.x, ball.y, baseR * 1.25, arcAngle, arcAngle + Math.PI * 0.7);
+                ctx.strokeStyle = 'rgba(0,255,255,0.45)';
+                ctx.lineWidth = 2.2;
+                ctx.shadowColor = '#0ff';
+                ctx.shadowBlur = 8;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                ctx.restore();
+            }
+
+            // --- Neon core with color shift ---
+            let coreGradient;
+            if (gameOverRedAnim.active) {
+                coreGradient = ctx.createRadialGradient(ball.x, ball.y, coreRadius * 0.18, ball.x, ball.y, coreRadius);
+                coreGradient.addColorStop(0, '#fff');
+                coreGradient.addColorStop(0.3, '#ffb3b3');
+                coreGradient.addColorStop(1, 'rgb(239,0,0)');
+            } else {
+                coreGradient = ctx.createRadialGradient(ball.x, ball.y, coreRadius * 0.18, ball.x, ball.y, coreRadius);
+                coreGradient.addColorStop(0, '#fff');
+                coreGradient.addColorStop(0.3, '#b3e6ff');
+                coreGradient.addColorStop(1, coreColor);
+            }
             ctx.beginPath();
             ctx.arc(ball.x, ball.y, coreRadius, 0, 2 * Math.PI);
             ctx.fillStyle = coreGradient;
             ctx.fill();
 
-            // Central dot (bright white for focus)
+            // --- Central dot ---
             ctx.beginPath();
             ctx.arc(ball.x, ball.y, coreRadius * 0.22, 0, 2 * Math.PI);
-            ctx.fillStyle = 'rgba(255,255,255,0.95)';
-            ctx.shadowColor = '#fff';
+            ctx.fillStyle = gameOverRedAnim.active ? 'rgba(255,200,200,0.95)' : 'rgba(255,255,255,0.95)';
+            ctx.shadowColor = gameOverRedAnim.active ? 'rgba(239,0,0,0.7)' : '#fff';
             ctx.shadowBlur = 8;
             ctx.fill();
             ctx.shadowBlur = 0;
@@ -478,6 +525,11 @@ title: Tomislav Hofman
             grandTotalHighScore = 0;
             speedBoost = 0;
             highscore = 0;
+
+            // Start red-out animation
+            gameOverRedAnim.active = true;
+            gameOverRedAnim.start = performance.now();
+            gameOverRedAnim.progress = 0;
         }
 
         function updateHighscoreList() {
@@ -768,7 +820,7 @@ title: Tomislav Hofman
             ctx.clearRect(0, 0, width, height);
             drawPixelArtBackground();
             drawCeilingAndFloor();
-            drawWarpPlatforms(); // Draw warp speed platforms between background and foreground
+            drawWarpPlatforms();
             drawPlatforms();
             drawFlyingSegments();
             ctx.globalAlpha = 1.0;
@@ -779,6 +831,14 @@ title: Tomislav Hofman
         }
 
         function loop() {
+            // Animate red-out on game over
+            if (gameOverRedAnim.active) {
+                const now = performance.now();
+                gameOverRedAnim.progress = (now - gameOverRedAnim.start) / 1800; // 1.8s fade
+                if (gameOverRedAnim.progress >= 1.0) {
+                    gameOverRedAnim.progress = 1.0;
+                }
+            }
             update();
             render();
             // Clean up unused objects to avoid memory leaks

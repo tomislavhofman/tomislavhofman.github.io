@@ -314,13 +314,17 @@ title: Tomislav Hofman
             const tracker = document.getElementById('score-tracker');
             tracker.style.minHeight = '4em'; // Prevent jitter
 
-            const grandTotalText = `Total High: ${Math.floor(grandTotalHighScore)}`;
-            const greenText = `G: ${greenScore} (H: ${greenHighScore})`;
-            const timeText = `T: ${Math.floor(highscore)} (H: ${timeHighScore})`;
+            // New labels
+            // Calculate distance: base value (1) + speed boosts, times time
+            const effectiveSpeedBoost = 1 + greenScore;
+            const distanceValue = Math.floor(effectiveSpeedBoost * highscore);
+            const speedBoostText = `Speed Boost: ${greenScore} (Best: ${greenHighScore})`;
+            const timeText = `Time: ${Math.floor(highscore)} (Best: ${timeHighScore})`;
+            const distanceText = `Distance: ${distanceValue}`;
 
             tracker.innerHTML =
-                `<div style='font-size:1.2em;margin-bottom:0.3em;'><span style="color:#fbbf24;font-weight:bold;">${grandTotalText}</span></div>` +
-                `<span style="display: inline-block; width: 250px; color:#22c55e;font-weight:bold;">${greenText}</span>` +
+                `<div style='font-size:1.2em;margin-bottom:0.3em;'><span style="color:#fbbf24;font-weight:bold;">${distanceText}</span></div>` +
+                `<span style="display: inline-block; width: 250px; color:#22c55e;font-weight:bold;">${speedBoostText}</span>` +
                 `<span style="display: inline-block; width: 250px; color:#2563eb;font-weight:bold;">${timeText}</span>`;
         }
 
@@ -367,7 +371,7 @@ title: Tomislav Hofman
         function updateHighscoreList() {
             const listElement = document.getElementById('highscore-list');
             if (highscoreList.length > 0) {
-                let listHTML = '<h3>Top 5 Scores</h3><ol style="list-style-position: inside; padding-left: 0; -webkit-padding-start: 0;">';
+                let listHTML = '<h3>Top 5 Distances</h3><ol style="list-style-position: inside; padding-left: 0; -webkit-padding-start: 0;">';
                 for (const score of highscoreList) {
                     listHTML += `<li style="margin: 0.2em 0;">${score}</li>`;
                 }

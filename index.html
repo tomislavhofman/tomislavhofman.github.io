@@ -2,45 +2,818 @@
 layout: default
 title: Tomislav Hofman
 ---
-<meta name="description" content="Tomislav Hofman – Software engineer from Osijek, Croatia. Building robust, simple software and sharing knowledge.">
+<meta name="description"
+      content="Tomislav Hofman – Software engineer from Osijek, Croatia. Building robust, simple software and sharing knowledge.">
 <meta name="author" content="Tomislav Hofman">
 <meta property="og:title" content="Tomislav Hofman">
-<meta property="og:description" content="Software engineer from Osijek, Croatia. Building robust, simple software and sharing knowledge.">
+<meta property="og:description"
+      content="Software engineer from Osijek, Croatia. Building robust, simple software and sharing knowledge.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://hofman.tech/">
 <meta property="og:image" content="https://hofman.tech/assets/img/background/img-11.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Tomislav Hofman">
-<meta name="twitter:description" content="Software engineer from Osijek, Croatia. Building robust, simple software and sharing knowledge.">
+<meta name="twitter:description"
+      content="Software engineer from Osijek, Croatia. Building robust, simple software and sharing knowledge.">
 <meta name="twitter:image" content="https://hofman.tech/assets/img/background/img-11.jpg">
 <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap">
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap">
 <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@type": "Person",
-  "name": "Tomislav Hofman",
-  "url": "https://hofman.tech/",
-  "sameAs": [
-    "https://github.com/tomislavhofman",
-    "https://www.linkedin.com/in/tomislav-hofman/"
-  ],
-  "jobTitle": "Software Engineer",
-  "address": {
-    "@type": "PostalAddress",
-    "addressLocality": "Osijek",
-    "addressCountry": "Croatia"
-  },
-  "email": "mailto:tomislav@hofman.tech"
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Tomislav Hofman",
+    "url": "https://hofman.tech/",
+    "sameAs": [
+        "https://github.com/tomislavhofman",
+        "https://www.linkedin.com/in/tomislav-hofman/"
+    ],
+    "jobTitle": "Software Engineer",
+    "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Osijek",
+        "addressCountry": "Croatia"
+    },
+    "email": "mailto:tomislav@hofman.tech"
 }</script>
-<h1>Tomislav Hofman</h1>
-<p class="intro">
-  Software engineer from Osijek, Croatia. I enjoy building simple, robust software and sharing what I learn. Find my work and projects on
-  <a href="https://github.com/tomislavhofman" target="_blank" rel="noopener noreferrer">GitHub</a>
-  or connect with me on
-  <a href="https://www.linkedin.com/in/tomislav-hofman/" target="_blank" rel="noopener noreferrer">LinkedIn</a>.
-  Also check out
-  <a href="https://pstr.app/" target="_blank" rel="noopener noreferrer">pstr.app</a>.
-</p>
+<div id="score-tracker"
+     style="max-width:600px;margin:2em auto 0 auto;text-align:center;font-size:1.1em;color:#222;font-family:Inter,Arial,sans-serif;"></div>
+<div id="dino-game-container" style="max-width: 600px; margin: 2em auto;">
+    <canvas id="dino-game" width="600" height="150"
+            style="width:100%;background:#fff;border-radius:1rem;box-shadow:0 1px 4px rgba(0,0,0,0.04);"></canvas>
+    <div style="text-align:center;margin-top:0.5em;color:#64748b;font-size:0.98em;">Press space or tap to jump</div>
+</div>
+<div id="highscore-list"
+     style="max-width: 600px; margin: 1em auto; text-align: center; font-family: Inter, Arial, sans-serif; color: #64748b;"></div>
+<script>
+    (function () {
+        const canvas = document.getElementById('dino-game');
+        canvas.height = 225 * 1.3; // 30% taller
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        // Ball properties
+        let ball = {x: 80, y: height / 2, r: 9, vy: 0};
+        let gravity = 0.5;
+        let upAccel = -0.5;
+        let maxVy = 5;
+        let minVy = -5;
+        let upHoldAccel = -0.22; // gentle upward acceleration when holding
+        let upTapBoost = -3.5; // quick boost on tap/press
+        let holdUp = false;
+        let platforms = [];
+        let frame = 0;
+        let score = 0;
+        let highscore = 0;
+        let greenScore = 0;
+        let redScore = 0;
+        let gameOver = false;
+        let gameStarted = false;
+        const platformMinW = 60;
+        const platformMaxW = width / 3;
+        const platformH = 8; // smaller height
+        const platformGap = 60;
+
+        // Parallax background layers
+        let backgroundLayers = null;
+        let backgroundOffsets = null;
+
+        // Platform segment width
+        const PLATFORM_SEGMENT_W = 10;
+
+        // Flying segment animation objects
+        let flyingSegments = [];
+
+        // High score variables
+        let greenHighScore = 0;
+        let timeHighScore = 0;
+        let gameSpeed = 4;
+
+        // Grand total high score tracking
+        let grandTotalHighScore = 0;
+        let currentGrandTotal = 0;
+        let highscoreList = [];
+        let timeIntervalId = null;
+        let lastTimeUpdate = null;
+
+        // Warp platforms for speed effect
+        let warpPlatforms = [];
+
+        function generateBackgroundLayers() {
+            // Layer speeds (from farthest to nearest)
+            const speeds = [0.1, 0.2, 0.4, 0.7];
+            // Sky gradient (static)
+            // Sun (static, but can move slowly)
+            const sun = {
+                x: 60 + Math.random() * 80,
+                y: 40 + Math.random() * 20,
+                r: 18 + Math.random() * 6,
+                speed: 0.05
+            };
+            // Clouds (far and near layers)
+            const cloudsFar = [];
+            const cloudsNear = [];
+            for (let i = 0; i < 3; i++) {
+                cloudsFar.push({
+                    x: Math.random() * width,
+                    y: 20 + Math.random() * 40,
+                    w: 40 + Math.random() * 30,
+                    h: 16 + Math.random() * 8,
+                    alpha: 0.4 + Math.random() * 0.2,
+                    speed: speeds[0]
+                });
+            }
+            for (let i = 0; i < 2; i++) {
+                cloudsNear.push({
+                    x: Math.random() * width,
+                    y: 60 + Math.random() * 40,
+                    w: 50 + Math.random() * 40,
+                    h: 20 + Math.random() * 10,
+                    alpha: 0.5 + Math.random() * 0.2,
+                    speed: speeds[1]
+                });
+            }
+            // Distant hills (simple polygons)
+            const hills = [];
+            for (let i = 0; i < 2; i++) {
+                let baseY = height - 70 - i * 18;
+                let points = [];
+                let step = 60;
+                for (let x = -step; x < width + step; x += step) {
+                    let y = baseY + Math.sin((x + i * 50) * 0.02) * (12 + i * 6) + Math.random() * 6;
+                    points.push({x, y});
+                }
+                hills.push({points, color: i === 0 ? '#b6e3a1' : '#a0c98f', speed: speeds[2]});
+            }
+            // Meadow (pixelated grass, flowers, moves fastest)
+            const grassHeight = 38;
+            const meadow = [];
+            for (let y = height - grassHeight; y < height; y += 4) {
+                for (let x = 0; x < width; x += 4) {
+                    let green = 180 + Math.floor(Math.random() * 60);
+                    let color = `rgb(80,${green},60)`;
+                    let flower = null;
+                    if (Math.random() < 0.01) {
+                        flower = ['#fbbf24', '#ef4444', '#a3e635', '#f472b6'][Math.floor(Math.random() * 4)];
+                    }
+                    meadow.push({x, y, color, flower, speed: speeds[3]});
+                }
+            }
+            return {sun, cloudsFar, cloudsNear, hills, meadow, speeds};
+        }
+
+        function updateBackgroundOffsets() {
+            if (!backgroundOffsets) {
+                backgroundOffsets = {sun: 0, cloudsFar: 0, cloudsNear: 0, hills: [0, 0], meadow: 0};
+            }
+            // Animate each layer
+            backgroundOffsets.sun += backgroundLayers.sun.speed;
+            backgroundOffsets.cloudsFar += backgroundLayers.speeds[0];
+            backgroundOffsets.cloudsNear += backgroundLayers.speeds[1];
+            backgroundOffsets.hills[0] += backgroundLayers.speeds[2];
+            backgroundOffsets.hills[1] += backgroundLayers.speeds[2] * 1.2;
+            backgroundOffsets.meadow += backgroundLayers.speeds[3];
+            // Loop offsets
+            backgroundOffsets.sun %= width;
+            backgroundOffsets.cloudsFar %= width;
+            backgroundOffsets.cloudsNear %= width;
+            backgroundOffsets.hills[0] %= width;
+            backgroundOffsets.hills[1] %= width;
+            backgroundOffsets.meadow %= width;
+        }
+
+        function drawPixelArtBackground() {
+            // Abstract, fluid, non-green background
+            // Layer 1: Soft vertical gradient (blue to purple)
+            let grad1 = ctx.createLinearGradient(0, 0, 0, height);
+            grad1.addColorStop(0, '#b3caff'); // soft blue
+            grad1.addColorStop(1, '#c7b3ff'); // soft purple
+            ctx.fillStyle = grad1;
+            ctx.fillRect(0, 0, width, height);
+
+            // Layer 2: Wavy, semi-transparent shapes (abstract clouds/waves)
+            for (let i = 0; i < 4; i++) {
+                ctx.save();
+                let yBase = height * (0.2 + 0.2 * i);
+                let amplitude = 18 + 10 * Math.sin(performance.now() / 2000 + i);
+                let color = `rgba(${180 + 20 * i},${160 + 10 * i},255,0.13)`;
+                ctx.beginPath();
+                ctx.moveTo(0, yBase);
+                for (let x = 0; x <= width; x += 8) {
+                    let y = yBase + Math.sin((x / 60) + performance.now() / 3000 + i) * amplitude;
+                    ctx.lineTo(x, y);
+                }
+                ctx.lineTo(width, height);
+                ctx.lineTo(0, height);
+                ctx.closePath();
+                ctx.fillStyle = color;
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // Layer 3: Abstract floating blobs (no green)
+            for (let i = 0; i < 7; i++) {
+                let t = performance.now() / 1800 + i * 2;
+                let x = (width / 7) * i + Math.sin(t) * 30;
+                let y = height * 0.25 + Math.cos(t * 1.2) * 40 + i * 7;
+                let r = 28 + 10 * Math.sin(t * 0.7);
+                ctx.save();
+                ctx.globalAlpha = 0.13 + 0.07 * Math.sin(t);
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, 2 * Math.PI);
+                ctx.fillStyle = `#${['b3caff', 'b3baff', 'b3b3ff', 'b3b3e6', 'b3b3d1', 'b3b3c0', 'b3b3b3'][i]}`;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function reset() {
+            ball.y = height / 2;
+            ball.vy = 0;
+            platforms = [];
+            frame = 0;
+            score = 0;
+            highscore = 0;
+            greenScore = 0;
+            currentGrandTotal = 0;
+            gameOver = false;
+            gameStarted = false;
+            backgroundLayers = generateBackgroundLayers();
+            backgroundOffsets = {sun: 0, cloudsFar: 0, cloudsNear: 0, hills: [0, 0], meadow: 0};
+            flyingSegments = [];
+            greenHighScore = Math.max(greenHighScore, greenScore);
+            timeHighScore = Math.max(timeHighScore, highscore);
+            gameSpeed = 4;
+            if (timeIntervalId) clearInterval(timeIntervalId);
+            lastTimeUpdate = null;
+            gameStarted = false;
+            gameOver = false;
+            updateHighscoreList();
+            // Reset warp platforms
+            warpPlatforms = [];
+        }
+
+        function startTimer() {
+            if (timeIntervalId) clearInterval(timeIntervalId);
+            lastTimeUpdate = Date.now();
+            timeIntervalId = setInterval(() => {
+                if (!gameStarted || gameOver) return;
+                highscore += 0.1;
+                currentGrandTotal += greenScore * 0.1;
+                grandTotalHighScore = Math.max(grandTotalHighScore, currentGrandTotal);
+            }, 100);
+        }
+
+        function drawBall() {
+            ctx.save();
+            ctx.fillStyle = '#2563eb';
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.r, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawPlatforms() {
+            platforms.forEach(p => {
+                ctx.save();
+                ctx.lineWidth = 6;
+                let segCount = Math.ceil(p.w / PLATFORM_SEGMENT_W);
+                for (let i = 0; i < segCount; i++) {
+                    let segX1 = p.x + i * PLATFORM_SEGMENT_W;
+                    let segX2 = Math.min(segX1 + PLATFORM_SEGMENT_W, p.x + p.w);
+                    let touched = p.touchedGreenSegments && p.touchedGreenSegments[i];
+                    let flying = p.flyingSegments && p.flyingSegments[i];
+                    // Draw only if not flying
+                    if (!flying) {
+                        ctx.strokeStyle = touched ? '#fff' : '#22c55e';
+                        ctx.beginPath();
+                        if (p.grassOnTop) {
+                            ctx.moveTo(segX1, p.y);
+                            ctx.lineTo(segX2, p.y);
+                        } else {
+                            ctx.moveTo(segX1, p.y + platformH);
+                            ctx.lineTo(segX2, p.y + platformH);
+                        }
+                        ctx.stroke();
+                    }
+                }
+                // Draw red side (full width, but skip touched segments)
+                ctx.strokeStyle = '#ef4444';
+                ctx.beginPath();
+                let drewRed = false;
+                for (let i = 0; i < segCount; i++) {
+                    let segX1 = p.x + i * PLATFORM_SEGMENT_W;
+                    let segX2 = Math.min(segX1 + PLATFORM_SEGMENT_W, p.x + p.w);
+                    let touched = p.touchedRedSegments && p.touchedRedSegments[i];
+                    if (!touched) {
+                        if (p.grassOnTop) {
+                            ctx.moveTo(segX1, p.y + platformH);
+                            ctx.lineTo(segX2, p.y + platformH);
+                        } else {
+                            ctx.moveTo(segX1, p.y);
+                            ctx.lineTo(segX2, p.y);
+                        }
+                        drewRed = true;
+                    }
+                }
+                if (drewRed) ctx.stroke();
+                ctx.restore();
+            });
+        }
+
+        function drawFlyingSegments() {
+            for (const seg of flyingSegments) {
+                ctx.save();
+                // Use color for animation
+                ctx.strokeStyle = seg.color === 'red' ? '#ef4444' : '#22c55e';
+                ctx.lineWidth = 6;
+                ctx.globalAlpha = 1 - seg.progress;
+                // Draw as a short horizontal line for visibility
+                ctx.beginPath();
+                ctx.moveTo(seg.x - 5, seg.y);
+                ctx.lineTo(seg.x + 5, seg.y);
+                ctx.stroke();
+                // Optional: draw a small glowing circle
+                ctx.beginPath();
+                ctx.arc(seg.x, seg.y, 6, 0, 2 * Math.PI);
+                ctx.globalAlpha = 0.18 * (1 - seg.progress);
+                ctx.fillStyle = seg.color === 'red' ? '#ef4444' : '#22c55e';
+                ctx.shadowColor = seg.color === 'red' ? '#ef4444' : '#22c55e';
+                ctx.shadowBlur = 12;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function drawScore() {
+            // Update the score tracker div above the game window
+            const tracker = document.getElementById('score-tracker');
+            tracker.style.minHeight = '4em'; // Prevent jitter
+
+            const grandTotalText = `Total High: ${Math.floor(grandTotalHighScore)}`;
+            const greenText = `G: ${greenScore} (H: ${greenHighScore})`;
+            const timeText = `T: ${Math.floor(highscore)} (H: ${timeHighScore})`;
+
+            tracker.innerHTML =
+                `<div style='font-size:1.2em;margin-bottom:0.3em;'><span style="color:#fbbf24;font-weight:bold;">${grandTotalText}</span></div>` +
+                `<span style="display: inline-block; width: 250px; color:#22c55e;font-weight:bold;">${greenText}</span>` +
+                `<span style="display: inline-block; width: 250px; color:#2563eb;font-weight:bold;">${timeText}</span>`;
+        }
+
+        function drawGameOver() {
+            ctx.save();
+            ctx.fillStyle = '#ef4444';
+            ctx.font = 'bold 32px Inter, Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Game Over', width / 2, height / 2 - 10);
+            ctx.font = '18px Inter, Arial, sans-serif';
+            ctx.fillStyle = '#64748b';
+            ctx.fillText('Press space or tap to restart', width / 2, height / 2 + 20);
+            ctx.restore();
+        }
+
+        // Remove Techno music variables and functions
+        // Remove mute icon creation and updateMuteIcon
+        // Remove all music-related event handlers and function calls
+        // Remove all playKick, playHiHat, playSnare, playClap, playBass, playArp, startTechnoMusic, stopTechnoMusic, technoLoop, actuallyStartTechno, and related code
+        // Remove references to musicMuted, technoGain, technoAudioCtx, technoActive, technoLoopInterval, technoTempo, technoStep
+        // Remove muteIcon DOM element and its event handler
+        // Remove all calls to startTechnoMusic() and stopTechnoMusic()
+
+        function endGameAndTrackScores() {
+            if (timeIntervalId) clearInterval(timeIntervalId);
+            greenHighScore = Math.max(greenHighScore, greenScore);
+            timeHighScore = Math.max(timeHighScore, Math.floor(highscore));
+
+            const finalScore = Math.floor(currentGrandTotal);
+            grandTotalHighScore = Math.max(grandTotalHighScore, finalScore);
+
+            if (finalScore > 0) {
+                highscoreList.push(finalScore);
+                highscoreList.sort((a, b) => b - a);
+                highscoreList = highscoreList.slice(0, 5);
+                updateHighscoreList();
+            }
+            currentGrandTotal = 0;
+            grandTotalHighScore = 0;
+            greenScore = 0;
+            highscore = 0;
+        }
+
+        function updateHighscoreList() {
+            const listElement = document.getElementById('highscore-list');
+            if (highscoreList.length > 0) {
+                let listHTML = '<h3>Top 5 Scores</h3><ol style="list-style-position: inside; padding-left: 0; -webkit-padding-start: 0;">';
+                for (const score of highscoreList) {
+                    listHTML += `<li style="margin: 0.2em 0;">${score}</li>`;
+                }
+                listHTML += '</ol>';
+                listElement.innerHTML = listHTML;
+            } else {
+                listElement.innerHTML = '';
+            }
+        }
+
+        function drawStartScreen() {
+            ctx.save();
+            ctx.fillStyle = '#2563eb';
+            ctx.font = 'bold 32px Inter, Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Press space or tap to start', width / 2, height / 2);
+            ctx.restore();
+        }
+
+        function drawCeilingAndFloor() {
+            ctx.save();
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 10;
+            // Ceiling
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(width, 0);
+            ctx.stroke();
+            // Floor
+            ctx.beginPath();
+            ctx.moveTo(0, height);
+            ctx.lineTo(width, height);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawWarpSpeedEffect() {
+            // Warp lines: very few at low speed, increase rapidly with gameSpeed
+            const minLines = 1;
+            const maxLines = 28;
+            // Exponential growth for more dramatic effect
+            const numLines = Math.floor(minLines + Math.pow(Math.max(gameSpeed - 3, 0), 1.7));
+            const clampedLines = Math.max(minLines, Math.min(numLines, maxLines));
+            const maxLen = 40 + Math.min(gameSpeed * 12, 120);
+            const centerX = width / 2;
+            const centerY = height / 2;
+            ctx.save();
+            ctx.globalAlpha = 0.13 + Math.min(gameSpeed / 30, 0.18);
+            for (let i = 0; i < clampedLines; i++) {
+                const angle = (2 * Math.PI / clampedLines) * i + (performance.now() / 900) % (2 * Math.PI);
+                const len = maxLen * (0.7 + Math.random() * 0.5);
+                // Make some lines even thinner, some a bit thicker
+                let thinnessRand = Math.random();
+                let lineWidth;
+                if (thinnessRand < 0.3) {
+                    lineWidth = 0.4 + Math.random() * 0.1; // super thin
+                } else if (thinnessRand < 0.8) {
+                    lineWidth = 0.7 + Math.random() * 0.4; // normal thin
+                } else {
+                    lineWidth = 1.2 + Math.random() * 0.7; // a few slightly thicker
+                }
+                // Warp speed: most lines 40%-100% of platform speed, a few up to 105%
+                let speedRand = Math.random();
+                let speedJitter;
+                if (speedRand < 0.85) {
+                    speedJitter = gameSpeed * (0.6 + Math.random() * 0.4); // 60%-100% of platform speed
+                } else {
+                    speedJitter = gameSpeed * (1.0 + Math.random() * 0.05); // 100%-105% of platform speed
+                }
+                // Animate the angle with speedJitter for parallax effect
+                const animatedAngle = angle + (performance.now() / (900 + speedJitter * 40)) % (2 * Math.PI);
+                ctx.strokeStyle = '#60a5fa';
+                ctx.lineWidth = lineWidth;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(centerX + Math.cos(animatedAngle) * len, centerY + Math.sin(animatedAngle) * len);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        function drawWarpPlatforms() {
+            ctx.save();
+            ctx.globalAlpha = 0.7;
+            for (const wp of warpPlatforms) {
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(wp.x, wp.y, wp.w, wp.h);
+            }
+            ctx.restore();
+        }
+
+        function update() {
+            console.log('update called', {gameStarted, gameOver, flyingSegmentsLen: flyingSegments.length});
+            updateBackgroundOffsets();
+            // Animate flyingSegments ...
+            for (let i = flyingSegments.length - 1; i >= 0; i--) {
+                let seg = flyingSegments[i];
+                seg.progress += 0.07;
+                if (seg.progress >= 1) {
+                    let [p, idx, colorType] = seg.seg;
+                    if (colorType === 'green' && p && p.touchedGreenSegments) p.touchedGreenSegments[idx] = true;
+                    flyingSegments.splice(i, 1);
+                    if (colorType === 'green') greenScore++;
+                } else {
+                    seg.x = seg.x + (seg.tx - seg.x) * seg.progress * 0.25;
+                    seg.y = seg.y + (seg.ty - seg.y) * seg.progress * 0.25;
+                    seg.x2 = seg.x;
+                    seg.y2 = seg.y;
+                }
+            }
+            // Warp platforms logic (visual only, not collectible)
+            if (gameStarted && !gameOver) {
+                const maxWarp = Math.floor(2 + Math.min(gameSpeed / 2, 10));
+                if (Math.random() < 0.15 * (gameSpeed / 6)) {
+                    for (let i = 0; i < maxWarp; i++) {
+                        if (Math.random() < 0.5) continue;
+                        const warpH = 6 + Math.random() * 8;
+                        const warpW = 18 + Math.random() * 18;
+                        const y = 10 + Math.random() * (height - 20 - warpH);
+                        const speed = gameSpeed + 2 + Math.random() * (gameSpeed * 1.2);
+                        warpPlatforms.push({
+                            x: width + Math.random() * 40,
+                            y,
+                            w: warpW,
+                            h: warpH,
+                            speed
+                        });
+                    }
+                }
+                // Move and remove off-screen warp platforms
+                for (let i = warpPlatforms.length - 1; i >= 0; i--) {
+                    warpPlatforms[i].x -= warpPlatforms[i].speed;
+                    if (warpPlatforms[i].x + warpPlatforms[i].w < 0) {
+                        warpPlatforms.splice(i, 1);
+                    }
+                }
+            }
+            if (!gameStarted || gameOver) {
+                return;
+            }
+
+            // Ball physics
+            if (holdUp) {
+                ball.vy += upHoldAccel;
+                if (ball.vy < minVy) ball.vy = minVy;
+            } else {
+                ball.vy += gravity;
+                if (ball.vy > maxVy) ball.vy = maxVy;
+            }
+            let nextY = ball.y + ball.vy;
+            let onPlatform = false;
+            let platformTouched = null;
+            // Platform collision and scoring/game over
+            for (let p of platforms) {
+                let topY = p.y;
+                let botY = p.y + platformH;
+                let left = p.x;
+                let right = p.x + p.w;
+                let collectedThisFrame = false;
+                if (ball.x + ball.r > left && ball.x - ball.r < right) {
+                    let segCount = Math.ceil(p.w / PLATFORM_SEGMENT_W);
+                    // Use two separate arrays for touched segments
+                    if (!p.touchedGreenSegments) p.touchedGreenSegments = Array(segCount).fill(false);
+                    if (!p.touchedRedSegments) p.touchedRedSegments = Array(segCount).fill(false);
+                    if (!p.flyingSegments) p.flyingSegments = Array(segCount).fill(null);
+                    if (p.grassOnTop) {
+                        // Only collect green if touching green (top)
+                        if (Math.abs((ball.y + ball.r) - topY) < 8) {
+                            onPlatform = true;
+                            platformTouched = p;
+                            for (let i = 0; i < segCount; i++) {
+                                let segX1 = p.x + i * PLATFORM_SEGMENT_W;
+                                let segX2 = Math.min(segX1 + PLATFORM_SEGMENT_W, p.x + p.w);
+                                if (ball.x + ball.r > segX1 && ball.x - ball.r < segX2) {
+                                    if (!p.touchedGreenSegments[i] && p.flyingSegments[i] !== 'green') {
+                                        flyingSegments.push({
+                                            x: (segX1 + segX2) / 2, y: p.y, x2: (segX1 + segX2) / 2, y2: p.y,
+                                            tx: 16, ty: height - 16, progress: 0, seg: [p, i, 'green'], color: 'green'
+                                        });
+                                        p.flyingSegments[i] = 'green';
+                                        p.touchedGreenSegments[i] = true;
+                                        collectedThisFrame = true;
+                                        gameSpeed += 0.05;
+                                    }
+                                }
+                            }
+                        }
+                        // Game over if touching red (bottom)
+                        if (!collectedThisFrame && Math.abs((ball.y - ball.r) - botY) < 8) {
+                            for (let i = 0; i < segCount; i++) {
+                                let segX1 = p.x + i * PLATFORM_SEGMENT_W;
+                                let segX2 = Math.min(segX1 + PLATFORM_SEGMENT_W, p.x + p.w);
+                                if (ball.x + ball.r > segX1 && ball.x - ball.r < segX2) {
+                                    gameOver = true;
+                                    gameStarted = false;
+                                    endGameAndTrackScores();
+                                }
+                            }
+                        }
+                    } else {
+                        // Only collect green if touching green (bottom)
+                        if (Math.abs((ball.y - ball.r) - botY) < 8) {
+                            onPlatform = true;
+                            platformTouched = p;
+                            for (let i = 0; i < segCount; i++) {
+                                let segX1 = p.x + i * PLATFORM_SEGMENT_W;
+                                let segX2 = Math.min(segX1 + PLATFORM_SEGMENT_W, p.x + p.w);
+                                if (ball.x + ball.r > segX1 && ball.x - ball.r < segX2) {
+                                    if (!p.touchedGreenSegments[i] && p.flyingSegments[i] !== 'green') {
+                                        flyingSegments.push({
+                                            x: (segX1 + segX2) / 2,
+                                            y: p.y + platformH,
+                                            x2: (segX1 + segX2) / 2,
+                                            y2: p.y + platformH,
+                                            tx: 16,
+                                            ty: height - 16,
+                                            progress: 0,
+                                            seg: [p, i, 'green'],
+                                            color: 'green'
+                                        });
+                                        p.flyingSegments[i] = 'green';
+                                        p.touchedGreenSegments[i] = true;
+                                        collectedThisFrame = true;
+                                        gameSpeed += 0.05;
+                                    }
+                                }
+                            }
+                        }
+                        // Game over if touching red (top)
+                        if (!collectedThisFrame && Math.abs((ball.y + ball.r) - topY) < 8) {
+                            for (let i = 0; i < segCount; i++) {
+                                let segX1 = p.x + i * PLATFORM_SEGMENT_W;
+                                let segX2 = Math.min(segX1 + PLATFORM_SEGMENT_W, p.x + p.w);
+                                if (ball.x + ball.r > segX1 && ball.x - ball.r < segX2) {
+                                    gameOver = true;
+                                    gameStarted = false;
+                                    endGameAndTrackScores();
+                                }
+                            }
+                        }
+                    }
+                    // Block movement as before
+                    if (p.grassOnTop) {
+                        if (ball.y + ball.r <= topY && nextY + ball.r >= topY) {
+                            nextY = topY - ball.r;
+                            ball.vy = 0;
+                        }
+                        if (ball.y - ball.r >= botY && nextY - ball.r <= botY) {
+                            nextY = botY + ball.r;
+                            ball.vy = 0;
+                        }
+                    } else {
+                        if (ball.y + ball.r <= topY && nextY + ball.r >= topY) {
+                            nextY = topY - ball.r;
+                            ball.vy = 0;
+                        }
+                        if (ball.y - ball.r >= botY && nextY - ball.r <= botY) {
+                            nextY = botY + ball.r;
+                            ball.vy = 0;
+                        }
+                    }
+                }
+            }
+            // Increase highscore for each 0.1s spent on green side
+            if (onPlatform && platformTouched) {
+                if (!platformTouched.lastScoreTime) platformTouched.lastScoreTime = performance.now();
+                const now = performance.now();
+                while (now - platformTouched.lastScoreTime >= 100) {
+                    highscore++;
+                    platformTouched.lastScoreTime += 100;
+                }
+            }
+            // Reset lastScoreTime if not on platform
+            platforms.forEach(p => {
+                if (p !== platformTouched) p.lastScoreTime = null;
+            });
+            ball.y = nextY;
+            // Clamp to screen and check for ceiling/floor collision (game over)
+            if (ball.y + ball.r > height) {
+                ball.y = height - ball.r;
+                ball.vy = 0;
+                gameOver = true;
+                gameStarted = false;
+                endGameAndTrackScores();
+            }
+            if (ball.y - ball.r < 0) {
+                ball.y = ball.r;
+                ball.vy = 0;
+                gameOver = true;
+                gameStarted = false;
+                endGameAndTrackScores();
+            }
+            // Spawn platforms
+            if (frame === 0 || (platforms.length && width - (platforms[platforms.length - 1].x + platforms[platforms.length - 1].w) > platformGap)) {
+                let w = platformMinW + Math.random() * (platformMaxW - platformMinW);
+                let y = 40 + Math.random() * (height - 80);
+                let grassOnTop = Math.random() < 0.5;
+                let segCount = Math.ceil(w / PLATFORM_SEGMENT_W);
+                platforms.push({
+                    x: width,
+                    y,
+                    w,
+                    grassOnTop,
+                    touchedSegments: Array(segCount).fill(false), // legacy, not used
+                    touchedGreenSegments: Array(segCount).fill(false),
+                    touchedRedSegments: Array(segCount).fill(false),
+                    flyingSegments: Array(segCount).fill(null)
+                });
+            }
+            // Move platforms
+            platforms.forEach(p => p.x -= gameSpeed);
+            if (platforms.length && platforms[0].x + platforms[0].w < 0) platforms.shift();
+            frame++;
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, width, height);
+            drawPixelArtBackground();
+            drawCeilingAndFloor();
+            drawWarpPlatforms(); // Draw warp speed platforms between background and foreground
+            drawPlatforms();
+            drawFlyingSegments();
+            drawWarpSpeedEffect();
+            ctx.globalAlpha = 1.0;
+            drawBall();
+            drawScore();
+            if (!gameStarted && !gameOver) drawStartScreen();
+            if (gameOver) drawGameOver();
+        }
+
+        function loop() {
+            update();
+            render();
+            // Clean up unused objects to avoid memory leaks
+            platforms = platforms.filter(p => p.x + p.w > 0);
+            requestAnimationFrame(loop);
+        }
+
+        function handleKey(e) {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (gameOver) {
+                    reset();
+                    return;
+                }
+                if (!gameStarted) {
+                    gameStarted = true;
+                    gameOver = false;
+                    holdUp = e.type === 'keydown';
+                    if (e.type === 'keydown') ball.vy = upTapBoost;
+                    startTimer();
+                    // Remove startTechnoMusic() call
+                } else {
+                    if (e.type === 'keydown') {
+                        if (!holdUp) ball.vy = upTapBoost; // tap gives a boost
+                        holdUp = true;
+                    }
+                    if (e.type === 'keyup') holdUp = false;
+                }
+            }
+        }
+
+        document.addEventListener('keydown', handleKey);
+        document.addEventListener('keyup', handleKey);
+        canvas.addEventListener('touchstart', () => {
+            if (gameOver) {
+                reset();
+                return;
+            }
+            if (!gameStarted) {
+                gameStarted = true;
+                gameOver = false;
+                holdUp = true;
+                ball.vy = upTapBoost;
+                startTimer();
+                // Remove startTechnoMusic() call
+            } else {
+                if (!holdUp) ball.vy = upTapBoost;
+                holdUp = true;
+            }
+        });
+        canvas.addEventListener('mousedown', () => {
+            if (gameOver) {
+                reset();
+                return;
+            }
+            if (!gameStarted) {
+                gameStarted = true;
+                gameOver = false;
+                holdUp = true;
+                ball.vy = upTapBoost;
+                startTimer();
+                // Remove startTechnoMusic() call
+            } else {
+                if (!holdUp) ball.vy = upTapBoost;
+                holdUp = true;
+            }
+        });
+        canvas.addEventListener('touchend', () => {
+            holdUp = false;
+        });
+        canvas.addEventListener('mouseup', () => {
+            holdUp = false;
+        });
+        backgroundLayers = generateBackgroundLayers();
+        backgroundOffsets = {sun: 0, cloudsFar: 0, cloudsNear: 0, hills: [0, 0], meadow: 0};
+        reset();
+        loop();
+    })();
+</script>
 <section class="contact-block" aria-label="Contact information">
-  <strong>Contact:</strong> Osijek, Croatia · <a href="mailto:tomislav@hofman.tech">tomislav@hofman.tech</a>
+    <strong>Contact:</strong> Osijek, Croatia · <a href="mailto:tomislav@hofman.tech">tomislav@hofman.tech</a>
 </section>

@@ -14,7 +14,10 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-  background: linear-gradient(120deg, #f5f7fa 0%, #e9eff5 100%);
+  background: radial-gradient(ellipse at 80% 20%, #e3f0fc 0%, transparent 60%),
+              radial-gradient(ellipse at 20% 80%, #eaf3fb 0%, transparent 65%),
+              radial-gradient(ellipse at 60% 80%, rgba(255, 183, 94, 0.25) 0%, transparent 70%),
+              linear-gradient(120deg, #fafdff 0%, #e3eaf6 100%);
   color: #18181b;
   min-height: 100vh;
   line-height: 1.6;
@@ -115,13 +118,79 @@ main {
     background: #23272f;
   }
 }
-@media (max-width: 600px) {
+@media (max-width: 900px) {
+  body {
+    padding-left: 8vw;
+    padding-right: 8vw;
+  }
   .container, main {
-    padding: 1.25rem 0.5rem;
-    border-radius: 0.75rem;
+    max-width: 100vw;
+    padding: 1.25rem 1rem;
   }
   header {
-    border-radius: 0 0 0.75rem 0.75rem;
+    border-radius: 0 0 1rem 1rem;
+    margin-bottom: 1.5rem;
+  }
+  nav {
+    gap: 1rem;
+    font-size: 0.98rem;
+  }
+}
+@media (max-width: 600px) {
+  body {
+    padding-left: 4vw;
+    padding-right: 4vw;
+  }
+  nav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+  }
+  nav a {
+    padding: 0.75em 1em;
+    font-size: 1.1em;
+    border-radius: 0.75em;
+    text-align: center;
+  }
+  main {
+    margin-left: 0;
+    margin-right: 0;
+    padding: 1.25rem 0.75rem;
+  }
+  h1 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5em;
+  }
+  h2 {
+    font-size: 1.05rem;
+  }
+  .blog-list {
+    gap: 0.75rem;
+  }
+  .blog-post {
+    padding: 0.75em 0.7em;
+    border-radius: 0.75rem;
+    margin-left: 0.25em;
+    margin-right: 0.25em;
+    margin-bottom: 1em;
+  }
+  .intro {
+    font-size: 1rem;
+    margin-bottom: 1em;
+  }
+  footer {
+    font-size: 0.85rem;
+    padding-bottom: 1rem;
+  }
+  .contact-block {
+    padding: 0.75em 0.7em;
+    border-radius: 0.75rem;
+    margin-left: 0.25em;
+    margin-right: 0.25em;
+    margin-bottom: 1em;
+    margin-top: 1em;
+    font-size: 0.98em;
   }
 }
 
@@ -172,8 +241,8 @@ p, ul, ol {
 .contact-block {
   background: #f1f5f9;
   border-radius: 1rem;
-  padding: 1em 1.5em;
-  margin-top: 1em;
+  padding: 0.85em 1em;
+  margin: 1.25em 0 1.25em 0;
   box-shadow: 0 1px 4px rgba(0,0,0,0.04);
   text-align: center;
   font-size: 1rem;
@@ -210,7 +279,7 @@ footer {
 .blog-post {
   background: #f8fafc;
   border-radius: 1rem;
-  padding: 1.25em 1.5em;
+  padding: 1em 1.1em;
   box-shadow: 0 1px 4px rgba(0,0,0,0.04);
   transition: box-shadow 0.2s;
 }
@@ -432,4 +501,52 @@ button, .btn {
 button:hover, .btn:hover {
   background: #1e40af;
   color: #fff;
+}
+
+/* Remove bottom-nav bar and restore top nav for all screen sizes */
+.bottom-nav {
+  position: static;
+  width: auto;
+  background: none;
+  box-shadow: none;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 0.75em 2em;
+  border-radius: 0;
+  z-index: auto;
+}
+.bottom-nav a {
+  flex: none;
+  margin: 0 0.75em;
+  padding: 0.7em 1.5em;
+  border-radius: 0.5em;
+  background: none;
+  color: #334155;
+  text-align: center;
+  font-size: 1em;
+  font-weight: 600;
+  transition: background 0.2s, color 0.2s;
+  box-shadow: none;
+}
+.bottom-nav a.active, .bottom-nav a[aria-current="page"] {
+  background: #e2e8f0;
+  color: #2563eb;
+}
+.bottom-nav a:hover {
+  background: #f1f5f9;
+  color: #2563eb;
+}
+@media (max-width: 700px) {
+  .bottom-nav {
+    padding: 0.5em 0.5em;
+  }
+  .bottom-nav a {
+    padding: 0.5em 0.9em;
+    margin: 0 0.3em;
+  }
+  main, .container {
+    padding-bottom: 0 !important;
+  }
 }

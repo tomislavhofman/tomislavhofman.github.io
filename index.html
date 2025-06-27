@@ -47,17 +47,19 @@ title: Tomislav Hofman
 <script>
     (function () {
         const canvas = document.getElementById('dino-game');
+        const tracker = document.getElementById('score-tracker');
+        const highscoreListElement = document.getElementById('highscore-list');
         canvas.height = 225 * 1.3; // 30% taller
         const ctx = canvas.getContext('2d');
         const width = canvas.width;
         const height = canvas.height;
         // Ball properties
         let ball = {x: 80, y: height / 2, r: 9, vy: 0};
-        let gravity = 0.5;
-        let maxVy = 5;
-        let minVy = -5;
-        let upHoldAccel = -0.22; // gentle upward acceleration when holding
-        let upTapBoost = -3.5; // quick boost on tap/press
+        const gravity = 0.5;
+        const maxVy = 5;
+        const minVy = -5;
+        const upHoldAccel = -0.22; // gentle upward acceleration when holding
+        const upTapBoost = -3.5; // quick boost on tap/press
         let holdUp = false;
         let platforms = [];
         let frame = 0;
@@ -308,7 +310,6 @@ title: Tomislav Hofman
 
         function drawScore() {
             // Update the score tracker div above the game window
-            const tracker = document.getElementById('score-tracker');
             tracker.style.minHeight = '';
 
             // Compact, retro style with icons and pixel font
@@ -364,16 +365,17 @@ title: Tomislav Hofman
         }
 
         function updateHighscoreList() {
-            const listElement = document.getElementById('highscore-list');
-            if (highscoreList.length > 0) {
+            if (highscoreList.length > 0 && highscoreList[0] > 0) {
                 let listHTML = '<div class="highscore-title">TOP SCORES</div><ol class="highscore-ol">';
                 for (const score of highscoreList) {
                     listHTML += `<li>${score}</li>`;
                 }
                 listHTML += '</ol>';
-                listElement.innerHTML = listHTML;
+                highscoreListElement.innerHTML = listHTML;
+                highscoreListElement.style.display = '';
             } else {
-                listElement.innerHTML = '';
+                highscoreListElement.innerHTML = '';
+                highscoreListElement.style.display = 'none';
             }
         }
 
@@ -414,7 +416,7 @@ title: Tomislav Hofman
         }
 
         function update() {
-            console.log('update called', {gameStarted, gameOver, flyingSegmentsLen: flyingSegments.length});
+            // Removed debug console.log for performance
             updateBackgroundOffsets();
             // Animate flyingSegments ...
             for (let i = flyingSegments.length - 1; i >= 0; i--) {
@@ -625,7 +627,6 @@ title: Tomislav Hofman
                     y,
                     w,
                     grassOnTop,
-                    touchedSegments: Array(segCount).fill(false), // legacy, not used
                     touchedGreenSegments: Array(segCount).fill(false),
                     touchedRedSegments: Array(segCount).fill(false),
                     flyingSegments: Array(segCount).fill(null)

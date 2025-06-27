@@ -589,7 +589,6 @@ title: Tomislav Hofman
         }
 
         function update() {
-            // Removed debug console.log for performance
             updateBackgroundOffsets();
             // Animate flyingSegments ...
             for (let i = flyingSegments.length - 1; i >= 0; i--) {
@@ -639,6 +638,18 @@ title: Tomislav Hofman
                     warpPlatforms.splice(i, 1);
                 }
             }
+            // --- Move platforms even after game over ---
+            let platformMoveSpeed = gameSpeed;
+            for (let i = platforms.length - 1; i >= 0; i--) {
+                platforms[i].x -= platformMoveSpeed;
+            }
+            // Remove off-screen platforms
+            for (let i = platforms.length - 1; i >= 0; i--) {
+                if (platforms[i].x + platforms[i].w < 0) {
+                    platforms.splice(i, 1);
+                }
+            }
+            // --- End always-moving platforms ---
             if (!gameStarted || gameOver) {
                 return;
             }
@@ -811,7 +822,6 @@ title: Tomislav Hofman
                 });
             }
             // Move platforms
-            platforms.forEach(p => p.x -= gameSpeed);
             if (platforms.length && platforms[0].x + platforms[0].w < 0) platforms.shift();
             frame++;
         }

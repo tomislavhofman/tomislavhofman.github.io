@@ -141,60 +141,76 @@ main {
   body {
     padding-left: 4vw;
     padding-right: 4vw;
+    font-size: 17px;
   }
   nav {
     flex-direction: column;
     align-items: stretch;
     gap: 0.5rem;
-    padding: 0.5rem 0;
+    padding: 0.75rem 0.5rem;
+    font-size: 1.1rem;
   }
-  nav a {
-    padding: 0.75em 1em;
-    font-size: 1.1em;
-    border-radius: 0.75em;
-    text-align: center;
+  .container, main {
+    max-width: 100vw;
+    padding: 1.1rem 0.7rem;
+    border-radius: 0.5rem;
+    font-size: 1.08rem;
   }
-  main {
-    margin-left: 0;
-    margin-right: 0;
-    padding: 1.25rem 0.75rem;
-  }
-  h1 {
-    font-size: 1.25rem;
-    margin-bottom: 0.5em;
-  }
-  h2 {
-    font-size: 1.05rem;
-  }
-  .blog-list {
-    gap: 0.75rem;
+  header {
+    border-radius: 0 0 0.75rem 0.75rem;
+    margin-bottom: 1rem;
+    padding: 1.2rem 0.7rem 1rem 0.7rem;
   }
   .blog-post {
-    padding: 0.75em 0.7em;
-    border-radius: 0.75rem;
-    margin-left: 0.25em;
-    margin-right: 0.25em;
-    margin-bottom: 1em;
+    padding: 1.1em 0.7em;
+    font-size: 1.08rem;
   }
-  .intro {
-    font-size: 1rem;
-    margin-bottom: 1em;
-  }
-  footer {
-    font-size: 0.85rem;
-    padding-bottom: 1rem;
+  .prose {
+    padding: 0.7em 0.2em;
+    font-size: 1.13rem;
   }
   .contact-block {
-    padding: 0.75em 0.7em;
-    border-radius: 0.75rem;
-    margin-left: 0.25em;
-    margin-right: 0.25em;
-    margin-bottom: 1em;
-    margin-top: 1em;
-    font-size: 0.98em;
+    padding: 1em 0.7em;
+    margin: 1.25em 0 1.25em 0;
+    font-size: 1.08rem;
+  }
+  footer {
+    padding: 1.2em 0.5em 2em 0.5em;
+    font-size: 1.05rem;
+  }
+  h1 {
+    font-size: 2rem;
+  }
+  h2 {
+    font-size: 1.5rem;
+  }
+  h3 {
+    font-size: 1.25rem;
+  }
+  button, input, select, textarea {
+    font-size: 1.08em;
+    padding: 0.75em 1em;
+  }
+  img, canvas, video {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+  table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .game-canvas {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: auto !important;
   }
 }
 
+/* Typography */
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
   font-weight: 700;
@@ -211,7 +227,7 @@ h1 {
 }
 @media (max-width: 600px) {
   h1 {
-    font-size: 1.5rem;
+    font-size: 2rem;
   }
 }
 h2 {
@@ -566,7 +582,7 @@ button:hover, .btn:hover {
   box-shadow: 0 0 24px 0 #0f0a, 0 2px 24px 0 #0f0a;
   max-width: 640px;
   margin: 2.5em auto 2em auto;
-  padding: 1.5em 1em 2em 1em;
+  padding: 1em 1em 1em 1em;
   font-family: 'VT323', 'Fira Mono', 'Menlo', monospace;
   position: relative;
   border: 2.5px solid #22ff55;
@@ -587,12 +603,8 @@ button:hover, .btn:hover {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 0.5em;
-  background: #10141a;
-  border-radius: 0.7em;
-  box-shadow: 0 0 8px #22ff55cc, 0 0 1px #22ff55;
-  padding: 0.5em 1em;
-  margin-bottom: 1.2em;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
   font-size: 1.25em;
   color: #22ff55;
   font-family: 'VT323', 'Fira Mono', 'Menlo', monospace;
@@ -710,15 +722,18 @@ button:hover, .btn:hover {
   .retro-game-container {
     padding: 0.3em 0.1em 0.3em 0.1em;
   }
+  .score-tracker {
+    margin-right: 0.7em;
+  }
 }
 @media (max-width: 480px) {
   .retro-console {
     border-radius: 0.7em;
-    padding: 0.5em 0.05em 0.7em 0.05em;
+    padding: 0.5em 0.5em 0.7em 0.5em;
   }
   .retro-ui-bar, .retro-highscore-list {
-    font-size: 0.95em;
-    padding: 0.2em 0.2em;
+    font-size: 1.1em;
+    padding: 1em 1em;
   }
   .retro-game-container {
     border-radius: 0.5em;
@@ -770,4 +785,41 @@ button:hover, .btn:hover {
 .retro-ui-hint,
 .key {
   font-family: 'VT323', 'Fira Mono', 'Menlo', monospace !important;
+}
+@media (max-width: 600px) {
+  .retro-ui-hint {
+    padding: 0.7em 0.5em;
+    font-size: 1.08em;
+  }
+  .game-over, .game-over-message {
+    font-size: 4em !important;
+    padding: 0.7em 0.5em !important;
+    font-weight: bold;
+    text-align: center;
+  }
+}
+.game-over, .game-over-message {
+  font-size: 5em;
+  font-weight: bold;
+  text-align: center;
+  color: #e11d48;
+  padding: 1em 0;
+}
+@media (max-width: 600px) {
+  #dino-game {
+    width: 99%;
+    max-width: 100vw !important;
+    min-width: 0;
+    height: auto !important;
+    min-height: 200px;
+    border-radius: 0.7em;
+    margin: 0 auto 1em auto;
+    box-shadow: 0 0 8px #22ff5533, 0 1px 4px #0002;
+    border-width: 2.5px;
+  }
+  .retro-game-container {
+    padding: 0.5em 0.1em 0.5em 0.1em;
+    border-radius: 0.7em;
+    margin-bottom: 1.2em;
+  }
 }

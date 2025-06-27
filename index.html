@@ -36,14 +36,12 @@ title: Tomislav Hofman
     },
     "email": "mailto:tomislav@hofman.tech"
 }</script>
-<div class="retro-console">
-  <div id="score-tracker" class="retro-score-bar retro-ui-bar"></div>
-  <div id="dino-game-container" class="retro-game-container">
-      <canvas id="dino-game" width="600" height="150"></canvas>
-      <div class="retro-ui-hint">Press <span class="key">space</span> or <span class="key">tap</span> to fly</div>
-  </div>
-  <div id="highscore-list" class="retro-highscore-list"></div>
+<div id="score-tracker" class="retro-ui-bar"></div>
+<div id="dino-game-container" class="retro-game-container">
+    <canvas id="dino-game" width="700" height="150"></canvas>
+    <div class="retro-ui-hint">Press <span class="key">space</span> or <span class="key">tap</span> to fly</div>
 </div>
+<div id="highscore-list" class="retro-highscore-list"></div>
 <script>
     (function () {
         const canvas = document.getElementById('dino-game');
@@ -99,7 +97,7 @@ title: Tomislav Hofman
         let warpPlatforms = [];
 
         // Ball red-out animation state
-        let gameOverRedAnim = { active: false, start: 0, progress: 0 };
+        let gameOverRedAnim = {active: false, start: 0, progress: 0};
 
         function generateBackgroundLayers() {
             // Layer speeds (from farthest to nearest)
@@ -481,14 +479,14 @@ title: Tomislav Hofman
 
         function drawGameOver() {
             ctx.save();
-            ctx.font = 'bold 32px VT323, Fira Mono, Menlo, monospace';
+            ctx.font = 'bold 4em VT323, Fira Mono, Menlo, monospace';
             ctx.textAlign = 'center';
             ctx.lineWidth = 2.5;
             ctx.strokeStyle = '#22ff55'; // retro green stroke
             ctx.strokeText('Game Over', width / 2, height / 2 - 10);
             ctx.fillStyle = '#181c23'; // black fill
             ctx.fillText('Game Over', width / 2, height / 2 - 10);
-            ctx.font = '18px VT323, Fira Mono, Menlo, monospace';
+            ctx.font = '2em VT323, Fira Mono, Menlo, monospace';
             ctx.strokeStyle = '#22ff55';
             ctx.lineWidth = 1.5;
             ctx.strokeText('Press space or tap to restart', width / 2, height / 2 + 20);

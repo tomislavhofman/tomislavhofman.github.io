@@ -162,17 +162,17 @@ title: Tomislav Hofman
             return {sun, cloudsFar, cloudsNear, hills, meadow, speeds};
         }
 
-        function updateBackgroundOffsets() {
+        function updateBackgroundOffsets(dt) {
             if (!backgroundOffsets) {
                 backgroundOffsets = {sun: 0, cloudsFar: 0, cloudsNear: 0, hills: [0, 0], meadow: 0};
             }
             // Animate each layer
-            backgroundOffsets.sun += backgroundLayers.sun.speed;
-            backgroundOffsets.cloudsFar += backgroundLayers.speeds[0];
-            backgroundOffsets.cloudsNear += backgroundLayers.speeds[1];
-            backgroundOffsets.hills[0] += backgroundLayers.speeds[2];
-            backgroundOffsets.hills[1] += backgroundLayers.speeds[2] * 1.2;
-            backgroundOffsets.meadow += backgroundLayers.speeds[3];
+            backgroundOffsets.sun += backgroundLayers.sun.speed * dt * 60;
+            backgroundOffsets.cloudsFar += backgroundLayers.speeds[0] * dt * 60;
+            backgroundOffsets.cloudsNear += backgroundLayers.speeds[1] * dt * 60;
+            backgroundOffsets.hills[0] += backgroundLayers.speeds[2] * dt * 60;
+            backgroundOffsets.hills[1] += backgroundLayers.speeds[2] * 1.2 * dt * 60;
+            backgroundOffsets.meadow += backgroundLayers.speeds[3] * dt * 60;
             // Loop offsets
             backgroundOffsets.sun %= width;
             backgroundOffsets.cloudsFar %= width;
@@ -586,12 +586,14 @@ title: Tomislav Hofman
             ctx.restore();
         }
 
-        function update() {
-            updateBackgroundOffsets();
+        function update(deltaTime) {
+            // Convert deltaTime from ms to seconds for physics
+            const dt = deltaTime / 1000;
+            updateBackgroundOffsets(dt);
             // Animate flyingSegments ...
             for (let i = flyingSegments.length - 1; i >= 0; i--) {
                 let seg = flyingSegments[i];
-                seg.progress += 0.07;
+                seg.progress += 0.07 * (dt * 60);
                 if (seg.progress >= 1) {
                     let [p, idx, colorType] = seg.seg;
                     if (colorType === 'green' && p && p.touchedGreenSegments) p.touchedGreenSegments[idx] = true;
@@ -607,16 +609,14 @@ title: Tomislav Hofman
             // Warp platforms logic (visual only, not collectible)
             let warpActive = gameStarted && !gameOver;
             let warpMoveSpeed = warpActive ? 1 : 0.5;
-            // Always generate warp platforms, but at lower rate if not active
-            let spawnRate = warpActive ? (0.15 * (gameSpeed / 6)) : 0.04; // much lower rate when idle
+            let spawnRate = warpActive ? (0.15 * (gameSpeed / 6)) : 0.04;
             const maxWarp = Math.floor(2 + Math.min(gameSpeed / 2, 10));
-            if (Math.random() < spawnRate) {
+            if (Math.random() < spawnRate * dt * 60) {
                 for (let i = 0; i < maxWarp; i++) {
                     if (Math.random() < 0.5) continue;
                     const warpH = 6 + Math.random() * 8;
                     const warpW = 18 + Math.random() * 18;
                     const y = 10 + Math.random() * (height - 20 - warpH);
-                    // Use a slower base speed when not active
                     const baseSpeed = warpActive ? (gameSpeed + 2) : 3;
                     const speed = baseSpeed + Math.random() * (gameSpeed * 1.2);
                     warpPlatforms.push({
@@ -628,42 +628,36 @@ title: Tomislav Hofman
                     });
                 }
             }
-            // Move and remove off-screen warp platforms (always move, but slower if not active)
             for (let i = warpPlatforms.length - 1; i >= 0; i--) {
-                let moveSpeed = warpPlatforms[i].speed * warpMoveSpeed;
+                let moveSpeed = warpPlatforms[i].speed * warpMoveSpeed * dt * 60;
                 warpPlatforms[i].x -= moveSpeed;
                 if (warpPlatforms[i].x + warpPlatforms[i].w < 0) {
                     warpPlatforms.splice(i, 1);
                 }
             }
-            // --- Move platforms even after game over ---
-            let platformMoveSpeed = gameSpeed;
+            let platformMoveSpeed = gameSpeed * dt * 60;
             for (let i = platforms.length - 1; i >= 0; i--) {
                 platforms[i].x -= platformMoveSpeed;
             }
-            // Remove off-screen platforms
             for (let i = platforms.length - 1; i >= 0; i--) {
                 if (platforms[i].x + platforms[i].w < 0) {
                     platforms.splice(i, 1);
                 }
             }
-            // --- End always-moving platforms ---
             if (!gameStarted || gameOver) {
                 return;
             }
-
             // Ball physics
             if (holdUp) {
-                ball.vy += upHoldAccel;
+                ball.vy += upHoldAccel * dt * 60;
                 if (ball.vy < minVy) ball.vy = minVy;
             } else {
-                ball.vy += gravity;
+                ball.vy += gravity * dt * 60;
                 if (ball.vy > maxVy) ball.vy = maxVy;
             }
-            let nextY = ball.y + ball.vy;
+            let nextY = ball.y + ball.vy * dt * 60;
             let onPlatform = false;
             let platformTouched = null;
-            // Platform collision and scoring/game over
             for (let p of platforms) {
                 let topY = p.y;
                 let botY = p.y + platformH;
@@ -672,12 +666,10 @@ title: Tomislav Hofman
                 let collectedThisFrame = false;
                 if (ball.x + ball.r > left && ball.x - ball.r < right) {
                     let segCount = Math.ceil(p.w / PLATFORM_SEGMENT_W);
-                    // Use two separate arrays for touched segments
                     if (!p.touchedGreenSegments) p.touchedGreenSegments = Array(segCount).fill(false);
                     if (!p.touchedRedSegments) p.touchedRedSegments = Array(segCount).fill(false);
                     if (!p.flyingSegments) p.flyingSegments = Array(segCount).fill(null);
                     if (p.grassOnTop) {
-                        // Only collect green if touching green (top)
                         if (Math.abs((ball.y + ball.r) - topY) < 8) {
                             onPlatform = true;
                             platformTouched = p;
@@ -698,7 +690,6 @@ title: Tomislav Hofman
                                 }
                             }
                         }
-                        // Game over if touching red (bottom)
                         if (!collectedThisFrame && Math.abs((ball.y - ball.r) - botY) < 8) {
                             for (let i = 0; i < segCount; i++) {
                                 let segX1 = p.x + i * PLATFORM_SEGMENT_W;
@@ -711,7 +702,6 @@ title: Tomislav Hofman
                             }
                         }
                     } else {
-                        // Only collect green if touching green (bottom)
                         if (Math.abs((ball.y - ball.r) - botY) < 8) {
                             onPlatform = true;
                             platformTouched = p;
@@ -739,7 +729,6 @@ title: Tomislav Hofman
                                 }
                             }
                         }
-                        // Game over if touching red (top)
                         if (!collectedThisFrame && Math.abs((ball.y + ball.r) - topY) < 8) {
                             for (let i = 0; i < segCount; i++) {
                                 let segX1 = p.x + i * PLATFORM_SEGMENT_W;
@@ -783,12 +772,10 @@ title: Tomislav Hofman
                     platformTouched.lastScoreTime += 100;
                 }
             }
-            // Reset lastScoreTime if not on platform
             platforms.forEach(p => {
                 if (p !== platformTouched) p.lastScoreTime = null;
             });
             ball.y = nextY;
-            // Clamp to screen and check for ceiling/floor collision (game over)
             if (ball.y + ball.r > height) {
                 ball.y = height - ball.r;
                 ball.vy = 0;
@@ -803,7 +790,6 @@ title: Tomislav Hofman
                 gameStarted = false;
                 endGameAndTrackScores();
             }
-            // Spawn platforms
             if (frame === 0 || (platforms.length && width - (platforms[platforms.length - 1].x + platforms[platforms.length - 1].w) > platformGap)) {
                 let w = platformMinW + Math.random() * (platformMaxW - platformMinW);
                 let y = 40 + Math.random() * (height - 80);
@@ -819,7 +805,6 @@ title: Tomislav Hofman
                     flyingSegments: Array(segCount).fill(null)
                 });
             }
-            // Move platforms
             if (platforms.length && platforms[0].x + platforms[0].w < 0) platforms.shift();
             frame++;
         }
@@ -839,17 +824,20 @@ title: Tomislav Hofman
         }
 
         function loop() {
+            const now = performance.now();
+            if (!loop.lastTime) loop.lastTime = now;
+            let deltaTime = now - loop.lastTime;
+            if (deltaTime > 100) deltaTime = 100; // clamp to avoid huge jumps
+            loop.lastTime = now;
             // Animate red-out on game over
             if (gameOverRedAnim.active) {
-                const now = performance.now();
-                gameOverRedAnim.progress = (now - gameOverRedAnim.start) / 1800; // 1.8s fade
+                gameOverRedAnim.progress = (now - gameOverRedAnim.start) / 1800;
                 if (gameOverRedAnim.progress >= 1.0) {
                     gameOverRedAnim.progress = 1.0;
                 }
             }
-            update();
+            update(deltaTime);
             render();
-            // Clean up unused objects to avoid memory leaks
             platforms = platforms.filter(p => p.x + p.w > 0);
             requestAnimationFrame(loop);
         }

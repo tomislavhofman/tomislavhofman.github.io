@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
 /* Reset and base styles */
 html {
@@ -549,4 +550,69 @@ button:hover, .btn:hover {
   main, .container {
     padding-bottom: 0 !important;
   }
+}
+
+/* --- Retro Console Styles --- */
+.retro-console {
+  background: #181c1b;
+  border: 4px solid #00ff99;
+  border-radius: 18px;
+  box-shadow: 0 0 32px #00ff99a0, 0 2px 24px #000b;
+  max-width: 640px;
+  margin: 2.5em auto 2em auto;
+  padding: 1.5em 1.2em 2em 1.2em;
+  position: relative;
+  font-family: 'VT323', 'Fira Mono', 'Menlo', 'Consolas', monospace;
+  overflow: hidden;
+}
+.retro-console:before {
+  content: '';
+  display: block;
+  pointer-events: none;
+  position: absolute;
+  left: 0; right: 0; top: 0; bottom: 0;
+  background: repeating-linear-gradient(
+    to bottom, rgba(0,255,153,0.04) 0px, rgba(0,255,153,0.04) 2px, transparent 2px, transparent 6px
+  );
+  z-index: 1;
+}
+.retro-score-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #101312;
+  border: 2px solid #00ff99;
+  border-radius: 8px;
+  font-family: 'VT323', 'Fira Mono', 'Menlo', 'Consolas', monospace;
+  font-size: 1.35em;
+  color: #00ff99;
+  margin-bottom: 1.2em;
+  padding: 0.3em 1.1em 0.2em 1.1em;
+  box-shadow: 0 0 8px #00ff99a0;
+  position: relative;
+  z-index: 2;
+  min-height: 2.2em;
+}
+.score-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  margin: 0 0.5em;
+  white-space: nowrap;
+}
+.score-icon {
+  font-size: 1.1em;
+  margin-right: 0.1em;
+  filter: drop-shadow(0 0 2px #00ff99cc);
+}
+.score-value {
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 0 2px #00ff99, 0 0 6px #00ff9944;
+}
+.score-best {
+  color: #00ff99;
+  font-size: 0.85em;
+  margin-left: 0.2em;
+  opacity: 0.7;
 }

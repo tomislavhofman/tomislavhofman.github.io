@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="{{ '/css/custom.css' | relative_url }}">
   <link rel="icon" href="{{ '/favicon.ico' | relative_url }}">
 </head>
-<body>
+<body{% if page.url == "/" %} class="home-page"{% endif %}>
   <a href="#main-content" class="visually-hidden focusable">Skip to main content</a>
   {% include nav.html %}
   {% if page.url == "/" %}

@@ -346,11 +346,13 @@ title: Tomislav Hofman
             greenHighScore = Math.max(greenHighScore, speedBoost);
             timeHighScore = Math.max(timeHighScore, Math.floor(highscore));
 
-            const finalScore = Math.floor(currentGrandTotal);
-            grandTotalHighScore = Math.max(grandTotalHighScore, finalScore);
+            // Calculate distance as in drawScore
+            const effectiveSpeedBoost = 1 + speedBoost;
+            const distanceValue = Math.floor(effectiveSpeedBoost * highscore);
+            grandTotalHighScore = Math.max(grandTotalHighScore, distanceValue);
 
-            if (finalScore > 0) {
-                highscoreList.push(finalScore);
+            if (distanceValue > 0) {
+                highscoreList.push(distanceValue);
                 highscoreList.sort((a, b) => b - a);
                 highscoreList = highscoreList.slice(0, 5);
                 updateHighscoreList();

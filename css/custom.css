@@ -268,6 +268,13 @@ footer {
   }
 }
 
+/* Remove all padding and background from main-content only on home page */
+.home-page #main-content {
+  padding: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
 /* Blog listing */
 .blog-list {
   list-style: none;

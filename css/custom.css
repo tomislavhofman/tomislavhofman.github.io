@@ -761,3 +761,13 @@ button:hover, .btn:hover {
     margin-top: 0.5em;
   }
 }
+
+/* Force all text inside .retro-console to use VT323 font */
+.retro-console,
+.retro-console *,
+.retro-ui-bar,
+.retro-highscore-list,
+.retro-ui-hint,
+.key {
+  font-family: 'VT323', 'Fira Mono', 'Menlo', monospace !important;
+}

@@ -40,13 +40,7 @@ title: Tomislav Hofman
   <div id="score-tracker" class="retro-score-bar retro-ui-bar"></div>
   <div id="dino-game-container" class="retro-game-container">
       <canvas id="dino-game" width="600" height="150"></canvas>
-      <div class="retro-ui-hint" aria-label="Game controls: Press space or tap to jump">
-        Press
-        <span class="key control-tag" aria-label="Press space key" tabindex="0">␣ space</span>
-        <span class="key-separator">or</span>
-        <span class="key control-tag" aria-label="Tap screen or click" tabindex="0">👆 tap</span>
-        to jump
-      </div>
+      <div class="retro-ui-hint">Press <span class="key">space</span> or <span class="key">tap</span> to jump</div>
   </div>
   <div id="highscore-list" class="retro-highscore-list"></div>
 </div>
@@ -396,23 +390,10 @@ title: Tomislav Hofman
 
         function drawStartScreen() {
             ctx.save();
-            // Neon green gradient for text
-            const grad = ctx.createLinearGradient(0, height/2 - 32, 0, height/2 + 32);
-            grad.addColorStop(0, '#00FF66');
-            grad.addColorStop(1, '#00FFB2');
+            ctx.fillStyle = '#2563eb';
             ctx.font = 'bold 32px Inter, Arial, sans-serif';
             ctx.textAlign = 'center';
-            ctx.shadowColor = '#00FF66';
-            ctx.shadowBlur = 18;
-            ctx.fillStyle = grad;
-            // Animate pulse: scale up/down every 1.5s
-            const t = (performance.now() % 1500) / 1500;
-            const scale = 1 + 0.05 * Math.sin(t * 2 * Math.PI);
-            ctx.save();
-            ctx.translate(width / 2, height / 2);
-            ctx.scale(scale, scale);
-            ctx.fillText('Press space or tap to start', 0, 0);
-            ctx.restore();
+            ctx.fillText('Press space or tap to start', width / 2, height / 2);
             ctx.restore();
         }
 

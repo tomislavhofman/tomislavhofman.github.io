@@ -228,11 +228,73 @@ title: Tomislav Hofman
         }
 
         function drawBall() {
+            // --- Animated Retro Sci-Fi Core (smaller, animated, rotating arc) ---
+            // Neon magenta/blue core, dark blue rim, strong animated glow
+            const t = performance.now() * 0.002;
+            const scale = 0.75; // 25% smaller
+            const baseR = ball.r * scale;
+            // Stronger pulsing
+            const pulse = 0.85 + 0.18 * Math.sin(t * 2.2);
+            const coreRadius = baseR * pulse;
+            const haloPulse = 1 + 0.13 * Math.sin(t * 2.2 + 1.2);
+            const haloRadius = baseR * 1.8 * haloPulse;
+            // Color shift between magenta and blue
+            const colorShift = (Math.sin(t * 2.2) + 1) / 2; // 0..1
+            const coreColor = `rgb(${Math.round(255 * (1 - colorShift))},0,${Math.round(255 * colorShift)})`;
+            // Rotating arc
+            const arcAngle = t * 1.2;
+
             ctx.save();
-            ctx.fillStyle = '#2563eb';
+            // Strong animated outer glow (magenta/blue)
+            let gradient = ctx.createRadialGradient(ball.x, ball.y, coreRadius, ball.x, ball.y, haloRadius);
+            gradient.addColorStop(0, `rgba(255,0,128,0.32)`);
+            gradient.addColorStop(0.5, `rgba(0,128,255,0.13)`);
+            gradient.addColorStop(1, 'rgba(0,0,0,0)');
             ctx.beginPath();
-            ctx.arc(ball.x, ball.y, ball.r, 0, 2 * Math.PI);
+            ctx.arc(ball.x, ball.y, haloRadius, 0, 2 * Math.PI);
+            ctx.fillStyle = gradient;
             ctx.fill();
+
+            // Rotating neon arc overlay
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, baseR * 1.25, arcAngle, arcAngle + Math.PI * 0.7);
+            ctx.strokeStyle = 'rgba(0,255,255,0.45)';
+            ctx.lineWidth = 2.2;
+            ctx.shadowColor = '#0ff';
+            ctx.shadowBlur = 8;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+            ctx.restore();
+
+            // Dark blue rim for contrast
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, baseR * 1.18, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#172554'; // dark blue
+            ctx.lineWidth = 4.2;
+            ctx.shadowColor = '#172554';
+            ctx.shadowBlur = 0;
+            ctx.stroke();
+
+            // Neon core with color shift
+            let coreGradient = ctx.createRadialGradient(ball.x, ball.y, coreRadius * 0.18, ball.x, ball.y, coreRadius);
+            coreGradient.addColorStop(0, '#fff');
+            coreGradient.addColorStop(0.3, '#b3e6ff');
+            coreGradient.addColorStop(1, coreColor);
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, coreRadius, 0, 2 * Math.PI);
+            ctx.fillStyle = coreGradient;
+            ctx.fill();
+
+            // Central dot (bright white for focus)
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, coreRadius * 0.22, 0, 2 * Math.PI);
+            ctx.fillStyle = 'rgba(255,255,255,0.95)';
+            ctx.shadowColor = '#fff';
+            ctx.shadowBlur = 8;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
             ctx.restore();
         }
 

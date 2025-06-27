@@ -721,3 +721,36 @@ button:hover, .btn:hover {
     border-radius: 0.5em;
   }
 }
+
+.game-card-wrapper {
+  max-width: 40rem;
+  margin: 2.5em auto 0 auto;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.game-card-wrapper .retro-console {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 2.5em;
+  box-shadow: 0 4px 32px #22ff5533, 0 1.5px 8px #0008;
+  border: 2.5px solid #22ff55;
+  background: #181c23;
+}
+@media (max-width: 700px) {
+  .game-card-wrapper {
+    max-width: 99vw;
+    margin-top: 1.2em;
+  }
+  .game-card-wrapper .retro-console {
+    border-radius: 0.7em;
+    margin-bottom: 1.2em;
+  }
+}
+@media (max-width: 480px) {
+  .game-card-wrapper {
+    max-width: 100vw;
+    margin-top: 0.5em;
+  }
+}

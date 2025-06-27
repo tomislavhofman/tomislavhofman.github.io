@@ -228,8 +228,8 @@ title: Tomislav Hofman
         }
 
         function drawBall() {
-            // Draw platform if game hasn't started
-            if (!gameStarted) {
+            // Draw platform if game hasn't started (but not if game over)
+            if (!gameStarted && !gameOver) {
                 // Platform parameters
                 const platformY = ball.y + ball.r * 0.85;
                 const platformW = ball.r * 2.2;
@@ -543,30 +543,35 @@ title: Tomislav Hofman
                 }
             }
             // Warp platforms logic (visual only, not collectible)
-            if (gameStarted && !gameOver) {
-                const maxWarp = Math.floor(2 + Math.min(gameSpeed / 2, 10));
-                if (Math.random() < 0.15 * (gameSpeed / 6)) {
-                    for (let i = 0; i < maxWarp; i++) {
-                        if (Math.random() < 0.5) continue;
-                        const warpH = 6 + Math.random() * 8;
-                        const warpW = 18 + Math.random() * 18;
-                        const y = 10 + Math.random() * (height - 20 - warpH);
-                        const speed = gameSpeed + 2 + Math.random() * (gameSpeed * 1.2);
-                        warpPlatforms.push({
-                            x: width + Math.random() * 40,
-                            y,
-                            w: warpW,
-                            h: warpH,
-                            speed
-                        });
-                    }
+            let warpActive = gameStarted && !gameOver;
+            let warpMoveSpeed = warpActive ? 1 : 0.5;
+            // Always generate warp platforms, but at lower rate if not active
+            let spawnRate = warpActive ? (0.15 * (gameSpeed / 6)) : 0.04; // much lower rate when idle
+            const maxWarp = Math.floor(2 + Math.min(gameSpeed / 2, 10));
+            if (Math.random() < spawnRate) {
+                for (let i = 0; i < maxWarp; i++) {
+                    if (Math.random() < 0.5) continue;
+                    const warpH = 6 + Math.random() * 8;
+                    const warpW = 18 + Math.random() * 18;
+                    const y = 10 + Math.random() * (height - 20 - warpH);
+                    // Use a slower base speed when not active
+                    const baseSpeed = warpActive ? (gameSpeed + 2) : 3;
+                    const speed = baseSpeed + Math.random() * (gameSpeed * 1.2);
+                    warpPlatforms.push({
+                        x: width + Math.random() * 40,
+                        y,
+                        w: warpW,
+                        h: warpH,
+                        speed
+                    });
                 }
-                // Move and remove off-screen warp platforms
-                for (let i = warpPlatforms.length - 1; i >= 0; i--) {
-                    warpPlatforms[i].x -= warpPlatforms[i].speed;
-                    if (warpPlatforms[i].x + warpPlatforms[i].w < 0) {
-                        warpPlatforms.splice(i, 1);
-                    }
+            }
+            // Move and remove off-screen warp platforms (always move, but slower if not active)
+            for (let i = warpPlatforms.length - 1; i >= 0; i--) {
+                let moveSpeed = warpPlatforms[i].speed * warpMoveSpeed;
+                warpPlatforms[i].x -= moveSpeed;
+                if (warpPlatforms[i].x + warpPlatforms[i].w < 0) {
+                    warpPlatforms.splice(i, 1);
                 }
             }
             if (!gameStarted || gameOver) {
@@ -771,23 +776,23 @@ title: Tomislav Hofman
         function handleKey(e) {
             if (e.code === 'Space') {
                 e.preventDefault();
-                if (gameOver) {
-                    reset();
-                    return;
-                }
-                if (!gameStarted) {
-                    gameStarted = true;
-                    gameOver = false;
-                    holdUp = e.type === 'keydown';
-                    if (e.type === 'keydown') ball.vy = upTapBoost;
-                    startTimer();
-                    // Remove startTechnoMusic() call
-                } else {
-                    if (e.type === 'keydown') {
-                        if (!holdUp) ball.vy = upTapBoost; // tap gives a boost
+                if (e.type === 'keydown') {
+                    if (gameOver) {
+                        reset();
+                        return;
+                    }
+                    if (!gameStarted && !gameOver) {
+                        gameStarted = true;
+                        gameOver = false;
+                        holdUp = true;
+                        ball.vy = upTapBoost;
+                        startTimer();
+                    } else {
+                        if (!holdUp) ball.vy = upTapBoost;
                         holdUp = true;
                     }
-                    if (e.type === 'keyup') holdUp = false;
+                } else if (e.type === 'keyup') {
+                    holdUp = false;
                 }
             }
         }

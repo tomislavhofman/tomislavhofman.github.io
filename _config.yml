@@ -1,9 +1,9 @@
 title: Tomislav Hofman
-email: your-email@example.com
+email: tomislav@hofman.tech
 description: >- # this means to ignore newlines until next key
   Personal blog by Tomislav Hofman.
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site
+url: "https://hofman.tech" # the base hostname & protocol for your site
 markdown: kramdown
 theme: minima
 plugins:

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% if page.title == site.title %}{{ page.title }}{% else %}{{ page.title }} – {{ site.title }}{% endif %}</title>
+  <title>{% if page.cardstitch %}{{ page.title }}{% elsif page.title == site.title %}{{ page.title }}{% else %}{{ page.title }} – {{ site.title }}{% endif %}</title>
   <link rel="stylesheet" href="{{ '/css/custom.css' | relative_url }}">
   <link rel="icon" href="{{ '/favicon.ico' | relative_url }}">
 </head>
@@ -25,7 +25,7 @@
     {% endif %}
   </main>
   <footer>
-    &copy; {{ site.time | date: '%Y' }} Tomislav Hofman
+    &copy; {{ site.time | date: '%Y' }} {% if page.cardstitch %}Hofman{% else %}Tomislav Hofman{% endif %}
   </footer>
 </body>
 </html>

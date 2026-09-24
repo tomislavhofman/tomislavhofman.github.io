@@ -5,5 +5,5 @@
   <a href="{{ '/blog.html' | relative_url }}" {% if page.url == '/blog.html' %}class="active" aria-current="page"{% endif %}>Blog</a>
   <a href="https://github.com/tomislavhofman" target="_blank" rel="noopener noreferrer">GitHub</a>
   <a href="https://www.linkedin.com/in/tomislav-hofman/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-  <a href="https://pstr.app/" target="_blank" rel="noopener noreferrer">pstr.app</a>
+  <a href="{{ '/cardstitch/' | relative_url }}" {% if page.url contains '/cardstitch/' %}class="active" aria-current="page"{% endif %}>CardStitch</a>
 </nav>

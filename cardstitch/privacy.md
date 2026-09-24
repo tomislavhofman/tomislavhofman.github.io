@@ -2,11 +2,12 @@
 layout: legal
 title: CardStitch Privacy Policy
 permalink: /cardstitch/privacy/
+cardstitch: true
 ---
 
 **Effective date:** September 24, 2026
 
-CardStitch is an Android app by **Tomislav Hofman**. This policy explains what
+CardStitch is an Android app developed and maintained by **Hofman**. This policy explains what
 CardStitch accesses and what happens to that information.
 
 ## The Short Version
@@ -41,7 +42,7 @@ CardStitch does not receive or control that SDK diagnostic data.
 
 CardStitch stores settings on the device, such as onboarding status, haptic
 feedback, gallery layout, and filename preferences. These settings are not
-sent to Tomislav Hofman.
+sent to Hofman.
 
 ### Sharing
 
@@ -78,6 +79,6 @@ This policy may be updated when CardStitch's data practices change. The current
 version will be published on this page.
 
 Questions about this policy can be sent to
-[tomislav@hofman.tech](mailto:tomislav@hofman.tech).
+[contact@hofman.tech](mailto:contact@hofman.tech).
 
 [Terms of Use]({{ '/cardstitch/terms/' | relative_url }})

@@ -2,12 +2,13 @@
 layout: legal
 title: CardStitch Terms of Use
 permalink: /cardstitch/terms/
+cardstitch: true
 ---
 
 **Effective date:** September 24, 2026
 
-These Terms of Use apply to the CardStitch Android app provided by **Tomislav
-Hofman**.
+These Terms of Use apply to the CardStitch Android app developed and maintained
+by **Hofman**.
 
 ## Using CardStitch
 
@@ -44,7 +45,7 @@ uninterrupted, error-free, or suitable for a particular purpose.
 
 Do not use CardStitch as the only copy of important images or records.
 
-To the extent permitted by applicable law, Tomislav Hofman is not responsible
+To the extent permitted by applicable law, Hofman is not responsible
 for loss of content, inaccurate OCR, device failures, or indirect damages
 resulting from use of the app. Nothing in these terms limits rights that cannot
 legally be limited.
@@ -56,6 +57,6 @@ this page. Continued use after an update means you accept the updated terms to
 the extent permitted by law.
 
 Questions can be sent to
-[tomislav@hofman.tech](mailto:tomislav@hofman.tech).
+[contact@hofman.tech](mailto:contact@hofman.tech).
 
 [Privacy Policy]({{ '/cardstitch/privacy/' | relative_url }})

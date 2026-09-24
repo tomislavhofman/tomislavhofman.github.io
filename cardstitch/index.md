@@ -18,7 +18,7 @@ Images and OCR input are processed on the device and saved to the device's
 Pictures/CardStitch folder. Sharing only happens when you explicitly choose an
 Android sharing destination.
 
-The app is developed and maintained by **Hofman**.
+The app is developed and maintained by **Tomislav Hofman**.
 
 ## More Information
 

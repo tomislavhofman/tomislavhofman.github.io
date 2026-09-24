@@ -7,7 +7,7 @@ cardstitch: true
 
 **Effective date:** September 24, 2026
 
-CardStitch is an Android app developed and maintained by **Hofman**. This policy explains what
+CardStitch is an Android app developed and maintained by **Tomislav Hofman**. This policy explains what
 CardStitch accesses and what happens to that information.
 
 ## The Short Version
@@ -42,7 +42,7 @@ CardStitch does not receive or control that SDK diagnostic data.
 
 CardStitch stores settings on the device, such as onboarding status, haptic
 feedback, gallery layout, and filename preferences. These settings are not
-sent to Hofman.
+sent to Tomislav Hofman.
 
 ### Sharing
 

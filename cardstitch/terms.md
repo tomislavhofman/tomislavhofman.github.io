@@ -8,7 +8,7 @@ cardstitch: true
 **Effective date:** September 24, 2026
 
 These Terms of Use apply to the CardStitch Android app developed and maintained
-by **Hofman**.
+by **Tomislav Hofman**.
 
 ## Using CardStitch
 
@@ -45,7 +45,7 @@ uninterrupted, error-free, or suitable for a particular purpose.
 
 Do not use CardStitch as the only copy of important images or records.
 
-To the extent permitted by applicable law, Hofman is not responsible
+To the extent permitted by applicable law, Tomislav Hofman is not responsible
 for loss of content, inaccurate OCR, device failures, or indirect damages
 resulting from use of the app. Nothing in these terms limits rights that cannot
 legally be limited.

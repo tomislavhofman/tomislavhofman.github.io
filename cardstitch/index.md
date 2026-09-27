@@ -22,26 +22,18 @@ The app is developed and maintained by **Tomislav Hofman**.
 
 ## Roadmap
 
-Goals, not promises. No dates.
-
-### Shipped
-
-- Front and back capture
-- Automatic card detection and cropping
-- Front and back stitched into one image
-- On-device text recognition for filenames
-- Configurable filename format (name, number, date)
-- Gallery: rename, delete, share
-- Offline, no account
-
-### In Progress
-
-- Retrain card detection on more card games (currently best on Pokémon)
-
-### Planned
-
-- Read the card name and set number from their own areas instead of the whole card, for more reliable filenames
-- Export and back up to a folder you choose
+<ul class="roadmap">
+  <li class="done">Front and back capture</li>
+  <li class="done">Automatic card detection and cropping</li>
+  <li class="done">Front and back stitched into one image</li>
+  <li class="done">On-device text recognition for filenames</li>
+  <li class="done">Configurable filename format (name, number, date)</li>
+  <li class="done">Gallery: rename, delete, share</li>
+  <li class="done">Offline, no account</li>
+  <li>Retrain card detection on more card games (currently best on Pokémon)</li>
+  <li>Read the card name and set number from their own areas for more reliable filenames</li>
+  <li>Export and back up to a folder you choose</li>
+</ul>
 
 ## More Information
 

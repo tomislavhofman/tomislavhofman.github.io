@@ -894,7 +894,7 @@ button:hover, .btn:hover {
   width: 1.2rem;
   height: 1.2rem;
   border: 2px solid #cbd5e1;
-  border-radius: 0.35rem;
+  border-radius: 50%;
 }
 .roadmap li.done {
   color: #94a3b8;
@@ -924,5 +924,36 @@ button:hover, .btn:hover {
     background: #38bdf8;
     border-color: #38bdf8;
     color: #18181b;
+  }
+}
+
+/* CardStitch hero */
+.hero {
+  margin: -2.5rem -1.5rem 0;
+  border-radius: 1.25rem 1.25rem 0 0;
+  overflow: hidden;
+  line-height: 0;
+}
+.hero img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+@media (max-width: 900px) {
+  .hero {
+    margin: -1.25rem -1rem 0;
+  }
+}
+
+/* Small print */
+.caption {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  text-align: center;
+  margin: 0;
+}
+@media (prefers-color-scheme: dark) {
+  .caption {
+    color: #64748b;
   }
 }

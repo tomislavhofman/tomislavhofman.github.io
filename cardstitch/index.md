@@ -5,20 +5,14 @@ permalink: /cardstitch/
 cardstitch: true
 ---
 
-# CardStitch
+<h1 class="visually-hidden">CardStitch</h1>
 
-CardStitch is a simple Android app for capturing both sides of a trading card,
-cropping the card edges, stitching the images together, and saving the result
-to your device.
+<div class="hero">
+  <img src="{{ '/cardstitch/feature.png' | relative_url }}" alt="CardStitch — scan both sides of a trading card and save them as one clean image">
+</div>
 
-## Designed To Stay Local
-
-CardStitch does not require an account and does not provide a cloud gallery.
-Images and OCR input are processed on the device and saved to the device's
-Pictures/CardStitch folder. Sharing only happens when you explicitly choose an
-Android sharing destination.
-
-The app is developed and maintained by **Tomislav Hofman**.
+CardStitch captures both sides of a trading card, crops the card edges, stitches
+them into one image and saves it to your device. On-device, no account.
 
 ## Roadmap
 
@@ -35,9 +29,18 @@ The app is developed and maintained by **Tomislav Hofman**.
   <li>Export and back up to a folder you choose</li>
 </ul>
 
+## Designed To Stay Local
+
+CardStitch does not require an account and does not provide a cloud gallery.
+Images and OCR input are processed on the device and saved to the device's
+Pictures/CardStitch folder. Sharing only happens when you explicitly choose an
+Android sharing destination.
+
 ## More Information
 
 - [Privacy policy]({{ '/cardstitch/privacy/' | relative_url }})
 - [Terms of use]({{ '/cardstitch/terms/' | relative_url }})
 
 Questions or feedback: [contact@hofman.tech](mailto:contact@hofman.tech).
+
+<p class="caption">Built and maintained by Tomislav Hofman.</p>

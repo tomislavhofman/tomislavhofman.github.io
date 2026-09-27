@@ -20,6 +20,29 @@ Android sharing destination.
 
 The app is developed and maintained by **Tomislav Hofman**.
 
+## Roadmap
+
+Goals, not promises. No dates.
+
+### Shipped
+
+- Front and back capture
+- Automatic card detection and cropping
+- Front and back stitched into one image
+- On-device text recognition for filenames
+- Configurable filename format (name, number, date)
+- Gallery: rename, delete, share
+- Offline, no account
+
+### In Progress
+
+- Retrain card detection on more card games (currently best on Pokémon)
+
+### Planned
+
+- Read the card name and set number from their own areas instead of the whole card, for more reliable filenames
+- Export and back up to a folder you choose
+
 ## More Information
 
 - [Privacy policy]({{ '/cardstitch/privacy/' | relative_url }})

@@ -24,9 +24,9 @@ them into one image and saves it to your device. On-device, no account.
   <li class="done">Configurable filename format (name, number, date)</li>
   <li class="done">Gallery: rename, delete, share</li>
   <li class="done">Offline, no account</li>
+  <li class="done">Export</li>
   <li>Improve card detection for different TCGs.</li>
   <li>Read the card name and set number from their own areas for more reliable filenames</li>
-  <li class="done">Export</li>
 </ul>
 
 ## Designed To Stay Local

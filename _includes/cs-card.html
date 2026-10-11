@@ -1,0 +1,21 @@
+{%- comment -%}
+  Illustrated pixel card (fictional "Sparkbit" card — no real card art).
+  Params: side="front"|"back", label (optional big overlay text, e.g. FRONT), class (optional extra classes)
+{%- endcomment -%}
+{%- if include.side == "back" -%}
+<span class="pcard pcard--back {{ include.class }}" aria-hidden="true">
+  <span class="pcard__pattern"></span>
+  <span class="pcard__emblem"></span>
+  {%- if include.label %}<span class="pcard__label">{{ include.label }}</span>{% endif -%}
+</span>
+{%- else -%}
+<span class="pcard pcard--front {{ include.class }}" aria-hidden="true">
+  <span class="pcard__face">
+  <span class="pcard__top"><span class="pcard__name">Sparkbit</span><span class="pcard__gem"></span></span>
+  <span class="pcard__art">{% include cs-sprite.html %}</span>
+  <span class="pcard__text"><span></span><span></span><span></span></span>
+  <span class="pcard__num">042/198</span>
+  </span>
+  {%- if include.label %}<span class="pcard__label">{{ include.label }}</span>{% endif -%}
+</span>
+{%- endif -%}

@@ -1,0 +1,28 @@
+# Public CardStitch roadmap — the single source of truth.
+# Rendered on /cardstitch/ (Roadmap section). The app repo's docs/roadmap.md
+# points here, so update this file only.
+#
+# done:  features in the app today
+# next:  being worked on
+# ideas: possible, not scheduled
+
+done:
+  - Front and back capture
+  - Automatic card detection and cropping
+  - Front and back stitched into one image
+  - Card name and set number read on-device for the filename
+  - "Filename template: name, number, condition, date and separator"
+  - Card condition (MT, NM, EX, GD, LP, PL, PO) in the filename
+  - Border (white, black or grey) and watermark on the stitched image
+  - "Photo quality presets: Standard, High, Maximum"
+  - File sizes in the gallery
+  - "Gallery: rename, delete, share"
+  - Fully on-device, no account
+
+next:
+  - Better card detection across trading card games (Magic, Yu-Gi-Oh!, One Piece and more)
+
+ideas:
+  - Auto-capture when the card is detected and steady
+  - Mark cards as listed in the gallery
+  - Upload-sized export for marketplaces

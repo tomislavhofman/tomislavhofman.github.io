@@ -1,0 +1,30 @@
+{%- comment -%}
+  CardStitch call to action. Driven by _data/cardstitch.yml:
+  play_url empty  -> "Coming soon" + beta e-mail
+  play_url set    -> "Get it on Google Play"
+  Params: id (optional, for aria), secondary (optional: href for "See how it works")
+{%- endcomment -%}
+{%- assign cs = site.data.cardstitch -%}
+<div class="cta">
+  {%- if cs.play_url and cs.play_url != "" %}
+  <a class="btn btn--primary btn--lg" href="{{ cs.play_url }}" rel="noopener">
+    {% include cs-icon.html i="play" %}<span>Get it on Google Play</span>
+  </a>
+  {%- else %}
+  <a class="btn btn--primary btn--lg" href="{{ cs.beta_mailto }}">
+    {% include cs-icon.html i="mail" %}<span>Join the beta</span>
+  </a>
+  {%- endif %}
+  {%- if include.secondary %}
+  <a class="btn btn--ghost btn--lg" href="{{ include.secondary }}">
+    <span>See how it works</span>{% include cs-icon.html i="arrowdown" %}
+  </a>
+  {%- endif %}
+</div>
+{%- unless cs.play_url and cs.play_url != "" %}
+<div class="status" role="note">
+  <span class="status__label"><span class="status__dot" aria-hidden="true"></span>Coming soon to Google Play</span>
+  <span class="marching" aria-hidden="true"><span></span><span></span><span></span></span>
+  <span class="status__text">{{ cs.status }}. Join the beta or get a heads-up at launch.</span>
+</div>
+{%- endunless %}

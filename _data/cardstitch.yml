@@ -1,0 +1,13 @@
+# Release state for the CardStitch landing page (/cardstitch/).
+#
+# While play_url is empty, every call to action reads "Coming soon to Google Play"
+# and offers the beta e-mail below. When the app is live, paste the Play Store
+# link into play_url and all CTAs switch to "Get it on Google Play".
+play_url: ""
+
+contact_email: contact@hofman.tech
+# Prefilled beta / notify e-mail (subject and body are already URL-encoded).
+beta_mailto: "mailto:contact@hofman.tech?subject=CardStitch%20beta&body=Hi%20Tomislav%2C%0A%0AI%27d%20like%20to%20join%20the%20CardStitch%20beta%20%2F%20hear%20when%20it%27s%20on%20Google%20Play.%0A%0AI%20mostly%20(sell%20%2F%20collect%20%2F%20trade)%3A%20%0AMain%20card%20game%3A%20%0AMy%20Android%20phone%3A%20%0A"
+
+# Shown next to the release-status bar while play_url is empty.
+status: "In final development"

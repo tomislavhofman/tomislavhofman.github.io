@@ -1,0 +1,503 @@
+---
+layout: cardstitch
+title: CardStitch
+seo_title: "CardStitch – front and back of a trading card in one photo | Android"
+description: "CardStitch photographs both sides of a trading card, crops them on your phone and stitches them into one ready-to-list image, named after the card. For marketplace sellers, collectors and traders. Coming soon to Android."
+permalink: /cardstitch/
+cardstitch: true
+share_image: /cardstitch/share.png
+share_image_alt: "CardStitch: one photo, both sides. The front and back of a trading card stitched into a single image."
+# Set to false to replace the real stitched example photo (contains real card art) with the pixel illustration.
+show_sample_photo: true
+---
+{%- assign cs = site.data.cardstitch -%}
+{%- assign roadmap = site.data.cardstitch_roadmap -%}
+
+<nav class="subbar" aria-label="On this page">
+  <div class="wrap subbar__inner">
+    <a class="brand" href="#top" aria-label="CardStitch, back to top">
+      <span class="brand__mark" aria-hidden="true"><span></span><span></span></span>
+      <span class="brand__name">CardStitch</span>
+    </a>
+    <ul class="subbar__links">
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#sellers">Features</a></li>
+      <li><a href="#honest">Honest photos</a></li>
+      <li><a href="#roadmap">Roadmap</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    {%- if cs.play_url and cs.play_url != "" %}
+    <a class="btn btn--primary btn--sm" href="{{ cs.play_url }}" rel="noopener">Get the app</a>
+    {%- else %}
+    <a class="btn btn--primary btn--sm" href="{{ cs.beta_mailto }}">Join the beta</a>
+    {%- endif %}
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="top" aria-labelledby="hero-title">
+  <div class="wrap hero__grid">
+    <div class="hero__copy">
+      <p class="eyebrow">Android app for trading card sellers</p>
+      <h1 id="hero-title" class="hero__title"><span>One photo.</span><br><span class="hl">Both sides.</span></h1>
+      <p class="hero__lead">
+        Photograph the front, then the back. CardStitch finds the card, crops it,
+        stitches both sides into <strong>one clean image</strong> and names the file
+        after the card. Ready to list.
+      </p>
+      <p class="hero__for">For marketplace sellers, collectors and traders.</p>
+      {% include cs-cta.html secondary="#how" %}
+      <ul class="facts" aria-label="Key facts">
+        <li>Android 7+</li>
+        <li>On-device</li>
+        <li>No account</li>
+      </ul>
+    </div>
+
+    <figure class="device" id="demo" aria-labelledby="demo-desc">
+      <div class="device__bar">
+        <span class="device__title">How it works</span>
+        <button class="device__toggle" type="button" data-demo-toggle hidden aria-pressed="false">
+          <span class="device__toggle-icon" aria-hidden="true"></span><span class="device__toggle-text">Pause</span>
+        </button>
+      </div>
+      <div class="device__screen">
+        <div class="stage" data-demo-stage>
+          <span class="stage__card stage__card--back" data-demo-back>{% include cs-card.html side="back" label="BACK" %}</span>
+          <span class="stage__card stage__card--front" data-demo-front>{% include cs-card.html side="front" label="FRONT" %}</span>
+          <canvas class="stage__fx" data-demo-fx aria-hidden="true"></canvas>
+        </div>
+        <p class="device__caption" aria-hidden="true"><span data-demo-caption>We stitch them</span><span class="caret"></span></p>
+        <p class="device__file" data-demo-file aria-hidden="true">
+          <span class="chip chip--ok">Saved</span><code>sparkbit_042_NM.jpg</code>
+        </p>
+      </div>
+      <figcaption id="demo-desc" class="visually-hidden">
+        Animation of the CardStitch tutorial: take a photo of the front of a card, flip it and take a photo of the back.
+        CardStitch crops both sides and stitches them into one image, saved as sparkbit_042_NM.jpg.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ PROBLEM ============ -->
+<section class="band band--deep" id="problem" aria-labelledby="problem-title">
+  <div class="wrap">
+    <header class="section-head reveal">
+      <p class="eyebrow">The problem</p>
+      <h2 id="problem-title">Buyers want both sides.<br>Your listing gets one photo.</h2>
+      <p class="section-head__lead">
+        Marketplaces like Cardmarket allow a single image per listing, so front and back
+        have to share one picture. Done by hand, every card turns into a small editing job.
+      </p>
+    </header>
+
+    <div class="versus">
+      <article class="panel panel--before reveal" aria-labelledby="before-title">
+        <header class="panel__head">
+          <h3 id="before-title">By hand</h3>
+          <p class="counter"><span class="counter__n">7</span> steps <span class="counter__per">per card</span></p>
+        </header>
+        <ol class="steps-list">
+          <li><span class="tool">Camera</span>Photograph the front</li>
+          <li><span class="tool">Camera</span>Photograph the back</li>
+          <li><span class="tool">Editor</span>Crop the front</li>
+          <li><span class="tool">Editor</span>Crop the back</li>
+          <li><span class="tool">Collage app</span>Put them side by side</li>
+          <li><span class="tool">Files</span>Rename it so you can find it later</li>
+          <li><span class="tool">Again</span>Next card. Repeat.</li>
+        </ol>
+      </article>
+
+      <div class="versus__vs" aria-hidden="true"><span>VS</span></div>
+
+      <article class="panel panel--after reveal" aria-labelledby="after-title">
+        <header class="panel__head">
+          <h3 id="after-title">With CardStitch</h3>
+          <p class="counter counter--good"><span class="counter__n">2</span> taps <span class="counter__per">per card</span></p>
+        </header>
+        <div class="taps">
+          <span class="tap"><span class="tap__btn" aria-hidden="true"></span><span><b>Tap</b> front</span></span>
+          <span class="tap"><span class="tap__btn" aria-hidden="true"></span><span><b>Tap</b> back</span></span>
+        </div>
+        <div class="result">
+          <span class="result__img" aria-hidden="true">
+            {% include cs-card.html side="front" %}{% include cs-card.html side="back" %}
+          </span>
+          <ul class="ticks">
+            <li>{% include cs-icon.html i="check" %}Cropped</li>
+            <li>{% include cs-icon.html i="check" %}Stitched</li>
+            <li>{% include cs-icon.html i="check" %}Named</li>
+            <li>{% include cs-icon.html i="check" %}Saved</li>
+          </ul>
+        </div>
+        <p class="panel__foot"><code>sparkbit_042_NM.jpg</code></p>
+      </article>
+    </div>
+
+    <p class="math reveal">
+      A 50-card listing session: <s>350 steps across four apps</s> <strong>100 taps in one.</strong>
+    </p>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section class="band" id="how" aria-labelledby="how-title">
+  <div class="wrap">
+    <header class="section-head reveal">
+      <p class="eyebrow">How it works</p>
+      <h2 id="how-title">Front. Back. Done.</h2>
+      <p class="section-head__lead">No editing, no second app, no renaming. The camera screen is the whole workflow.</p>
+    </header>
+
+    <ol class="how">
+      <li class="how__step reveal">
+        <div class="vf" aria-hidden="true">
+          <span class="vf__slots"><span class="is-next">F</span><span>B</span></span>
+          <span class="vf__frame brackets">{% include cs-card.html side="front" %}</span>
+          <span class="vf__shutter"></span>
+        </div>
+        <p class="how__num">01</p>
+        <h3>Shoot the front</h3>
+        <p>Line the card up inside the corner guides and tap the shutter.</p>
+      </li>
+      <li class="how__step reveal">
+        <div class="vf" aria-hidden="true">
+          <span class="vf__slots"><span class="is-filled">F</span><span class="is-next">B</span></span>
+          <span class="vf__frame brackets">{% include cs-card.html side="back" %}</span>
+          <span class="vf__shutter"></span>
+        </div>
+        <p class="how__num">02</p>
+        <h3>Flip, shoot the back</h3>
+        <p>Turn the card over and tap again. Retake either side if you're not happy.</p>
+      </li>
+      <li class="how__step reveal">
+        <div class="vf vf--done" aria-hidden="true">
+          <span class="vf__out">{% include cs-card.html side="front" %}{% include cs-card.html side="back" %}</span>
+          <span class="marching marching--wide"><span></span><span></span><span></span></span>
+          <span class="vf__name"><code>sparkbit_042_NM.jpg</code></span>
+        </div>
+        <p class="how__num">03</p>
+        <h3>Get one image</h3>
+        <p>
+          On-device detection finds the card edges and crops each side with a small margin.
+          Both sides are stitched side by side, the card name and set number are read for the
+          filename, and it's saved to <code>Pictures/CardStitch</code>.
+        </p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ SELLERS ============ -->
+<section class="band band--deep" id="sellers" aria-labelledby="sellers-title">
+  <div class="wrap">
+    <header class="section-head reveal">
+      <p class="eyebrow">Built for sellers</p>
+      <h2 id="sellers-title">Made for listing day.</h2>
+      <p class="section-head__lead">
+        The details that matter when you're photographing a stack of cards, not one.
+        Try the output settings below; they work the same way in the app.
+      </p>
+    </header>
+
+    <div class="lab reveal" data-lab>
+      <div class="lab__preview">
+        <p class="lab__label" id="lab-preview-label">Preview</p>
+        <div class="lab__canvas">
+          <div class="stitched" data-border="white" data-lab-stitched role="img" aria-labelledby="lab-preview-label lab-preview-desc">
+            <span class="stitched__cards">{% include cs-card.html side="front" %}{% include cs-card.html side="back" %}</span>
+            <span class="stitched__strip"><span class="stitched__wm" data-lab-wm>your-shop.example</span></span>
+          </div>
+        </div>
+        <p class="visually-hidden" id="lab-preview-desc" data-lab-desc aria-live="polite">Stitched front and back with a white border and the watermark your-shop.example in the bottom border.</p>
+        <p class="lab__file">
+          <span class="lab__file-label">File</span>
+          <output data-lab-file aria-live="polite" aria-label="Filename">sparkbit_042_NM.jpg</output>
+        </p>
+      </div>
+
+      <form class="lab__controls" data-lab-form aria-label="Output settings demo" onsubmit="return false">
+        <fieldset class="ctl">
+          <legend>Filename blocks</legend>
+          <div class="seg seg--wrap">
+            <label class="toggle"><input type="checkbox" name="block" value="name" checked><span>Name</span></label>
+            <label class="toggle"><input type="checkbox" name="block" value="number" checked><span>Number</span></label>
+            <label class="toggle"><input type="checkbox" name="block" value="condition" checked><span>Condition</span></label>
+            <label class="toggle"><input type="checkbox" name="block" value="date"><span>Date</span></label>
+          </div>
+          <p class="ctl__hint">In the app: hold &amp; drag to reorder.</p>
+        </fieldset>
+
+        <fieldset class="ctl">
+          <legend>Separator</legend>
+          <div class="seg">
+            <label class="toggle"><input type="radio" name="sep" value="_" checked><span>_</span></label>
+            <label class="toggle"><input type="radio" name="sep" value="-"><span>-</span></label>
+            <label class="toggle"><input type="radio" name="sep" value=""><span>None</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="ctl">
+          <legend>Condition</legend>
+          <div class="seg seg--wrap seg--cond">
+            <label class="toggle" title="Mint"><input type="radio" name="cond" value="MT"><span>MT</span></label>
+            <label class="toggle" title="Near Mint"><input type="radio" name="cond" value="NM" checked><span>NM</span></label>
+            <label class="toggle" title="Excellent"><input type="radio" name="cond" value="EX"><span>EX</span></label>
+            <label class="toggle" title="Good"><input type="radio" name="cond" value="GD"><span>GD</span></label>
+            <label class="toggle" title="Light Played"><input type="radio" name="cond" value="LP"><span>LP</span></label>
+            <label class="toggle" title="Played"><input type="radio" name="cond" value="PL"><span>PL</span></label>
+            <label class="toggle" title="Poor"><input type="radio" name="cond" value="PO"><span>PO</span></label>
+            <label class="toggle" title="No condition"><input type="radio" name="cond" value=""><span>–</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="ctl">
+          <legend>Border</legend>
+          <div class="seg">
+            <label class="toggle"><input type="radio" name="border" value="white" checked><span>White</span></label>
+            <label class="toggle"><input type="radio" name="border" value="black"><span>Black</span></label>
+            <label class="toggle"><input type="radio" name="border" value="grey"><span>Grey</span></label>
+            <label class="toggle"><input type="radio" name="border" value="none"><span>Off</span></label>
+          </div>
+        </fieldset>
+
+        <div class="ctl">
+          <label class="ctl__legend" for="lab-wm">Watermark</label>
+          <input class="field" id="lab-wm" type="text" name="wm" maxlength="60" value="your-shop.example" placeholder="Shop name or URL" autocomplete="off" spellcheck="false">
+          <p class="ctl__hint" data-lab-wm-hint>Sits in the border, never over the card.</p>
+        </div>
+      </form>
+    </div>
+
+    <ul class="features">
+      <li class="feature reveal">
+        <span class="feature__icon">{% include cs-icon.html i="ocr" %}</span>
+        <h3>Named for you</h3>
+        <p>On-device text recognition reads the card name and set number from their spots on the card and builds the filename. Wrong read? Rename it in a tap.</p>
+      </li>
+      <li class="feature reveal">
+        <span class="feature__icon">{% include cs-icon.html i="star" %}</span>
+        <h3>Condition in the name</h3>
+        <p>MT, NM, EX, GD, LP, PL or PO goes straight into the filename. Pick it once and it stays selected for the next cards; fix the last card from the camera screen.</p>
+      </li>
+      <li class="feature reveal">
+        <span class="feature__icon">{% include cs-icon.html i="sliders" %}</span>
+        <h3>Your naming template</h3>
+        <p>Choose and order the blocks (name, number, condition, date) and the separator. Every file in your library follows the same pattern.</p>
+      </li>
+      <li class="feature reveal">
+        <span class="feature__icon">{% include cs-icon.html i="frame" %}</span>
+        <h3>Border &amp; watermark</h3>
+        <p>An even white, black or grey border around and between both sides. Add your shop name or URL; it's placed in the border, never over the card.</p>
+      </li>
+      <li class="feature reveal">
+        <span class="feature__icon">{% include cs-icon.html i="camera" %}</span>
+        <h3>Photo quality presets</h3>
+        <p><b>Standard</b> for smaller files and a faster shutter, <b>High</b> for sharper images, <b>Maximum</b> for the most detail. Cards are cropped from the full-resolution photo.</p>
+      </li>
+      <li class="feature reveal">
+        <span class="feature__icon">{% include cs-icon.html i="gallery" %}</span>
+        <h3>Gallery &amp; sharing</h3>
+        <p>Every stitched card with its file size, so you know what you're uploading. Rename, delete, or share to any app through Android's share sheet.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ HONEST PHOTOS ============ -->
+<section class="band band--honest" id="honest" aria-labelledby="honest-title">
+  <div class="wrap honest">
+    <div class="honest__copy reveal">
+      <p class="eyebrow">Honest photos</p>
+      <h2 id="honest-title">What the buyer sees is the real card.</h2>
+      <p class="section-head__lead">
+        CardStitch never edits your card. It crops, and scales both sides evenly so they line up.
+        That's all. Whitening, scratches, centring: the buyer sees them as your camera did.
+      </p>
+      <div class="dodont">
+        <div>
+          <h3 class="dodont__title dodont__title--do">It does</h3>
+          <ul class="dodont__list dodont__list--do">
+            <li>{% include cs-icon.html i="check" %}Find the card edges</li>
+            <li>{% include cs-icon.html i="check" %}Crop with a small margin</li>
+            <li>{% include cs-icon.html i="check" %}Scale both sides evenly</li>
+            <li>{% include cs-icon.html i="check" %}Place them side by side</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="dodont__title dodont__title--dont">It never</h3>
+          <ul class="dodont__list dodont__list--dont">
+            <li>{% include cs-icon.html i="cross" %}Straightens</li>
+            <li>{% include cs-icon.html i="cross" %}Applies filters</li>
+            <li>{% include cs-icon.html i="cross" %}Retouches</li>
+            <li>{% include cs-icon.html i="cross" %}Touches the card itself</li>
+          </ul>
+        </div>
+      </div>
+      <p class="honest__why">Accurate photos mean fewer surprises for your buyers.</p>
+    </div>
+
+    <figure class="honest__proof reveal">
+      {%- if page.show_sample_photo %}
+      <span class="proof brackets brackets--green">
+        <img src="{{ '/cardstitch/assets/sample-output-1200.webp' | relative_url }}"
+             srcset="{{ '/cardstitch/assets/sample-output-640.webp' | relative_url }} 640w, {{ '/cardstitch/assets/sample-output-1200.webp' | relative_url }} 1200w"
+             sizes="(min-width: 960px) 520px, 92vw"
+             width="1200" height="800" loading="lazy" decoding="async"
+             alt="A real CardStitch output: the front and back of a sleeved trading card side by side, cropped with a small margin and otherwise unedited.">
+      </span>
+      <figcaption>Real output, straight from the app. Sleeve, glare and fingertips included: cropped, nothing else.</figcaption>
+      {%- else %}
+      <span class="proof proof--illustrated brackets brackets--green" aria-hidden="true">
+        <span class="stitched" data-border="white"><span class="stitched__cards">{% include cs-card.html side="front" %}{% include cs-card.html side="back" %}</span><span class="stitched__strip"></span></span>
+      </span>
+      <figcaption>Cropped and placed side by side. Nothing on the card is changed.</figcaption>
+      {%- endif %}
+    </figure>
+  </div>
+</section>
+
+<!-- ============ PRIVACY ============ -->
+<section class="band band--deep" id="privacy" aria-labelledby="privacy-title">
+  <div class="wrap">
+    <header class="section-head section-head--center reveal">
+      <p class="eyebrow">Private by design</p>
+      <h2 id="privacy-title">Stays on your device.</h2>
+      <p class="section-head__lead">
+        Card detection and text recognition run on the phone. Images are saved to your
+        <code>Pictures/CardStitch</code> folder and only leave the phone when you share them.
+      </p>
+    </header>
+    <ul class="pillars">
+      <li class="pillar reveal">
+        <span class="pillar__icon">{% include cs-icon.html i="noaccount" %}</span>
+        <h3>No account</h3>
+        <p>No sign-up, no login. Open the app and start shooting.</p>
+      </li>
+      <li class="pillar reveal">
+        <span class="pillar__icon">{% include cs-icon.html i="nocloud" %}</span>
+        <h3>No cloud</h3>
+        <p>Your photos are never uploaded. There's no CardStitch server and no cloud gallery.</p>
+      </li>
+      <li class="pillar reveal">
+        <span class="pillar__icon">{% include cs-icon.html i="phone" %}</span>
+        <h3>On-device</h3>
+        <p>Detection, cropping, stitching and OCR all happen on your phone.</p>
+      </li>
+    </ul>
+    <p class="center-link reveal"><a href="{{ '/cardstitch/privacy/' | relative_url }}">Read the privacy policy</a></p>
+  </div>
+</section>
+
+<!-- ============ ROADMAP ============ -->
+<section class="band" id="roadmap" aria-labelledby="roadmap-title">
+  <div class="wrap">
+    <header class="section-head reveal">
+      <p class="eyebrow">Roadmap</p>
+      <h2 id="roadmap-title">Where it's heading.</h2>
+      <p class="section-head__lead">
+        Detection is trained mostly on Pokémon cards today, so that's where it shines.
+        Making it just as good for other games is next.
+      </p>
+    </header>
+    <div class="roadmap">
+      <section class="lane lane--done reveal" aria-labelledby="lane-done">
+        <h3 id="lane-done" class="lane__title"><span class="lane__dot" aria-hidden="true"></span>In the app</h3>
+        <ul>
+          {%- for item in roadmap.done %}
+          <li>{% include cs-icon.html i="check" %}<span>{{ item }}</span></li>
+          {%- endfor %}
+        </ul>
+      </section>
+      <section class="lane lane--next reveal" aria-labelledby="lane-next">
+        <h3 id="lane-next" class="lane__title"><span class="lane__dot" aria-hidden="true"></span>Coming next</h3>
+        <ul>
+          {%- for item in roadmap.next %}
+          <li><span class="lane__bullet" aria-hidden="true"></span><span>{{ item }}</span></li>
+          {%- endfor %}
+        </ul>
+        <span class="marching" aria-hidden="true"><span></span><span></span><span></span></span>
+      </section>
+      <section class="lane lane--ideas reveal" aria-labelledby="lane-ideas">
+        <h3 id="lane-ideas" class="lane__title"><span class="lane__dot" aria-hidden="true"></span>Ideas</h3>
+        <p class="lane__note">Being considered, not scheduled.</p>
+        <ul>
+          {%- for item in roadmap.ideas %}
+          <li><span class="lane__bullet" aria-hidden="true"></span><span>{{ item }}</span></li>
+          {%- endfor %}
+        </ul>
+      </section>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="band band--deep" id="faq" aria-labelledby="faq-title">
+  <div class="wrap wrap--narrow">
+    <header class="section-head reveal">
+      <p class="eyebrow">FAQ</p>
+      <h2 id="faq-title">Questions.</h2>
+    </header>
+    <div class="faq">
+      <details>
+        <summary>Which card games does it work with?</summary>
+        <div class="faq__a">
+          <p>Card detection is trained mostly on Pokémon cards today, so that's where it works best. Other games may work, but less reliably. Better detection across games (Magic, Yu-Gi-Oh!, One Piece and more) is <a href="#roadmap">next on the roadmap</a>.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Does it upload my photos anywhere?</summary>
+        <div class="faq__a">
+          <p>No. Detection, cropping, stitching and text recognition run on your phone. There's no account and no CardStitch server. Images only leave the device when you share them yourself. Details are in the <a href="{{ '/cardstitch/privacy/' | relative_url }}">privacy policy</a>.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Where are my files saved?</summary>
+        <div class="faq__a">
+          <p>In your phone's <code>Pictures/CardStitch</code> folder, so they show up in your gallery and file manager. Next to each stitched image, the plain front and back crops are saved too.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Does it work with Cardmarket?</summary>
+        <div class="faq__a">
+          <p>CardStitch makes a regular JPEG with both sides in one picture, which is what single-image listings need. You upload it the way you'd upload any photo. CardStitch doesn't connect to your marketplace account or post anything for you, and it isn't affiliated with Cardmarket.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Does it change how my card looks?</summary>
+        <div class="faq__a">
+          <p>No. It crops and scales both sides evenly, nothing else: no straightening, no filters, no retouching. See <a href="#honest">honest photos</a>.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Which Android versions are supported?</summary>
+        <div class="faq__a">
+          <p>Android 7.0 and newer, on a phone with a camera.</p>
+        </div>
+      </details>
+      <details>
+        <summary>When is it out?</summary>
+        <div class="faq__a">
+          {%- if cs.play_url and cs.play_url != "" %}
+          <p>It's out. <a href="{{ cs.play_url }}" rel="noopener">Get it on Google Play</a>.</p>
+          {%- else %}
+          <p>CardStitch is in final development and the Google Play release is coming soon. <a href="{{ cs.beta_mailto }}">Send a short e-mail</a> to join the beta or hear when it's out.</p>
+          {%- endif %}
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="band final" id="get" aria-labelledby="final-title">
+  <div class="wrap">
+    <div class="final__panel reveal">
+      <span class="final__cards" aria-hidden="true">{% include cs-card.html side="front" %}{% include cs-card.html side="back" %}</span>
+      <h2 id="final-title">Stop stitching by hand.</h2>
+      <p class="section-head__lead">Two taps per card. One image per listing. Your next stack of cards will thank you.</p>
+      {% include cs-cta.html %}
+    </div>
+  </div>
+</section>

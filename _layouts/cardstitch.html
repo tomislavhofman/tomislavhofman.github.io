@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page.seo_title | default: page.title }}</title>
+  <meta name="description" content="{{ page.description | strip | escape }}">
+  <link rel="canonical" href="{{ page.url | absolute_url }}">
+  <meta name="theme-color" content="#2E4A63">
+  <meta name="color-scheme" content="dark">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ site.title }}">
+  <meta property="og:title" content="{{ page.seo_title | default: page.title | escape }}">
+  <meta property="og:description" content="{{ page.description | strip | escape }}">
+  <meta property="og:url" content="{{ page.url | absolute_url }}">
+  <meta property="og:image" content="{{ page.share_image | absolute_url }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="{{ page.share_image_alt | escape }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ page.seo_title | default: page.title | escape }}">
+  <meta name="twitter:description" content="{{ page.description | strip | escape }}">
+  <meta name="twitter:image" content="{{ page.share_image | absolute_url }}">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "CardStitch",
+    "operatingSystem": "Android 7.0 or later",
+    "applicationCategory": "MultimediaApplication",
+    "description": {{ page.description | strip | jsonify }},
+    "url": {{ page.url | absolute_url | jsonify }},
+    "image": {{ page.share_image | absolute_url | jsonify }},
+    "author": { "@type": "Person", "name": "Tomislav Hofman", "url": {{ site.url | jsonify }} }
+  }
+  </script>
+
+  <script>document.documentElement.className = document.documentElement.className.replace('no-js', 'js');</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Jersey+10&family=Silkscreen&display=swap">
+  <link rel="stylesheet" href="{{ '/css/cardstitch.css' | relative_url }}">
+  <link rel="icon" href="{{ '/favicon.ico' | relative_url }}">
+</head>
+<body class="cs">
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+  <header class="site-header">
+    {% include nav.html %}
+  </header>
+  <main id="main-content" tabindex="-1">
+    {{ content }}
+  </main>
+  <footer class="site-footer">
+    <div class="wrap site-footer__inner">
+      <div class="site-footer__brand">
+        <p class="site-footer__name">CardStitch</p>
+        <p>An Android app by Tomislav Hofman.</p>
+      </div>
+      <nav class="site-footer__links" aria-label="CardStitch links">
+        <a href="{{ '/cardstitch/privacy/' | relative_url }}">Privacy policy</a>
+        <a href="{{ '/cardstitch/terms/' | relative_url }}">Terms of use</a>
+        <a href="mailto:{{ site.data.cardstitch.contact_email }}">{{ site.data.cardstitch.contact_email }}</a>
+      </nav>
+      <p class="site-footer__legal">
+        CardStitch is an independent app and is not affiliated with, endorsed by or sponsored by Cardmarket or any trading card game publisher.
+        Cardmarket, Pokémon, Magic: The Gathering, Yu-Gi-Oh! and One Piece are trademarks of their respective owners.
+        Google Play and Android are trademarks of Google LLC.
+      </p>
+      <p class="site-footer__copy">&copy; {{ site.time | date: '%Y' }} Tomislav Hofman</p>
+    </div>
+  </footer>
+  <script src="{{ '/cardstitch/assets/cardstitch.js' | relative_url }}" defer></script>
+</body>
+</html>

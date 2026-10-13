@@ -1572,25 +1572,27 @@ html:has(body.cs-embed), body.cs-embed { height: 100%; overflow: hidden; }
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) auto;
   padding: 10px 0 0;
 }
 .cs-embed .stage {
+  grid-column: 1 / -1;
   height: 100%;
   width: auto;
   max-width: 100%;
   margin: 0 auto;
 }
-.cs-embed .device__caption {
+/* Caption and filename share one strip: caption left, file right. */
+.cs-embed .device__caption,
+.cs-embed .device__file {
   min-height: 0;
   margin: 8px 0 0;
-  padding: 5px 8px;
+  padding: 6px 10px;
+  border-top: 0;
   font-size: 13px;
 }
-.cs-embed .device__file {
-  margin: 0;
-  padding: 4px 8px 6px;
-  gap: 8px;
-  font-size: 11px;
-}
-.cs-embed .device__file .chip { font-size: 10px; }
+.cs-embed .device__caption { justify-content: flex-start; }
+.cs-embed .device__file { gap: 6px; flex-wrap: nowrap; font-size: 11px; }
+.cs-embed .device__file .chip { display: none; }
+@media (max-width: 380px) { .cs-embed .device__file { display: none; } }

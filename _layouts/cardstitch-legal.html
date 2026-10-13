@@ -1,0 +1,40 @@
+---
+layout: cardstitch
+---
+{%- comment -%}
+  Long-form legal pages (privacy, terms) in the CardStitch pixel style.
+  Front matter: title, heading, description, effective_date, legal: true.
+  No scroll reveal here: legal text is visible immediately.
+{%- endcomment -%}
+<nav class="subbar" aria-label="CardStitch">
+  <div class="wrap subbar__inner">
+    <a class="brand" href="{{ '/cardstitch/' | relative_url }}" aria-label="CardStitch home">
+      <span class="brand__mark" aria-hidden="true"><span></span><span></span></span>
+      <span class="brand__name">CardStitch</span>
+    </a>
+    <ul class="subbar__links subbar__links--legal">
+      <li><a href="{{ '/cardstitch/privacy/' | relative_url }}"{% if page.url == '/cardstitch/privacy/' %} aria-current="page"{% endif %}>Privacy</a></li>
+      <li><a href="{{ '/cardstitch/terms/' | relative_url }}"{% if page.url == '/cardstitch/terms/' %} aria-current="page"{% endif %}>Terms</a></li>
+    </ul>
+  </div>
+</nav>
+
+<article class="legal" aria-labelledby="legal-title">
+  <header class="legal__head">
+    <div class="wrap legal__wrap">
+      <p class="eyebrow">Legal</p>
+      <h1 class="legal__title" id="legal-title">{{ page.heading | default: page.title }}</h1>
+      <p class="legal__meta">
+        <span>Effective <time datetime="{{ page.effective_date | date: '%Y-%m-%d' }}">{{ page.effective_date | date: '%B %-d, %Y' }}</time></span>
+        <span>CardStitch for Android and iOS</span>
+      </p>
+    </div>
+  </header>
+
+  <div class="wrap legal__wrap">
+    <div class="legal__body">
+      {{ content }}
+    </div>
+    <p class="legal__back"><a href="{{ '/cardstitch/' | relative_url }}">&larr; Back to CardStitch</a></p>
+  </div>
+</article>

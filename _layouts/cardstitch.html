@@ -23,6 +23,7 @@
   <meta name="twitter:description" content="{{ page.description | strip | escape }}">
   <meta name="twitter:image" content="{{ page.share_image | absolute_url }}">
 
+  {%- unless page.legal %}
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -36,6 +37,7 @@
     "author": { "@type": "Person", "name": "Tomislav Hofman", "url": {{ site.url | jsonify }} }
   }
   </script>
+  {%- endunless %}
 
   <script>document.documentElement.className = document.documentElement.className.replace('no-js', 'js');</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">

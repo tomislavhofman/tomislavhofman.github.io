@@ -1,14 +1,24 @@
 ---
-layout: legal
+layout: cardstitch-legal
 title: CardStitch Terms of Use
+heading: Terms of use
+description: "Terms of use for the CardStitch app for Android and iOS."
 permalink: /cardstitch/terms/
 cardstitch: true
+legal: true
+effective_date: 2026-10-13
+share_image: /cardstitch/share.png
+share_image_alt: "CardStitch: one photo, both sides."
 ---
 
-**Effective date:** September 24, 2026
+**What changed on October 13, 2026:** these terms now also cover the iOS
+(iPhone) version of CardStitch, and the third-party software section mentions
+the Apple frameworks it uses. The previous version was effective
+September 24, 2026.
+{: .legal__note}
 
-These Terms of Use apply to the CardStitch Android app developed and maintained
-by **Tomislav Hofman**.
+These Terms of Use apply to the CardStitch app for Android and iOS developed
+and maintained by **Tomislav Hofman**.
 
 ## Using CardStitch
 
@@ -31,10 +41,12 @@ content for you.
 
 ## Third-Party Services
 
-CardStitch depends on Android, Google Play services, ML Kit, LiteRT, CameraX,
-and other third-party software. Those services and libraries may have their
-own terms, licenses, and privacy policies. The Android share feature is
-controlled by the app you choose to receive a file.
+On Android, CardStitch depends on Android, Google Play services, ML Kit,
+LiteRT, CameraX, and other third-party software. On iOS, it depends on iOS
+and Apple frameworks such as Vision and Photos, LiteRT, and other third-party
+software. Those services and libraries may have their own terms, licenses,
+and privacy policies. The share feature on Android and iOS is controlled by
+the app you choose to receive a file.
 
 ## Availability and Disclaimer
 
@@ -59,4 +71,4 @@ the extent permitted by law.
 Questions can be sent to
 [contact@hofman.tech](mailto:contact@hofman.tech).
 
-[Privacy Policy]({{ '/cardstitch/privacy/' | relative_url }})
+See also the [Privacy Policy]({{ '/cardstitch/privacy/' | relative_url }}).

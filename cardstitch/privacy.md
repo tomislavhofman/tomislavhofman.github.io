@@ -44,8 +44,8 @@ Where the resulting images are saved depends on your device:
 - **Android:** in the device's shared Pictures/CardStitch folder, using
   Android MediaStore.
 - **iOS:** in CardStitch's own folder in the Files app (On My iPhone ›
-  CardStitch). Each stitched image is also added to a "CardStitch" album in
-  the Photos app.
+  CardStitch). A copy of each stitched image is also saved to your photo
+  library in the Photos app.
 
 CardStitch does not upload the captured images or recognized text to a
 CardStitch server.
@@ -69,11 +69,11 @@ analytics or advertising SDKs.
 
 ### Photos access (iOS)
 
-On iOS, CardStitch asks for access to Photos so it can add your stitched card
-images to a "CardStitch" album. It uses that access only to find or create
-this album and add new cards to it. It does not read your other photos. If
-you do not allow Photos access, your cards are still saved in CardStitch's
-folder in the Files app.
+On iOS, CardStitch asks only for permission to add photos to your photo
+library, so it can save a copy of each stitched card image there. This
+add-only permission does not let CardStitch see, read, or change any other
+photos, and CardStitch does not create albums. If you do not allow it, your
+cards are still saved in CardStitch's folder in the Files app.
 
 ### Local settings
 
@@ -116,8 +116,8 @@ file manager.
 
 **iOS:** card images remain in CardStitch's folder in the Files app until you
 delete them in CardStitch or in the Files app. Deleting a card in CardStitch
-removes its files from that folder, but not the copy in the "CardStitch"
-Photos album. That copy is yours to keep or delete in the Photos app, and it
+removes its files from that folder, but not the copy saved to your photo
+library. That copy is yours to keep or delete in the Photos app, and it
 also stays there if you delete the app.
 
 You are responsible for copies you export or share to other apps.
@@ -128,8 +128,9 @@ On **Android**, CardStitch requests camera access for capture. On older
 Android versions it may also request storage access so it can save the images
 to the shared Pictures folder.
 
-On **iOS**, CardStitch requests camera access for capture and Photos access
-to save to the "CardStitch" album, as described above.
+On **iOS**, CardStitch requests camera access for capture and add-only
+Photos access to save a copy of each stitched image to your photo library, as
+described above.
 
 CardStitch does not request location, contacts, microphone, or account
 permissions.

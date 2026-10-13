@@ -2,39 +2,28 @@
 layout: cardstitch
 ---
 {%- comment -%}
-  Long-form legal pages (privacy, terms) in the CardStitch pixel style.
+  Long-form legal pages (privacy, terms), built from the landing page's own
+  pieces: sub bar, band + section head, bevelled panel, facts, center link.
   Front matter: title, heading, description, effective_date, legal: true.
   No scroll reveal here: legal text is visible immediately.
 {%- endcomment -%}
-<nav class="subbar" aria-label="CardStitch">
-  <div class="wrap subbar__inner">
-    <a class="brand" href="{{ '/cardstitch/' | relative_url }}" aria-label="CardStitch home">
-      <span class="brand__mark" aria-hidden="true"><span></span><span></span></span>
-      <span class="brand__name">CardStitch</span>
-    </a>
-    <ul class="subbar__links subbar__links--legal">
-      <li><a href="{{ '/cardstitch/privacy/' | relative_url }}"{% if page.url == '/cardstitch/privacy/' %} aria-current="page"{% endif %}>Privacy</a></li>
-      <li><a href="{{ '/cardstitch/terms/' | relative_url }}"{% if page.url == '/cardstitch/terms/' %} aria-current="page"{% endif %}>Terms</a></li>
-    </ul>
-  </div>
-</nav>
+{% include cs-subbar.html base="/cardstitch/" %}
 
-<article class="legal" aria-labelledby="legal-title">
-  <header class="legal__head">
-    <div class="wrap legal__wrap">
+<section class="band band--deep legal" aria-labelledby="legal-title">
+  <div class="wrap wrap--narrow">
+    <header class="section-head legal__head">
       <p class="eyebrow">Legal</p>
-      <h1 class="legal__title" id="legal-title">{{ page.heading | default: page.title }}</h1>
-      <p class="legal__meta">
-        <span>Effective <time datetime="{{ page.effective_date | date: '%Y-%m-%d' }}">{{ page.effective_date | date: '%B %-d, %Y' }}</time></span>
-        <span>CardStitch for Android and iOS</span>
-      </p>
-    </div>
-  </header>
+      <h1 id="legal-title" class="legal__title">{{ page.heading | default: page.title }}</h1>
+      <ul class="facts" aria-label="About this document">
+        <li>Effective <time datetime="{{ page.effective_date | date: '%Y-%m-%d' }}">{{ page.effective_date | date: '%B %-d, %Y' }}</time></li>
+        <li>Android &amp; iOS</li>
+      </ul>
+    </header>
 
-  <div class="wrap legal__wrap">
-    <div class="legal__body">
+    <article class="panel legal__body">
       {{ content }}
-    </div>
-    <p class="legal__back"><a href="{{ '/cardstitch/' | relative_url }}">&larr; Back to CardStitch</a></p>
+    </article>
+
+    <p class="center-link"><a href="{{ '/cardstitch/' | relative_url }}">Back to CardStitch</a></p>
   </div>
-</article>
+</section>

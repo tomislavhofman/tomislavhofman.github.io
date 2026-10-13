@@ -2,7 +2,7 @@
 layout: cardstitch
 title: CardStitch
 seo_title: "CardStitch – front and back of a trading card in one photo | Android"
-description: "CardStitch photographs both sides of a trading card, crops them on your phone and stitches them into one ready-to-list image, named after the card. For marketplace sellers, collectors and traders. Coming soon to Android."
+description: "CardStitch photographs both sides of a trading card, crops them on your phone and stitches them into one ready-to-list image, named after the card. For marketplace sellers, collectors and traders. Coming soon to Android, with iOS to follow."
 permalink: /cardstitch/
 cardstitch: true
 share_image: /cardstitch/share.png
@@ -13,26 +13,7 @@ show_sample_photo: true
 {%- assign cs = site.data.cardstitch -%}
 {%- assign roadmap = site.data.cardstitch_roadmap -%}
 
-<nav class="subbar" aria-label="On this page">
-  <div class="wrap subbar__inner">
-    <a class="brand" href="#top" aria-label="CardStitch, back to top">
-      <span class="brand__mark" aria-hidden="true"><span></span><span></span></span>
-      <span class="brand__name">CardStitch</span>
-    </a>
-    <ul class="subbar__links">
-      <li><a href="#how">How it works</a></li>
-      <li><a href="#sellers">Features</a></li>
-      <li><a href="#honest">Honest photos</a></li>
-      <li><a href="#roadmap">Roadmap</a></li>
-      <li><a href="#faq">FAQ</a></li>
-    </ul>
-    {%- if cs.play_url and cs.play_url != "" %}
-    <a class="btn btn--primary btn--sm" href="{{ cs.play_url }}" rel="noopener">Get the app</a>
-    {%- else %}
-    <a class="btn btn--primary btn--sm" href="{{ cs.beta_mailto }}">Join the beta</a>
-    {%- endif %}
-  </div>
-</nav>
+{% include cs-subbar.html %}
 
 <!-- ============ HERO ============ -->
 <section class="hero" id="top" aria-labelledby="hero-title">
@@ -49,6 +30,7 @@ show_sample_photo: true
       {% include cs-cta.html secondary="#how" %}
       <ul class="facts" aria-label="Key facts">
         <li>Android 7+</li>
+        <li>iOS coming soon</li>
         <li>On-device</li>
         <li>No account</li>
       </ul>
@@ -473,7 +455,7 @@ show_sample_photo: true
       <details>
         <summary>Which Android versions are supported?</summary>
         <div class="faq__a">
-          <p>Android 7.0 and newer, on a phone with a camera.</p>
+          <p>Android 7.0 and newer, on a phone with a camera. An iPhone version is coming soon.</p>
         </div>
       </details>
       <details>
@@ -482,7 +464,7 @@ show_sample_photo: true
           {%- if cs.play_url and cs.play_url != "" %}
           <p>It's out. <a href="{{ cs.play_url }}" rel="noopener">Get it on Google Play</a>.</p>
           {%- else %}
-          <p>CardStitch is in final development and the Google Play release is coming soon. <a href="{{ cs.beta_mailto }}">Send a short e-mail</a> to join the beta or hear when it's out.</p>
+          <p>CardStitch is in final development and the Google Play release is coming soon, with the iPhone version to follow. <a href="{{ cs.beta_mailto }}">Send a short e-mail</a> to join the beta or hear when it's out.</p>
           {%- endif %}
         </div>
       </details>

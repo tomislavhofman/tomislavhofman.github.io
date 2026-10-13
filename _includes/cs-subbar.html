@@ -1,0 +1,27 @@
+{%- comment -%}
+  CardStitch sub bar, shared by the landing page and the legal pages.
+  Params: base (optional: prefix for the section links, e.g. "/cardstitch/"
+  on other pages; empty on the landing page so links stay in-page).
+{%- endcomment -%}
+{%- assign cs = site.data.cardstitch -%}
+{%- if include.base %}{% assign base = include.base | relative_url %}{% else %}{% assign base = "" %}{% endif -%}
+<nav class="subbar" aria-label="{% if include.base %}CardStitch{% else %}On this page{% endif %}">
+  <div class="wrap subbar__inner">
+    <a class="brand" href="{% if include.base %}{{ base }}{% else %}#top{% endif %}" aria-label="{% if include.base %}CardStitch home{% else %}CardStitch, back to top{% endif %}">
+      <span class="brand__mark" aria-hidden="true"><span></span><span></span></span>
+      <span class="brand__name">CardStitch</span>
+    </a>
+    <ul class="subbar__links">
+      <li><a href="{{ base }}#how">How it works</a></li>
+      <li><a href="{{ base }}#sellers">Features</a></li>
+      <li><a href="{{ base }}#honest">Honest photos</a></li>
+      <li><a href="{{ base }}#roadmap">Roadmap</a></li>
+      <li><a href="{{ base }}#faq">FAQ</a></li>
+    </ul>
+    {%- if cs.play_url and cs.play_url != "" %}
+    <a class="btn btn--primary btn--sm" href="{{ cs.play_url }}" rel="noopener">Get the app</a>
+    {%- else %}
+    <a class="btn btn--primary btn--sm" href="{{ cs.beta_mailto }}">Join the beta</a>
+    {%- endif %}
+  </div>
+</nav>

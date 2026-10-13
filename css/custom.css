@@ -285,10 +285,15 @@ footer {
 }
 
 /* Remove all padding and background from main-content only on home page */
+/* Home is a full-width project grid, so widen main beyond the default 40rem. */
 .home-page #main-content {
   padding: 0 !important;
   background: none !important;
   box-shadow: none !important;
+  max-width: 1100px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Blog listing */
@@ -707,48 +712,12 @@ button:hover, .btn:hover {
   font-family: inherit;
   box-shadow: 0 0 4px #22ff5599;
 }
-.retro-highscore-list {
-  background: #10141a;
-  border-radius: 0.7em;
-  box-shadow: 0 0 8px #22ff55cc, 0 0 1px #22ff55;
-  padding: 0.7em 1em 0.7em 1em;
-  margin: 0 auto;
-  max-width: 340px;
-  color: #22ff55;
-  font-family: 'VT323', 'Fira Mono', 'Menlo', monospace;
-  font-size: 1.1em;
-  text-align: center;
-  letter-spacing: 0.04em;
-  text-shadow: 0 0 6px #22ff55cc, 0 0 2px #22ff55;
-}
-.highscore-title {
-  font-size: 1.1em;
-  color: #aaffcc;
-  margin-bottom: 0.2em;
-  letter-spacing: 0.06em;
-  text-shadow: 0 0 6px #22ff55cc;
-}
-.highscore-ol {
-  list-style: none;
-  padding: 0;
-  margin: 0.2em 0 0 0;
-}
-.highscore-ol li {
-  background: rgba(34,255,85,0.09);
-  border-radius: 0.4em;
-  margin: 0.15em 0;
-  padding: 0.1em 0.5em;
-  color: #fff;
-  font-weight: bold;
-  text-shadow: 0 0 4px #22ff55cc;
-  font-size: 1.05em;
-}
 @media (max-width: 700px) {
   .retro-console {
     padding: 1em 0.2em 1.2em 0.2em;
     max-width: 99vw;
   }
-  .retro-ui-bar, .retro-highscore-list {
+  .retro-ui-bar {
     font-size: 1em;
     padding: 0.4em 0.5em;
   }
@@ -764,7 +733,7 @@ button:hover, .btn:hover {
     border-radius: 0.7em;
     padding: 0.5em 0.5em 0.7em 0.5em;
   }
-  .retro-ui-bar, .retro-highscore-list {
+  .retro-ui-bar {
     font-size: 1.1em;
     padding: 1em 1em;
   }
@@ -814,7 +783,6 @@ button:hover, .btn:hover {
 .retro-console,
 .retro-console *,
 .retro-ui-bar,
-.retro-highscore-list,
 .retro-ui-hint,
 .key {
   font-family: 'VT323', 'Fira Mono', 'Menlo', monospace !important;
@@ -955,5 +923,44 @@ button:hover, .btn:hover {
 @media (prefers-color-scheme: dark) {
   .caption {
     color: #64748b;
+  }
+}
+
+/* ==========================================================================
+   Shared low-emphasis footer links (GitHub / LinkedIn / e-mail)
+   ========================================================================== */
+.footer-copy {
+  margin: 0;
+}
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.35rem 1.25rem;
+  margin: 0.6rem 0 0;
+  padding: 0;
+}
+.footer-links a {
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+.footer-links a:hover {
+  background: none;
+  color: #2563eb;
+  text-decoration: underline;
+}
+@media (prefers-color-scheme: dark) {
+  .footer-links a {
+    color: #94a3b8;
+  }
+  .footer-links a:hover {
+    background: none;
+    color: #38bdf8;
   }
 }

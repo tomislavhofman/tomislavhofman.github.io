@@ -1,0 +1,26 @@
+# Home page project grid, in display order.
+#
+# Each entry becomes one grid cell. The cell's inner visual comes from the
+# matching partial in _includes/home-<id>.html (home-game.html, ...), so adding
+# a project is just: append an entry here + add a home-<id>.html partial.
+#   id        unique id; selects _includes/home-<id>.html
+#   url       link target; omit (or leave empty) for entries that live on the
+#             page itself (e.g. the game)
+#   external  true when url points off-site (opens in a new tab)
+#   label     hint row text shown at the bottom of the entry
+#   accent    accent colour for the console frame and glow
+- id: game
+  accent: "#22ff55"
+  label: "Fly · tap to play"
+
+- id: cardstitch
+  url: "/cardstitch/"
+  external: false
+  accent: "#38bdf8"
+  label: "CardStitch · open ▸"
+
+- id: poster
+  url: "https://play.google.com/store/apps/details?id=app.pstr.android&hl=en"
+  external: true
+  accent: "#fbbf24"
+  label: "Poster · get it on Play ▸"

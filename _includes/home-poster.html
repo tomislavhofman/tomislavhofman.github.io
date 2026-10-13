@@ -1,0 +1,18 @@
+{%- comment -%}
+  Home grid · Poster. A dark retro pixel console (same visual language as the
+  game console) with a small CSS animation: the pixel blocks of a poster fill
+  in and the "POSTER" title bar types itself. Respects reduced motion.
+{%- endcomment -%}
+<div class="home-console home-console--poster">
+  <div class="home-console__stage pos" aria-hidden="true">
+    <div class="pos-poster">
+      <div class="pos-blocks">
+        {%- for i in (1..16) -%}
+        <i style="--i: {{ forloop.index0 }}"></i>
+        {%- endfor -%}
+      </div>
+      <div class="pos-title"><span>POSTER</span></div>
+    </div>
+  </div>
+  <div class="retro-ui-hint home-console__hint">{{ project.label | default: "Poster · get it on Play ▸" }}</div>
+</div>

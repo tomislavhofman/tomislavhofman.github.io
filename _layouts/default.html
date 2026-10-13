@@ -10,22 +10,16 @@
 <body{% if page.url == "/" %} class="home-page"{% endif %}>
   <a href="#main-content" class="visually-hidden focusable">Skip to main content</a>
   {% include nav.html %}
-  {% if page.url == "/" %}
-    <div class="game-card-wrapper">
-      {% capture game_card %}{{ content | split: '<div class="retro-console">' | last | split: '</div>' | first }}{% endcapture %}
-      <div class="retro-console">
-        {{ game_card }}</div>
-    </div>
-  {% endif %}
   <main id="main-content" tabindex="-1">
-    {% if page.url == "/" %}
-      {{ content | remove_first: '<div class="retro-console">' | remove_first: game_card | remove_first: '</div>' }}
-    {% else %}
-      {{ content }}
-    {% endif %}
+    {{ content }}
   </main>
   <footer>
-    &copy; {{ site.time | date: '%Y' }} Tomislav Hofman
+    <p class="footer-copy">&copy; {{ site.time | date: '%Y' }} Tomislav Hofman</p>
+    <nav class="footer-links" aria-label="Contact and social links">
+      <a href="https://github.com/tomislavhofman" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a href="https://www.linkedin.com/in/tomislav-hofman/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      <a href="mailto:contact@hofman.tech">contact@hofman.tech</a>
+    </nav>
   </footer>
 </body>
 </html>

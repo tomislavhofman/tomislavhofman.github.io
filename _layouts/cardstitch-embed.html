@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>CardStitch demo</title>
+  <script>document.documentElement.className = document.documentElement.className.replace('no-js', 'js');</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Jersey+10&family=Silkscreen&display=swap">
+  <link rel="stylesheet" href="{{ '/css/cardstitch.css' | relative_url }}">
+  <style>
+    /* Embed-only chrome reset: transparent so the console behind it shows,
+       no margins and never any scrollbars inside the iframe. */
+    html, body { margin: 0; padding: 0; overflow: hidden; background: transparent; }
+  </style>
+</head>
+<body class="cs cs-embed">
+  {{ content }}
+  <script src="{{ '/cardstitch/assets/cardstitch.js' | relative_url }}" defer></script>
+</body>
+</html>

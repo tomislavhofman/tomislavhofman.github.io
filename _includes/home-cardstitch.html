@@ -1,0 +1,18 @@
+{%- comment -%}
+  Home grid · CardStitch. Plays the exact "How it works" demo from the CardStitch
+  landing page, embedded in an iframe so that page's global stylesheet
+  (css/cardstitch.css) can never leak onto the home page. The whole entry is
+  already a link to /cardstitch/, so the iframe ignores pointer events and every
+  click falls through to that link.
+{%- endcomment -%}
+<div class="home-console home-console--cardstitch">
+  <div class="home-console__stage home-console__stage--cs">
+    <iframe class="home-console__frame"
+            src="{{ '/cardstitch/demo.html' | relative_url }}"
+            title="CardStitch demo"
+            loading="lazy"
+            tabindex="-1"
+            aria-hidden="true"></iframe>
+  </div>
+  <div class="retro-ui-hint home-console__hint">{{ project.label | default: "CardStitch · open ▸" }}</div>
+</div>

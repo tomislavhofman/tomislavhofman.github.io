@@ -1,0 +1,11 @@
+{%- comment -%}
+  Home grid · Fly. The score bar sits directly on top of the dark console
+  (canvas + "press space or tap to fly"); together they read as one panel, with
+  no extra frame around them. The bar shows live DIST/QS/time plus a single BEST
+  badge in its top-right corner (rendered by the game script, never over the canvas).
+{%- endcomment -%}
+<div id="score-tracker" class="retro-ui-bar home-game__bar"></div>
+<div id="dino-game-container" class="home-console home-console--game">
+  <canvas id="dino-game" width="700" height="150"></canvas>
+  <div class="retro-ui-hint">Press <span class="key">space</span> or <span class="key">tap</span> to fly</div>
+</div>

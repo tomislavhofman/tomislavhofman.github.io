@@ -19,6 +19,7 @@ title: Tomislav Hofman
 <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
 <link rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap">
+<link rel="stylesheet" href="{{ '/css/home.css' | relative_url }}">
 <script type="application/ld+json">{
     "@context": "https://schema.org",
     "@type": "Person",
@@ -36,17 +37,29 @@ title: Tomislav Hofman
     },
     "email": "mailto:contact@hofman.tech"
 }</script>
-<div id="score-tracker" class="retro-ui-bar"></div>
-<div id="dino-game-container" class="retro-game-container">
-    <canvas id="dino-game" width="700" height="150"></canvas>
-    <div class="retro-ui-hint">Press <span class="key">space</span> or <span class="key">tap</span> to fly</div>
-</div>
-<div id="highscore-list" class="retro-highscore-list"></div>
+<section class="home-grid" aria-label="Projects">
+  {%- for project in site.data.projects %}
+  {%- assign home_include = "home-" | append: project.id | append: ".html" -%}
+  {%- if project.url and project.url != "" %}
+  <a class="home-entry home-entry--{{ project.id }}"
+     style="--entry-accent: {{ project.accent }};"
+     href="{% if project.external %}{{ project.url }}{% else %}{{ project.url | relative_url }}{% endif %}"
+     aria-label="{{ project.label | default: project.id | replace: ' ▸', '' }}"
+     {%- if project.external %} target="_blank" rel="noopener noreferrer"{% endif %}>
+    {% include {{ home_include }} %}
+  </a>
+  {%- else %}
+  <article class="home-entry home-entry--{{ project.id }}"
+           style="--entry-accent: {{ project.accent }};">
+    {% include {{ home_include }} %}
+  </article>
+  {%- endif %}
+  {%- endfor %}
+</section>
 <script>
     (function () {
         const canvas = document.getElementById('dino-game');
         const tracker = document.getElementById('score-tracker');
-        const highscoreListElement = document.getElementById('highscore-list');
         canvas.height = 225 * 1.3; // 30% taller
         const ctx = canvas.getContext('2d');
         const width = canvas.width;
@@ -89,7 +102,7 @@ title: Tomislav Hofman
         // Grand total high score tracking
         let grandTotalHighScore = 0;
         let currentGrandTotal = 0;
-        let highscoreList = [];
+        let bestScore = 0; // single best distance (raw), shown as the BEST badge
         let timeIntervalId = null;
         let lastTimeUpdate = null;
 
@@ -212,7 +225,6 @@ title: Tomislav Hofman
             lastTimeUpdate = null;
             gameStarted = false;
             gameOver = false;
-            updateHighscoreList();
             // Reset warp platforms
             warpPlatforms = [];
             // Reset red-out animation
@@ -474,6 +486,9 @@ title: Tomislav Hofman
                 <span class="score-label"></span>
                 <span class="score-value">${Math.floor(highscore)} <span style='font-size:0.9em;opacity:0.8;'>s</span></span>
               </span>
+              <span class="score-item home-game__best" title="Best score" style="font-family: 'Fira Mono', 'Consolas', monospace; font-weight: 700; text-shadow: 0 0 6px #f472b6, 0 0 2px #fff; background: rgba(244,114,182,0.13); border-radius: 6px; padding: 2px 8px;">
+                <span class="score-value">BEST ${(bestScore * 0.01).toFixed(2)} <span style='font-size:0.9em;opacity:0.8;'>SU</span></span>
+              </span>
             `;
         }
 
@@ -514,10 +529,7 @@ title: Tomislav Hofman
             grandTotalHighScore = Math.max(grandTotalHighScore, distanceValue);
 
             if (distanceValue > 0) {
-                highscoreList.push(distanceValue);
-                highscoreList.sort((a, b) => b - a);
-                highscoreList = highscoreList.slice(0, 5);
-                updateHighscoreList();
+                bestScore = Math.max(bestScore, distanceValue);
             }
             currentGrandTotal = 0;
             grandTotalHighScore = 0;
@@ -530,22 +542,8 @@ title: Tomislav Hofman
             gameOverRedAnim.progress = 0;
         }
 
-        function updateHighscoreList() {
-            if (highscoreList.length > 0 && highscoreList[0] > 0) {
-                let listHTML = '<div class="highscore-title">TOP SCORES</div><ol class="highscore-ol">';
-                for (const score of highscoreList) {
-                    // Format score as SU, two decimals, matching in-game DIST
-                    let suScore = (score * 0.01).toFixed(2);
-                    listHTML += `<li>${suScore} <span style='font-size:0.9em;opacity:0.8;'>SU</span></li>`;
-                }
-                listHTML += '</ol>';
-                highscoreListElement.innerHTML = listHTML;
-                highscoreListElement.style.display = '';
-            } else {
-                highscoreListElement.innerHTML = '';
-                highscoreListElement.style.display = 'none';
-            }
-        }
+        // Best score is a single value kept in `bestScore` and rendered as the
+        // BEST badge by drawScore(), so there is no separate list to update.
 
         function drawStartScreen() {
             ctx.save();
@@ -914,6 +912,3 @@ title: Tomislav Hofman
         loop();
     })();
 </script>
-<section class="contact-block" aria-label="Contact information">
-    <strong>Contact:</strong> Osijek, Croatia · <a href="mailto:contact@hofman.tech">contact@hofman.tech</a>
-</section>

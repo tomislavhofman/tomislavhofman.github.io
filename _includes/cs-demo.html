@@ -1,0 +1,29 @@
+{%- comment -%}
+  CardStitch "How it works" device — the single source of the animated demo.
+  Used by cardstitch/index.html (hero, right column) and cardstitch/demo.html
+  (the same markup embedded in the home page inside an iframe). The animation is
+  driven by initDemo() in cardstitch/assets/cardstitch.js.
+{%- endcomment -%}
+<figure class="device" id="demo" aria-labelledby="demo-desc">
+  <div class="device__bar">
+    <span class="device__title">How it works</span>
+    <button class="device__toggle" type="button" data-demo-toggle hidden aria-pressed="false">
+      <span class="device__toggle-icon" aria-hidden="true"></span><span class="device__toggle-text">Pause</span>
+    </button>
+  </div>
+  <div class="device__screen">
+    <div class="stage" data-demo-stage>
+      <span class="stage__card stage__card--back" data-demo-back>{% include cs-card.html side="back" label="BACK" %}</span>
+      <span class="stage__card stage__card--front" data-demo-front>{% include cs-card.html side="front" label="FRONT" %}</span>
+      <canvas class="stage__fx" data-demo-fx aria-hidden="true"></canvas>
+    </div>
+    <p class="device__caption" aria-hidden="true"><span data-demo-caption>We stitch them</span><span class="caret"></span></p>
+    <p class="device__file" data-demo-file aria-hidden="true">
+      <span class="chip chip--ok">Saved</span><code>sparkbit_042_NM.jpg</code>
+    </p>
+  </div>
+  <figcaption id="demo-desc" class="visually-hidden">
+    Animation of the CardStitch tutorial: take a photo of the front of a card, flip it and take a photo of the back.
+    CardStitch crops both sides and stitches them into one image, saved as sparkbit_042_NM.jpg.
+  </figcaption>
+</figure>

@@ -1,0 +1,412 @@
+/* ==========================================================================
+   Home page — project grid (loaded from index.html only)
+   Each grid cell IS the project's own visual: a dark retro "console".
+   There is no white tile, no coloured top border, no inner title box and no
+   "Open →" link. Every cell is the same size so the grid stays even.
+   ========================================================================== */
+
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 1fr;                 /* every row ends up the same height */
+  align-items: stretch;
+  gap: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 16px 2rem;           /* 16px phone gutter */
+}
+
+.home-entry {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+  outline-offset: 3px;
+}
+a.home-entry { cursor: pointer; }
+a.home-entry:hover { text-decoration: none; }
+
+@media (max-width: 720px) {
+  .home-grid { grid-template-columns: 1fr; }
+}
+
+/* Keep the exact 16px home gutter on phones (body adds its own padding). */
+@media (max-width: 900px) {
+  body.home-page {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+/* ==========================================================================
+   The console — one shared dark panel for every project
+   ========================================================================== */
+.home-console {
+  --home-accent: var(--entry-accent, #38bdf8);
+
+  /* Pixel palette, mirrored from the CardStitch stylesheet so the reused
+     card artwork renders the same way here. */
+  --border: #213547;
+  --bevel: #799bbf;
+  --surface-2: #2e4a63;
+  --amber: #ffca3a;
+  --accent: #e63946;
+  --text-strong: #f4efe4;
+  --font-pixel: 'VT323', 'Fira Mono', Menlo, monospace;
+
+  position: relative;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+  padding: 0.7rem;
+  background: #181c23;
+  border: 2.5px solid var(--home-accent);
+  border-radius: 1rem;
+  box-shadow:
+    0 0 16px -4px var(--home-accent),
+    0 4px 16px rgba(15, 23, 42, 0.35);
+  overflow: hidden;
+  color: #e6fff0;
+  font-family: 'VT323', 'Fira Mono', Menlo, monospace;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+/* Subtle CRT scanlines. */
+.home-console::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.035) 0 1px,
+    transparent 1px 3px
+  );
+}
+.home-console > * { position: relative; z-index: 1; }
+
+a.home-entry:hover .home-console {
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 22px -3px var(--home-accent),
+    0 10px 22px rgba(15, 23, 42, 0.4);
+}
+
+.home-console__stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.65rem;
+  overflow: hidden;
+  background: #10141a;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.06), 0 0 16px -6px var(--home-accent);
+}
+
+.home-console__hint { flex: none; }
+
+/* Game entry: the score bar caps the console, so bar + console read as one
+   panel of exactly the same size as the other project consoles. */
+.home-game__bar {
+  flex: none;
+  font-size: 1.08em;                  /* fits DIST/QS/time/BEST on one line */
+  min-height: 1.9em;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  padding: 0.45rem 0.7rem;
+  background: #181c23;
+  border: 2.5px solid var(--entry-accent, #22ff55);
+  border-bottom: 0;
+  border-radius: 1rem 1rem 0 0;
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.07), 0 0 16px -4px var(--entry-accent, #22ff55);
+  max-width: 100%;
+}
+.home-console--game {
+  flex: 1 1 auto;
+  border-top: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+/* BEST badge: a single best score pinned to the right end of the one-line
+   score bar (which sits above the console, so it can never overlap the canvas). */
+.home-game__bar .home-game__best {
+  margin-left: auto;
+  margin-right: 0 !important;
+  flex: none;
+  white-space: nowrap;
+  font-size: 0.72em;              /* keep DIST/QS/time + BEST on one line */
+  letter-spacing: 0.02em;
+}
+
+/* Game canvas: scales with its cell, keeps its aspect ratio. */
+.home-console--game #dino-game {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  background: #0d1015;
+  border: 2px solid var(--home-accent);
+  border-radius: 0.4rem;
+  box-shadow: 0 0 12px -5px var(--home-accent);
+}
+
+/* Keep DIST · QS · time · BEST on a single line whenever the cell is narrower
+   than the full desktop column (tablet + phone). Labels and icon size are
+   dropped so the four items always fit. */
+@media (max-width: 1131px) {
+  .home-game__bar { font-size: 0.72em; gap: 0.15rem; }
+  .home-game__bar .score-item {
+    padding: 0 4px !important;
+    margin-right: 4px !important;
+    gap: 0.15em;
+  }
+  .home-game__bar .score-item:last-child { margin-right: 0 !important; }
+  .home-game__bar .score-icon { font-size: 1em; margin-right: 0; }
+  .home-game__bar .score-label { display: none; }
+  .home-game__bar .score-value { font-size: 0.95em; }
+  .home-game__bar .home-game__best { font-size: 1em; }
+}
+/* Tiny phones (≤380px): drop the icons too, keeping the four figures on one line. */
+@media (max-width: 380px) {
+  .home-game__bar .score-icon { display: none; }
+}
+
+/* ==========================================================================
+   Reused pixel card artwork (_includes/cs-card.html)
+   Ported from css/cardstitch.css (that sheet is NOT loaded on the home page).
+   ========================================================================== */
+.home-console .pcard {
+  --bv-hi: rgba(255, 255, 255, 0.45);
+  --bv-lo: rgba(33, 53, 71, 0.55);
+  --px-bevel: 3px;
+  position: relative;
+  display: block;
+  aspect-ratio: 84 / 118;
+  container-type: inline-size;
+  overflow: hidden;
+  box-shadow:
+    inset var(--px-bevel) var(--px-bevel) 0 0 var(--bv-hi),
+    inset calc(var(--px-bevel) * -1) calc(var(--px-bevel) * -1) 0 0 var(--bv-lo),
+    0 0 0 2px var(--border);
+}
+.home-console .pcard--front { background: var(--amber); }
+.home-console .pcard--back {
+  background-color: var(--surface-2);
+  display: grid;
+  place-items: center;
+}
+
+.home-console .pcard__face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4cqw;
+  padding: 7cqw;
+}
+.home-console .pcard__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1cqw;
+}
+.home-console .pcard__name {
+  font-family: var(--font-pixel);
+  font-size: 10.5cqw;
+  line-height: 1;
+  color: var(--border);
+}
+.home-console .pcard__gem {
+  width: 9cqw;
+  height: 9cqw;
+  background: var(--accent);
+  box-shadow: inset -2cqw -2cqw 0 #a51f2b, 0 0 0 1.5cqw var(--border);
+}
+.home-console .pcard__art {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 10 / 7.4;
+  background:
+    linear-gradient(var(--bevel) 0 0) bottom / 100% 26% no-repeat,
+    #a9c3dc;
+  box-shadow: 0 0 0 1.5cqw var(--border);
+}
+.home-console .pcard__art .sprite {
+  width: 52%;
+  height: auto;
+  image-rendering: pixelated;
+}
+.home-console .pcard__text {
+  display: grid;
+  gap: 3.4cqw;
+  padding: 3cqw 2cqw 0;
+}
+.home-console .pcard__text span {
+  height: 3.4cqw;
+  background: rgba(33, 53, 71, 0.55);
+}
+.home-console .pcard__text span:nth-child(2) { width: 82%; }
+.home-console .pcard__text span:nth-child(3) { width: 58%; }
+.home-console .pcard__num {
+  margin-top: auto;
+  align-self: flex-end;
+  font-family: var(--font-pixel);
+  font-size: 7cqw;
+  line-height: 1;
+  color: var(--border);
+}
+.home-console .pcard__pattern {
+  position: absolute;
+  inset: 7cqw;
+  background-color: #2a5a8a;
+  background-image:
+    linear-gradient(45deg, #23507d 25%, transparent 25%, transparent 75%, #23507d 75%),
+    linear-gradient(45deg, #23507d 25%, transparent 25%, transparent 75%, #23507d 75%);
+  background-size: 16cqw 16cqw;
+  background-position: 0 0, 8cqw 8cqw;
+  box-shadow: 0 0 0 1.5cqw var(--border);
+}
+.home-console .pcard__emblem {
+  --step: polygon(37.5% 0, 62.5% 0, 62.5% 12.5%, 75% 12.5%, 75% 25%, 87.5% 25%, 87.5% 37.5%, 100% 37.5%, 100% 62.5%, 87.5% 62.5%, 87.5% 75%, 75% 75%, 75% 87.5%, 62.5% 87.5%, 62.5% 100%, 37.5% 100%, 37.5% 87.5%, 25% 87.5%, 25% 75%, 12.5% 75%, 12.5% 62.5%, 0 62.5%, 0 37.5%, 12.5% 37.5%, 12.5% 25%, 25% 25%, 25% 12.5%, 37.5% 12.5%);
+  position: relative;
+  width: 46cqw;
+  height: 46cqw;
+  background: var(--border);
+  clip-path: var(--step);
+}
+.home-console .pcard__emblem::before,
+.home-console .pcard__emblem::after {
+  content: '';
+  position: absolute;
+  clip-path: var(--step);
+}
+.home-console .pcard__emblem::before {
+  inset: 9%;
+  background: linear-gradient(135deg, var(--amber) 50%, #e09a1a 50%);
+}
+.home-console .pcard__emblem::after { inset: 34%; background: var(--border); }
+.home-console .pcard__label {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 4cqw 6cqw 5cqw;
+  font-family: var(--font-pixel);
+  font-size: 15cqw;
+  line-height: 1;
+  color: var(--text-strong);
+  background: rgba(33, 53, 71, 0.92);
+  box-shadow: 0 0 0 1.5cqw var(--border);
+  text-shadow: 1cqw 1cqw 0 var(--border);
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   CardStitch console — the landing page's real "How it works" demo, embedded
+   in an iframe so its global stylesheet (css/cardstitch.css) never touches the
+   home page. The frame is sized to the device's natural height at each cell
+   width (never smaller, so the device is never cut off).
+   ========================================================================== */
+.home-console__stage--cs {
+  display: block;
+  position: relative;
+  padding: 0;
+  background: #10141a;
+  aspect-ratio: 700 / 292;       /* same as the game canvas, so the cell matches the game */
+}
+.home-console__frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  pointer-events: none;          /* clicks fall through to the entry's link */
+}
+
+/* ==========================================================================
+   Poster console — a poster assembles itself
+   ========================================================================== */
+.pos { flex-direction: column; aspect-ratio: 700 / 292; }
+.pos-poster {
+  position: relative;
+  height: 84%;
+  max-width: 70%;
+  aspect-ratio: 3 / 4;
+  display: flex;
+  flex-direction: column;
+  background: #0d1015;
+  border: 2px solid var(--home-accent);
+  border-radius: 4px;
+  box-shadow: 0 0 14px -5px var(--home-accent);
+  overflow: hidden;
+}
+.pos-blocks {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 3px;
+  padding: 8px;
+}
+.pos-blocks i {
+  border-radius: 1px;
+  background: var(--home-accent);
+  opacity: 0;
+  transform: scale(0.4);
+  animation: posFill 5s linear infinite;
+  animation-delay: calc(var(--i, 0) * 0.13s);
+}
+.pos-title {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2em 0;
+  background: rgba(0, 0, 0, 0.4);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+.pos-title span {
+  width: 6ch;
+  overflow: hidden;
+  white-space: nowrap;
+  font-family: 'VT323', 'Fira Mono', Menlo, monospace;
+  font-size: clamp(0.7rem, 2.4vw, 1rem);
+  letter-spacing: 0.15em;
+  color: #ffffff;
+  animation: posType 5s steps(6, end) infinite;
+}
+
+@keyframes posFill {
+  0% { opacity: 0; transform: scale(0.4); }
+  6% { opacity: 1; transform: scale(1); }
+  70% { opacity: 1; transform: scale(1); }
+  82% { opacity: 0; transform: scale(0.4); }
+  100% { opacity: 0; transform: scale(0.4); }
+}
+@keyframes posType {
+  0%, 12% { width: 0; }
+  52%, 90% { width: 6ch; }
+  100% { width: 0; }
+}
+
+/* ==========================================================================
+   Reduced motion: show the finished frames, no looping
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .pos-blocks i,
+  .pos-title span {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .pos-title span { width: auto !important; }
+  .home-console { transition: none; }
+}

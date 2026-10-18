@@ -1,12 +1,12 @@
 // Clicks, hover labels, speech bubbles, particles and the hidden secrets of the scene.
 import * as THREE from '../vendor/three-0.170.0.module.min.js';
-import { WATER_Y, makePerson, makeDuck, rng } from './world.js';
+import { WATER_Y, makeDuck, makeBoat, rng } from './world.js';
 
 export const SECRETS = {
   daynight: 'Day and night',
-  hello: 'A friendly hello',
   cat: 'The promenade cat',
-  bench: 'A bench for two',
+  hotel: 'Hotel Osijek says hi',
+  boat: 'A boat on the Drava',
   birds: 'Birds in the tree',
   ducklings: 'The duck family',
   love: 'Love on the bridge',
@@ -15,13 +15,13 @@ export const SECRETS = {
 };
 
 const LABELS = {
-  tree: 'A tree on the promenade', lamp: 'Street lamp', bench: 'Bench', bridge: 'Pješački most, the footbridge (1981)',
-  cathedral: 'Co-cathedral of St Peter and Paul', person: 'Someone out for a walk', duck: 'Duck', sun: 'The sun',
-  moon: 'The moon', cat: 'The promenade cat', bush: 'Flower box',
+  tree: 'A tree in the park', lamp: 'Street lamp', bench: 'Bench', bridge: 'Pješački most, the footbridge (1981)',
+  cathedral: 'Co-cathedral of St Peter and Paul', duck: 'Duck', sun: 'The sun',
+  moon: 'The moon', cat: 'The promenade cat', bush: 'Flower box', hotel: 'Hotel Osijek', water: 'The Drava',
 };
 
-const GREETINGS_DAY = ['Bok!', 'Lijep dan!', 'Hi there!', 'Dobar dan!', 'Hello from Osijek!'];
-const GREETINGS_NIGHT = ['Laku noć!', 'Lovely night.', 'Bok!', 'Look at the stars.'];
+// Hotel window patterns (7 x 6 heart, drawn top row first).
+const HEART_ROWS = ['.XX.XX.', 'XXXXXXX', 'XXXXXXX', '.XXXXX.', '..XXX..', '...X...'];
 
 function pixelTexture(rows, palette) {
   const h = rows.length;
@@ -114,7 +114,7 @@ export class Interactions {
     }
 
     // Generous invisible hit boxes (layer 3 is never rendered) for small things.
-    const HIT = { bench: [0.9, 1.3, 2.4, 0.5], cat: [0.9, 0.9, 1.3, 0.3], duck: [1.5, 1.1, 1.4, 0.3], person: [0.9, 2.0, 0.9, 1.0], lamp: [1.0, 6.8, 1.0, 3.3], bush: [3.8, 1.8, 1.8, 0.7] };
+    const HIT = { bench: [0.9, 1.3, 2.4, 0.5], cat: [0.9, 0.9, 1.3, 0.3], duck: [1.5, 1.1, 1.4, 0.3], lamp: [1.0, 6.8, 1.0, 3.3], bush: [3.8, 1.8, 1.8, 0.7] };
     for (const c of world.clickables) {
       const h = HIT[c.userData.kind];
       if (!h) continue;
@@ -163,7 +163,8 @@ export class Interactions {
     const rect = this.canvas.getBoundingClientRect();
     const ndc = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
     this.ray.setFromCamera(ndc, this.camera);
-    const hits = this.ray.intersectObjects(this.world.clickables.filter((c) => c.visible), true);
+    // Glow sprites are decoration (and invisible by day), so they never catch a click.
+    const hits = this.ray.intersectObjects(this.world.clickables.filter((c) => c.visible), true).filter((h) => !h.object.isSprite);
     // The sun and moon sit far behind the bridge's hit volume, so they win when both are hit.
     const sky = hits.find((h) => h.object === this.world.sunDisc || h.object === this.world.moonDisc);
     if (sky) return { obj: sky.object, point: sky.point };
@@ -174,8 +175,12 @@ export class Interactions {
       while (o && !this.world.clickables.includes(o)) o = o.parent;
       return o;
     };
-    const isHelper = (h) => h.object.layers.mask === 1 << 3;
-    const best = hits.find((h) => !isHelper(h) && owner(h)) || hits.find((h) => owner(h));
+    // Helpers: invisible hit boxes and 1px cables/points, which would otherwise steal clicks.
+    const isHelper = (h) => h.object.layers.mask === 1 << 3 || h.object.isLine || h.object.isPoints;
+    const isWater = (h) => h.object === this.world.water;
+    const best = hits.find((h) => !isHelper(h) && !isWater(h) && owner(h))
+      || hits.find((h) => isHelper(h) && owner(h))
+      || hits.find((h) => owner(h));
     return best ? { obj: owner(best), point: best.point } : null;
   }
 
@@ -305,20 +310,31 @@ export class Interactions {
   }
 
   click_bench(bench) {
-    if (this.couple) {
-      this.couple.forEach((p) => this.scene.remove(p));
-      this.couple = null;
-      return;
+    const lines = ['Sit for a while.', 'Best view in town.', 'Free seat by the Drava.'];
+    this.bubble(lines[(this.counts.bench - 1) % lines.length], bench.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 1800);
+  }
+
+  click_hotel() {
+    const w = this.world.hotelWindows;
+    w.userData.mode = (w.userData.mode || 0) % 3 + 1;   // 1 all on, 2 chase, 3 heart
+    w.userData.modeT = 0;
+    if (w.userData.mode === 3) {
+      this.bubble('♥', this.world.hotel.localToWorld(new THREE.Vector3(0, 80, 9)), 2400);
+      this.discover('hotel');
     }
-    this.couple = [makePerson(this.r, { shirt: '#e86fa5' }), makePerson(this.r, { shirt: '#5bc0de' })];
-    this.couple.forEach((p, i) => {
-      p.position.copy(bench.position).add(new THREE.Vector3(0.05, -0.32, i ? 0.35 : -0.35));
-      p.rotation.y = -Math.PI / 2;
-      p.userData.kind = 'person';
-      this.scene.add(p);
-    });
-    this.sprite(HEART, bench.position.clone().add(new THREE.Vector3(0.2, 2.1, 0)), 0.5, new THREE.Vector3(0, 0.5, 0), 3);
-    this.discover('bench');
+  }
+
+  click_water(water, point) {
+    for (let i = 0; i < 18; i++) {
+      const a = (i / 18) * Math.PI * 2;
+      this.small.spawn(point.clone().setY(WATER_Y + 0.05), new THREE.Vector3(Math.cos(a) * 2.2, 0, Math.sin(a) * 2.2), '#e8f4ff', 1.1, 0, 1.5);
+    }
+    if (this.counts.water >= 3 && !this.boat) {
+      this.boat = makeBoat();
+      this.boat.position.set(70 + Math.random() * 30, WATER_Y, -330);
+      this.scene.add(this.boat);
+      this.discover('boat');
+    }
   }
 
   click_cathedral(cat) {
@@ -330,14 +346,6 @@ export class Interactions {
         new THREE.Vector3(10 + Math.random() * 10, 6 + Math.random() * 6, 6 + Math.random() * 10), 8, [BIRD_A, BIRD_B]);
     }
     this.discover('bells');
-  }
-
-  click_person(p) {
-    p.userData.pause = 3;
-    p.rotation.y = Math.atan2(this.camera.position.x - p.position.x, this.camera.position.z - p.position.z);
-    const list = this.state.nightTarget > 0.5 ? GREETINGS_NIGHT : GREETINGS_DAY;
-    this.bubble(list[Math.floor(Math.random() * list.length)], p.position.clone().add(new THREE.Vector3(0, 2.1, 0)));
-    this.discover('hello');
   }
 
   click_cat(cat) {
@@ -366,6 +374,31 @@ export class Interactions {
     }
     this.after(7.5, () => { this.fireworksRunning = false; });
     this.bubble('★ Osijek says thank you ★', new THREE.Vector3(80, 50, -150), 5000);
+  }
+
+  updateHotel(dt, t) {
+    const w = this.world.hotelWindows;
+    const { cols, rows, base } = w.userData;
+    const night = Math.max(0, (this.state.night - 0.35) / 0.65);
+    const mode = w.userData.mode || 0;
+    w.userData.modeT = (w.userData.modeT || 0) + dt;
+    if (mode && w.userData.modeT > 9) w.userData.mode = 0;   // patterns fade back after a while
+    const col = w.geometry.attributes.color;
+    for (let row = 0; row < rows; row++) {
+      for (let c = 0; c < cols; c++) {
+        const i = row * cols + c;
+        let on = base[i] ? night : 0;
+        if (mode === 1) on = 1;
+        if (mode === 2) on = (Math.floor(w.userData.modeT * 10) - row) % 6 === 0 ? 1 : 0.15 * night;
+        if (mode === 3) {
+          const hr = 17 - row;   // heart sits on floors 12-17, top row first
+          on = hr >= 0 && hr < HEART_ROWS.length && HEART_ROWS[hr][c] === 'X' ? 1 : 0.08 * night;
+        }
+        const warm = mode === 3 ? [1, 0.35, 0.45] : [1, 0.82, 0.45];
+        col.setXYZ(i, warm[0] * on, warm[1] * on, warm[2] * on);
+      }
+    }
+    col.needsUpdate = true;
   }
 
   /* ---------- per-frame ---------- */
@@ -417,6 +450,13 @@ export class Interactions {
         d.position.set(p.x, WATER_Y + Math.sin(t * 3 + i) * 0.02, p.z);
       });
     }
+    this.updateHotel(dt, t);
+    if (this.boat) {
+      this.boat.position.z += 9 * dt;
+      this.boat.position.y = WATER_Y + Math.sin(t * 1.6) * 0.08;
+      if (this.boat.position.z > 40) { this.scene.remove(this.boat); this.boat = null; this.counts.water = 0; }
+    }
+
     const cat = this.world.cat;
     if (cat.userData.wagT != null) {
       cat.userData.wagT += dt;

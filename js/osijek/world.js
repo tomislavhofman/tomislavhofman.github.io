@@ -3,9 +3,9 @@
 // cathedral spire. Units are metres; +x is towards the river, -z is upstream.
 import * as THREE from '../vendor/three-0.170.0.module.min.js';
 
-export const WATER_Y = -1.5;
+export const WATER_Y = -2.0;
 const BRIDGE_Z = -140;
-const PYLON_A = 10;     // city-side pylon x
+const PYLON_A = 13.6;   // city-side pylon x, on the lower walkway
 const PYLON_B = 172;    // far-side pylon x
 const PYLON_H = 35;
 const LEG = 1.8;        // half the distance between a pylon's two legs
@@ -348,13 +348,24 @@ function makeFlowerBox(r) {
   return g;
 }
 
+// Long backless wooden bench, set along the promenade.
 function makeBench() {
   const g = new THREE.Group();
-  const wood = '#a8714a';
-  const metal = '#3a3f44';
-  box(0.5, 0.08, 1.9, wood, 0, 0.46, 0, g);
-  box(0.08, 0.42, 1.9, wood, -0.24, 0.72, 0, g).rotation.z = 0.12;
-  for (const z of [-0.8, 0.8]) box(0.45, 0.46, 0.08, metal, 0, 0.23, z, g);
+  box(0.48, 0.08, 2.0, '#9a6640', 0, 0.45, 0, g);
+  box(0.48, 0.02, 2.0, '#b07a4c', 0, 0.5, 0, g);
+  for (const z of [-0.75, 0.75]) box(0.4, 0.42, 0.07, '#3a3f44', 0, 0.21, z, g);
+  return g;
+}
+
+// A small white river cruiser.
+export function makeBoat() {
+  const g = new THREE.Group();
+  box(3.2, 1.2, 11, '#f4f4f0', 0, 0.3, 0, g);
+  box(3.25, 0.3, 11.05, '#c8423a', 0, 0.55, 0, g);
+  box(2.4, 1.4, 5.5, '#e9edf0', 0, 1.6, 0.8, g);
+  box(2.45, 0.45, 5.4, '#3d5a73', 0, 1.75, 0.8, g);
+  box(0.06, 1.2, 0.06, '#666666', 0, 2.9, 3.2, g);
+  box(0.05, 0.4, 0.7, '#2f6fb3', 0, 3.3, 3.55, g);
   return g;
 }
 
@@ -482,36 +493,35 @@ export function buildWorld(scene) {
     ground.add(m);
     return m;
   };
-  plane(-2500, -13, 80, -2500, 0, null, grassTexture(r, '#6fa44a', 1240, 1290));   // park and beyond
-  plane(-13, -4.6, 80, -2500, 0.02, null, grassTexture(r, '#7fb552', 5, 1290));     // grass strip
-  plane(-4.6, 3.2, 80, -2500, 0.04, null, asphaltTexture(r, 5, 1290));             // asphalt path
-  plane(3.2, 7.3, 80, -2500, 0.045, null, pavingTexture(r, 3, 1720));              // paved strip by the river
-  const yellow = new THREE.Mesh(new THREE.PlaneGeometry(0.14, 2580), toon('#e9c23b'));
-  yellow.rotation.x = -Math.PI / 2;
-  yellow.position.set(-2.1, 0.05, -1210);
-  ground.add(yellow);
-  box(0.2, 0.12, 2580, '#cfc8bb', 3.2, 0.06, -1210, ground);                       // kerb
-  box(0.5, 0.55, 3000, '#b7ab99', 7.55, 0.27, -1400, ground);  // low river wall
-  // Stone embankment sloping down to the water.
-  const slope = new THREE.Mesh(new THREE.PlaneGeometry(Math.hypot(4.4, -WATER_Y), 3000), toon('#9a917f'));
-  slope.rotation.x = -Math.PI / 2;
-  slope.rotation.y = Math.atan2(-WATER_Y, 4.4);
-  slope.position.set(7.8 + 2.2, WATER_Y / 2, -1400);
-  ground.add(slope);
-  const farSlope = new THREE.Mesh(new THREE.PlaneGeometry(Math.hypot(6, 3.1), 3000), toon('#8a9a62'));
+  // Cross-section from the park to the river: blue running track, cobbled strip with flower
+  // boxes and benches, asphalt path, river-side cobbled strip, then the embankment.
+  plane(-2500, -15.5, 80, -2500, 0, null, grassTexture(r, '#6fa44a', 1240, 1290));   // park and beyond
+  plane(-15.5, -13, 80, -2500, 0.03, '#3d84c8');                                   // blue running track
+  plane(-13, -12.2, 80, -2500, 0.02, null, grassTexture(r, '#7fb552', 1, 1290));   // grass edge
+  plane(-12.2, -4.6, 80, -2500, 0.045, null, pavingTexture(r, 5, 1720));          // cobbles, city side
+  plane(-4.6, 3.4, 80, -2500, 0.04, null, asphaltTexture(r, 5, 1290));            // asphalt path
+  plane(3.4, 9.2, 80, -2500, 0.045, null, pavingTexture(r, 4, 1720));             // cobbles, river side
+  const line = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 2580), toon('#f2f2ee'));
+  line.rotation.x = -Math.PI / 2;
+  line.position.set(-1.0, 0.05, -1210);
+  ground.add(line);
+  for (const kx of [-4.6, 3.4]) box(0.2, 0.1, 2580, '#cfc8bb', kx, 0.05, -1210, ground);   // kerbs
+  const slopeStrip = (x0, y0, x1, y1, color) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(Math.hypot(x1 - x0, y1 - y0), 3000), toon(color));
+    m.rotation.x = -Math.PI / 2;
+    m.rotation.y = Math.atan2(y0 - y1, x1 - x0);
+    m.position.set((x0 + x1) / 2, (y0 + y1) / 2, -1400);
+    ground.add(m);
+  };
+  slopeStrip(9.2, 0.045, 12.6, -1.1, '#6f6b66');        // dark stepped revetment
+  plane(12.6, 14.6, 80, -2500, -1.1, '#cbc5ba');        // lower walkway
+  slopeStrip(14.6, -1.1, 16.8, WATER_Y - 0.1, '#968a76'); // rocks down to the water
+  const farSlope = new THREE.Mesh(new THREE.PlaneGeometry(Math.hypot(6, 0.5 - WATER_Y), 3000), toon('#8a9a62'));
   farSlope.rotation.x = -Math.PI / 2;
-  farSlope.rotation.y = -Math.atan2(3.1, 6);
-  farSlope.position.set(175, WATER_Y / 2 + 0.25, -1400);
+  farSlope.rotation.y = -Math.atan2(0.5 - WATER_Y, 6);
+  farSlope.position.set(175, (WATER_Y + 0.5) / 2, -1400);
   ground.add(farSlope);
   plane(178, 2500, 80, -2500, 0.5, null, grassTexture(r, '#79ab4f', 1160, 1290));
-
-  // Railing on the wall: posts + top rail, drawn as 1px lines.
-  const railPts = [];
-  for (let z = 60; z > -600; z -= 2.5) railPts.push(7.55, 0.55, z, 7.55, 1.05, z);
-  railPts.push(7.55, 1.05, 60, 7.55, 1.05, -600);
-  const rail = new THREE.LineSegments(new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(railPts, 3)),
-    new THREE.LineBasicMaterial({ color: 0x3d4a48, depthWrite: false }));
-  scene.add(onLayer1(rail));
 
   /* water */
   const water = new THREE.Mesh(new THREE.PlaneGeometry(200, 3000), new THREE.ShaderMaterial({
@@ -532,13 +542,13 @@ export function buildWorld(scene) {
   const greens = ['#4f8f3a', '#5c9b3f', '#447f37', '#6aa548', '#3f7a3f'];
   for (let z = 22; z > -260; z -= 8 + r() * 4) {
     const t = makeTree(r, 1.15 + r() * 0.35, greens);
-    t.position.set(-10 + (r() - 0.5) * 1.5, 0, z);
+    t.position.set(-17.5 + (r() - 0.5) * 1.5, 0, z);
     scene.add(t);
     W.trees.push(t);
   }
   for (let i = 0; i < 70; i++) {
     const t = makeTree(r, 1.1 + r() * 0.6, greens);
-    t.position.set(-16 - r() * 55, 0, 25 - r() * 230);
+    t.position.set(-23 - r() * 55, 0, 25 - r() * 230);
     scene.add(t);
     W.trees.push(t);
   }
@@ -564,12 +574,18 @@ export function buildWorld(scene) {
   });
   scene.add(canopies, trunks);
 
-  /* lamps */
+  /* the promenade rows: flower box, bench, lamp, bench on the river side; flower box and
+     benches on the city side. Near things are separate (clickable), far ones are baked. */
   W.glowTex = glowTexture();
-  for (let i = 0; i < 22; i++) {
-    const z = -12 - i * 20;
+  W.flowerBoxes = [];
+  W.benches = [];
+  const farProps = new THREE.Group();
+  scene.add(farProps);
+  W.farProps = farProps;
+  const NEAR = -45;
+  const addLamp = (z) => {
     const lamp = makeLamp();
-    lamp.position.set(3.6, 0, z);
+    lamp.position.set(6.0, 0.045, z);
     scene.add(lamp);
     const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: W.glowTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0, fog: false }));
     glow.scale.set(1.7, 1.7, 1);
@@ -578,6 +594,7 @@ export function buildWorld(scene) {
     lamp.userData.glow = glow;
     lamp.userData.on = false;
     lamp.userData.kind = 'lamp';
+    const i = W.lamps.length;
     if (i < 10) {
       const light = new THREE.PointLight(0xffc06a, 0, 18, 1.5);
       light.position.set(-0.6, 5.5, 0);
@@ -586,37 +603,42 @@ export function buildWorld(scene) {
     }
     W.lamps.push(lamp);
     if (i < 8) W.clickables.push(lamp);
-  }
-
-  /* flower boxes */
-  W.flowerBoxes = [];
-  const farBoxes = new THREE.Group();
-  scene.add(farBoxes);
-  for (let z = 3; z > -520; z -= 5.4) {
+  };
+  const addBox = (x, z) => {
     const fb = makeFlowerBox(r);
-    fb.position.set(5.4, 0, z);
-    if (z > -45) {
+    fb.position.set(x, 0.045, z);
+    fb.rotation.y = Math.PI / 2;
+    if (z > NEAR) {
       fb.userData.kind = 'bush';
       scene.add(fb);
       W.flowerBoxes.push(fb);
     } else {
-      farBoxes.add(fb);
       fb.userData.bushes.userData.keep = false;
+      farProps.add(fb);
     }
-  }
-  W.clickables.push(...W.flowerBoxes);
-  W.farBoxes = farBoxes;
-
-  /* benches */
-  W.benches = [];
-  for (const z of [-21, -97]) {
+  };
+  const addBench = (x, z) => {
     const b = makeBench();
-    b.position.set(-4.2, 0.02, z);
-    scene.add(b);
-    W.benches.push(b);
+    b.position.set(x, 0.045, z);
+    if (z > NEAR) {
+      b.userData.kind = 'bench';
+      scene.add(b);
+      W.benches.push(b);
+    } else {
+      farProps.add(b);
+    }
+  };
+  for (let z0 = -3; z0 > -430; z0 -= 11.8) {
+    addBox(6.0, z0);
+    addBench(6.0, z0 - 3.6);
+    if (z0 - 5.9 > -290) addLamp(z0 - 5.9);
+    addBench(6.0, z0 - 8.2);
+    const z1 = z0 - 5.9;                       // city side, offset by half a period
+    addBox(-8.4, z1);
+    addBench(-8.4, z1 - 3.6);
+    addBench(-8.4, z1 - 8.2);
   }
-  W.benches[0].userData.kind = 'bench';
-  W.clickables.push(W.benches[0]);
+  W.clickables.push(...W.flowerBoxes, ...W.benches.slice(0, 4));
 
   /* bridge */
   W.bridge = buildBridge(scene);
@@ -636,20 +658,34 @@ export function buildWorld(scene) {
   }
   // Riverside blocks near the bridge, and the blue glass hotel tower.
   for (let i = 0; i < 6; i++) makeBuilding(r, -34 - i * 2, -190 - i * 26, 12, 18, 14 + r() * 8, walls[i % walls.length], roofs[i % roofs.length], city, windows);
-  // Hotel Osijek: the glass tower at the end of the promenade, with its white fins and mast.
+  // Hotel Osijek: the glass tower at the end of the promenade, with white fins and a mast.
+  // Its windows are a 7 x 22 grid of lights that can play patterns when clicked.
   const hotel = new THREE.Group();
   box(20, 64, 17, '#79a5d2', 0, 32, 0, hotel);
-  for (const [fx, fz] of [[-10.2, -8.7], [10.2, -8.7], [-10.2, 8.7], [10.2, 8.7], [0, 8.7]]) box(1.3, 66, 1.3, '#eef0f2', fx, 33, fz, hotel);
+  for (const [fx, fz] of [[-10.2, -8.7], [10.2, -8.7], [-10.2, 8.7], [10.2, 8.7]]) box(1.3, 66, 1.3, '#eef0f2', fx, 33, fz, hotel);
   box(15, 4, 12, '#eef0f2', 0, 66, 0, hotel);
   box(6, 7, 5, '#dfe3e6', 0, 71, 0, hotel);
   const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.4, 16, 5), toon('#d4d8dc'));
   mast.position.set(0, 82, 0);
   hotel.add(mast);
   box(26, 8, 22, '#e9e4da', 4, 4, 2, hotel);
+  const winPos = [];
+  for (let row = 0; row < 22; row++) for (let col = 0; col < 7; col++) winPos.push(-8.1 + col * 2.7, 10 + row * 2.4, 8.8);
+  const winGeo2 = new THREE.BufferGeometry();
+  winGeo2.setAttribute('position', new THREE.Float32BufferAttribute(winPos, 3));
+  winGeo2.setAttribute('color', new THREE.BufferAttribute(new Float32Array(winPos.length), 3));
+  const hotelWindows = new THREE.Points(winGeo2, new THREE.PointsMaterial({ size: 1, sizeAttenuation: false, vertexColors: true, transparent: true, depthWrite: false, fog: false, blending: THREE.AdditiveBlending }));
+  hotelWindows.userData.cols = 7;
+  hotelWindows.userData.rows = 22;
+  hotelWindows.userData.base = Array.from({ length: 154 }, () => r() < 0.55);
+  hotel.add(onLayer1(hotelWindows));
   hotel.position.set(-16, 0, -350);
   hotel.rotation.y = 0.12;
-  city.add(hotel);
-  for (let f = 1; f < 18; f++) for (let c = 0; c < 5; c++) if (r() < 0.55) windows.push(new THREE.Vector3(-24 + c * 3.6, 3 + f * 3.4, -340.6));
+  hotel.userData.kind = 'hotel';
+  scene.add(hotel);
+  W.hotel = hotel;
+  W.hotelWindows = hotelWindows;
+  W.clickables.push(hotel);
 
   // Co-cathedral of St Peter and Paul: red brick nave, 90 m tower and spire.
   const cat = new THREE.Group();
@@ -699,23 +735,7 @@ export function buildWorld(scene) {
     W.clouds.push(c);
   }
 
-  /* people */
-  const walkers = [
-    { x: 1.4, z: -14, dir: 1, speed: 1.2 }, { x: -1.0, z: -45, dir: -1, speed: 1.0 },
-    { x: -3.2, z: -70, dir: 1, speed: 1.3 }, { x: 2.2, z: -110, dir: -1, speed: 1.1 },
-    { x: 0.4, z: -160, dir: 1, speed: 1.0 }, { x: -2.6, z: -25, dir: -1, speed: 0.9 },
-  ];
-  for (const w of walkers) {
-    const p = makePerson(r);
-    p.position.set(w.x, 0.04, w.z);
-    p.userData.walk = w;
-    p.userData.kind = 'person';
-    scene.add(p);
-    W.people.push(p);
-  }
-  W.clickables.push(...W.people);
-
-  /* the cat on the river wall */
+  /* the promenade cat, on a bench */
   const cat2 = new THREE.Group();
   const fur = '#e08a3c';
   const catBody = new THREE.Mesh(new THREE.SphereGeometry(0.18, 8, 6), toon(fur));
@@ -735,8 +755,8 @@ export function buildWorld(scene) {
   catTail.rotation.x = -0.6;
   catTail.userData.keep = true;
   cat2.add(catTail);
-  cat2.position.set(4.8, 0.43, -6.4);   // on the rim of a flower box, by the path
-  cat2.rotation.y = -0.9;
+  cat2.position.copy(W.benches.find((b) => b.position.x > 0 && b.position.z < -10).position).add(new THREE.Vector3(0, 0.46, 0.3));
+  cat2.rotation.y = 0.7;
   cat2.userData.kind = 'cat';
   cat2.userData.tail = catTail;
   scene.add(cat2);
@@ -744,9 +764,9 @@ export function buildWorld(scene) {
   W.clickables.push(cat2);
 
   /* ducks */
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 2; i++) {
     const d = makeDuck(r, i % 2 ? 'hen' : 'mallard');
-    d.position.set(20 + r() * 8, WATER_Y, -48 - i * 6 - r() * 3);
+    d.position.set(22 + i * 2.5, WATER_Y, -30 - i * 3);
     d.rotation.y = r() * Math.PI * 2;
     d.userData.kind = 'duck';
     scene.add(d);
@@ -754,14 +774,18 @@ export function buildWorld(scene) {
   }
   W.clickables.push(...W.ducks);
 
+  /* the river itself can be clicked */
+  W.water.userData.kind = 'water';
+  W.clickables.push(W.water);
+
   /* bake static groups into single meshes */
   for (const t of W.trees) { bake(t.userData.canopy); bake(t); }
   for (const l of W.lamps) bake(l, '#5a5c60');
   for (const b of W.benches) bake(b);
-  for (const p of W.people) bake(p);
   for (const d of W.ducks) bake(d);
   for (const fb of W.flowerBoxes) { bake(fb.userData.bushes); bake(fb); }
-  bake(W.farBoxes);
+  bake(farProps);
+  bake(hotel);
   bake(cat2);
   bake(city);
   bake(cat);
@@ -841,7 +865,7 @@ function buildBridge(scene) {
   g.add(onLayer1(lights));
 
   // Invisible hit volume (layer 3 is never rendered) so the thin cables are easy to click.
-  const hit = new THREE.Mesh(new THREE.BoxGeometry(PYLON_B - PYLON_A + 30, PYLON_H, 8), new THREE.MeshBasicMaterial());
+  const hit = new THREE.Mesh(new THREE.BoxGeometry(PYLON_B - PYLON_A + 4, PYLON_H, 8), new THREE.MeshBasicMaterial());
   hit.position.set((PYLON_A + PYLON_B) / 2, PYLON_H / 2, BRIDGE_Z);
   hit.layers.set(3);
   g.add(hit);

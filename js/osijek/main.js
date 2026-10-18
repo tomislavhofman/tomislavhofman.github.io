@@ -55,16 +55,16 @@ export function start(container, opts = {}) {
     canvas.style.height = h * ps + 'px';
     const aspect = w / h;
     camera.aspect = aspect;
-    // Pedestrian on the promenade path, looking upstream along the Drava towards the footbridge.
+    // Standing on the river-side cobbles, looking upstream along the Drava towards the footbridge.
     if (aspect >= 1) {
       camera.fov = aspect > 2 ? 40 : 47;
-      camera.position.set(0.4, 1.8, 6);
-      camera.lookAt(38, 11, -140);
+      camera.position.set(8.1, 1.7, 6);
+      camera.lookAt(40, 9, -140);
     } else {
       // Portrait: keep the promenade, the cathedral and the city-side pylon in view.
       camera.fov = 64;
-      camera.position.set(0.8, 1.7, 9);
-      camera.lookAt(12, 13, -140);
+      camera.position.set(8.4, 1.7, 9);
+      camera.lookAt(13, 12, -140);
     }
     camera.updateProjectionMatrix();
     render();
@@ -147,22 +147,13 @@ export function start(container, opts = {}) {
       tr.userData.canopy.rotation.z = s;
       tr.userData.canopy.rotation.x = s * 0.5;
     }
-    for (const p of world.people) {
-      const w = p.userData.walk;
-      if (p.userData.pause > 0) { p.userData.pause -= dt; continue; }
-      p.position.z -= w.dir * w.speed * dt;
-      if (p.position.z < -260) w.dir = -1;
-      if (p.position.z > 12) w.dir = 1;
-      p.rotation.y = w.dir > 0 ? 0 : Math.PI;
-      p.position.y = 0.04 + Math.abs(Math.sin(t * 6 * w.speed + w.x)) * 0.05;
-    }
     for (const d of world.ducks) {
       d.userData.phase += dt * 0.15;
       const ph = d.userData.phase;
       d.position.x += Math.cos(ph) * dt * 0.35;
       d.position.z += Math.sin(ph * 0.7) * dt * 0.35;
-      d.position.x = Math.min(34, Math.max(17, d.position.x));
-      d.position.z = Math.min(-40, Math.max(-85, d.position.z));
+      d.position.x = Math.min(32, Math.max(19, d.position.x));
+      d.position.z = Math.min(-18, Math.max(-60, d.position.z));
       d.rotation.y = -Math.atan2(Math.sin(ph * 0.7), Math.cos(ph));
       d.position.y = WATER_Y + Math.sin(t * 2 + ph * 3) * 0.03 + (d.userData.dive || 0);
     }

@@ -11,6 +11,8 @@
 #   accent    accent colour for the console frame and glow
 #   name      project name shown under the console
 #   desc      one-line description shown under the name
+#   status    short status chip (e.g. "Live", "In beta", "Just for fun")
+#   cta       link text for the project button (omit for entries without a url)
 - id: invoicesheet
   url: "/invoicesheet/"
   external: false
@@ -18,6 +20,8 @@
   label: "InvoiceSheet · open ▸"
   name: "InvoiceSheet"
   desc: "Turns piles of e-invoices (XRechnung, Peppol, ZUGFeRD, Factur-X, eRačun) into one Excel sheet. Runs in the browser; nothing is uploaded."
+  status: "Live"
+  cta: "Open InvoiceSheet"
 
 - id: cardstitch
   url: "/cardstitch/"
@@ -26,12 +30,15 @@
   label: "CardStitch · open ▸"
   name: "CardStitch"
   desc: "Android app for trading card sellers: photographs both sides of a card and stitches them into one listing-ready image."
+  status: "In beta"
+  cta: "See CardStitch"
 
 - id: game
   accent: "#22ff55"
   label: "Fly · tap to play"
   name: "Fly"
   desc: "A tiny browser game, just for fun. Press space or tap to fly."
+  status: "Just for fun"
 
 # Poster is hidden while the Play listing is unavailable. To bring it back,
 # restore this entry (its partial _includes/home-poster.html and styles in

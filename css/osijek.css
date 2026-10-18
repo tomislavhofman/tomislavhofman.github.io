@@ -120,13 +120,13 @@ html.oh-night body.oh header.oh-hero { background: #0a1530; }
 }
 .oh-ui > *, .oh-top > * { pointer-events: auto; }
 .oh-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; pointer-events: none; }
-.oh-sign { max-width: 30rem; }
+.oh-sign { max-width: 21rem; padding: 10px 14px 11px; }
 .oh-sign h1 {
-  font: 700 clamp(1.9rem, 3.6vw, 3rem)/1 var(--oh-pixel);
+  font: 700 clamp(1.5rem, 2.5vw, 2.1rem)/1 var(--oh-pixel);
   color: var(--oh-ink);
-  margin-bottom: 8px;
+  margin-bottom: 5px;
 }
-.oh-sign p { margin: 0; font-size: 1.02rem; color: var(--oh-ink-soft); }
+.oh-sign p { margin: 0; font-size: 0.9rem; line-height: 1.4; color: var(--oh-ink-soft); }
 
 body.oh nav.oh-nav {
   display: flex;
@@ -163,7 +163,7 @@ body.oh nav.oh-nav {
 .oh-toast {
   position: absolute;
   left: 50%;
-  bottom: 70px;
+  top: 168px;
   transform: translateX(-50%);
   z-index: 3;
   font: 700 1.15rem/1.3 var(--oh-pixel);
@@ -313,14 +313,14 @@ body.oh footer.oh-footer {
 @media (max-width: 720px) {
   .oh-ui { padding: 12px 12px 16px; }
   .oh-top { flex-direction: column; align-items: stretch; gap: 10px; }
-  .oh-sign { max-width: none; padding: 10px 14px; }
-  .oh-sign h1 { font-size: 1.75rem; margin-bottom: 4px; }
-  .oh-sign p { font-size: 0.92rem; }
+  .oh-sign { max-width: none; padding: 8px 12px; }
+  .oh-sign h1 { font-size: 1.45rem; margin-bottom: 3px; }
+  .oh-sign p { font-size: 0.85rem; }
   body.oh nav.oh-nav { justify-content: flex-start; gap: 8px; }
   .oh-navlink { display: none; }
   .oh-chip { font-size: 1rem; padding: 6px 10px 7px; }
   .oh-hint { font-size: 0.95rem; margin-bottom: 8px; }
-  .oh-toast { white-space: normal; width: calc(100vw - 32px); text-align: center; font-size: 1rem; bottom: 60px; }
+  .oh-toast { white-space: normal; width: calc(100vw - 32px); text-align: center; font-size: 1rem; top: 172px; }
   .oh-section { padding: 48px 0; }
   .oh-project { grid-template-columns: 1fr; gap: 18px; }
   .oh-project:nth-child(even) .oh-project__visual { order: 0; }

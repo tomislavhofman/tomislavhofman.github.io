@@ -109,7 +109,10 @@ export function start(container, opts = {}) {
     world.moonDisc.visible = k > 0.15;
 
     world.stars.material.opacity = k * k;
-    world.bridge.cables.material.color.copy(lerpColor('#e3e7e8', '#aab8d8', k));
+    // Bridge illumination: a chosen colour (by clicking the bridge) washes the cables and deck at night.
+    const lit = bridgeLight();
+    world.bridge.cables.material.color.copy(lerpColor('#e3e7e8', lit ? lit.clone().lerp(new THREE.Color('#ffffff'), 0.15) : new THREE.Color('#aab8d8'), k));
+    if (deckMat) deckMat.emissive.copy(new THREE.Color('#7a7a74').lerp(lit ? lit.clone().multiplyScalar(0.55) : new THREE.Color('#3a4258'), k));
     world.windows.material.opacity = Math.max(0, k * 1.4 - 0.4);
     pipe.post.uniforms.grade.value.setRGB(...DAY.grade.map((v, i) => v + (NIGHT.grade[i] - v) * k));
     const lampK = Math.max(0, (k - 0.35) / 0.65);
@@ -125,6 +128,13 @@ export function start(container, opts = {}) {
 
   /* ---------- animation ---------- */
   const fx = new Interactions({ world, camera, canvas, container, state, scene, setNight, applyLighting });
+  let deckMat = null;
+  world.bridge.group.traverse((o) => { if (o.isMesh && o.material.vertexColors) deckMat = o.material; });
+  function bridgeLight() {
+    const c = fx.bridgeColor;
+    if (!c) return null;
+    return c === 'rainbow' ? new THREE.Color().setHSL((state.time * 0.08) % 1, 0.85, 0.55) : new THREE.Color(c);
+  }
 
   function update(dt) {
     state.time += dt;
@@ -162,11 +172,13 @@ export function start(container, opts = {}) {
     const col = lights.geometry.attributes.color;
     const nightOn = Math.max(0, (state.night - 0.4) / 0.6);
     const boost = fx.bridgeBoost;
+    const lit = bridgeLight();
     for (let i = 0; i < col.count; i++) {
       const wave = 0.5 + 0.5 * Math.sin(i * 0.45 - t * (boost > 0 ? 6 : 1.5));
       const v = Math.min(1, (nightOn * (0.35 + 0.65 * wave)) + boost * wave);
-      const hue = boost > 0 ? (i * 0.03 + t * 0.2) % 1 : 0.11;
-      const c = new THREE.Color().setHSL(hue, boost > 0 ? 0.9 : 0.8, 0.5 + 0.2 * wave);
+      const c = fx.bridgeColor === 'rainbow' ? new THREE.Color().setHSL((i * 0.03 + t * 0.2) % 1, 0.9, 0.55)
+        : lit ? lit.clone().lerp(new THREE.Color('#ffffff'), 0.25 * wave)
+        : new THREE.Color().setHSL(0.11, 0.8, 0.5 + 0.2 * wave);
       col.setXYZ(i, c.r * v, c.g * v, c.b * v);
     }
     col.needsUpdate = true;
@@ -204,7 +216,7 @@ export function start(container, opts = {}) {
   resize();
   requestAnimationFrame(frame);
 
-  const api = { setNight, isNight: () => state.nightTarget > 0.5, update, render, state, world, camera, fx };
+  const api = { setNight, isNight: () => state.nightTarget > 0.5, update, render, state, world, camera, fx, pipe };
   window.__osijek = api;
   return api;
 }

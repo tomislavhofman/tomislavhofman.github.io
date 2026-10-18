@@ -1,6 +1,7 @@
 // Clicks, hover labels, speech bubbles, particles and the hidden secrets of the scene.
 import * as THREE from '../vendor/three-0.170.0.module.min.js';
 import { WATER_Y, makeDuck, makeBoat, rng } from './world.js';
+import { catTextures, makeCatSprite, GREY_KITTEN } from './sprites.js';
 
 export const SECRETS = {
   daynight: 'Day and night',
@@ -12,13 +13,17 @@ export const SECRETS = {
   love: 'Love on the bridge',
   bells: 'The cathedral bells',
   lights: 'Every lamp lit',
+  treecat: 'The cat in the tree',
 };
 
 const LABELS = {
   tree: 'A tree in the park', lamp: 'Street lamp', bench: 'Bench', bridge: 'Pješački most, the footbridge (1981)',
   cathedral: 'Co-cathedral of St Peter and Paul', duck: 'Duck', sun: 'The sun',
-  moon: 'The moon', cat: 'The promenade cat', bush: 'Flower box', hotel: 'Hotel Osijek', water: 'The Drava',
+  moon: 'The moon', cat: 'The promenade cat', bush: 'Flower box', hotel: 'Hotel Osijek', water: 'Drava', visitor: 'A curious kitten', bollard: 'Mooring bollard',
 };
+
+// Footbridge illumination colours, cycled by clicking the bridge ('rainbow' animates).
+const BRIDGE_COLORS = ['#ff2f3a', '#ff4fc8', '#3f7bff', '#2fe07a', '#ffc93b', '#ffffff', 'rainbow'];
 
 // Hotel window patterns (7 x 6 heart, drawn top row first).
 const HEART_ROWS = ['.XX.XX.', 'XXXXXXX', 'XXXXXXX', '.XXXXX.', '..XXX..', '...X...'];
@@ -44,6 +49,8 @@ function pixelTexture(rows, palette) {
 const HEART = pixelTexture(['.rr.rr.', 'rpprrrr', 'rprrrrr', 'rrrrrrr', '.rrrrr.', '..rrr..', '...r...'], { r: '#e8455a', p: '#ffb3c0' });
 const NOTE = pixelTexture(['..kkk', '..k.k', '..k.k', '..k..', 'kkk..', 'kkk..'], { k: '#fff4c8' });
 const BIRD_A = pixelTexture(['k...k', '.k.k.', '..k..'], { k: '#2a2a33' });
+const KITTEN = catTextures(GREY_KITTEN);
+
 const BUTTERFLY_A = pixelTexture(['y...y', 'yykyy', '.yky.', 'y.k.y'], { y: '#ffd166', k: '#3a2a1c' });
 const BUTTERFLY_B = pixelTexture(['.....', '.yky.', '.yky.', '..k..'], { y: '#ffd166', k: '#3a2a1c' });
 const BIRD_B = pixelTexture(['.....', 'kkkkk', '..k..'], { k: '#2a2a33' });
@@ -114,13 +121,14 @@ export class Interactions {
     }
 
     // Generous invisible hit boxes (layer 3 is never rendered) for small things.
-    const HIT = { bench: [0.9, 1.3, 2.4, 0.5], cat: [0.9, 0.9, 1.3, 0.3], duck: [1.5, 1.1, 1.4, 0.3], lamp: [1.0, 6.8, 1.0, 3.3], bush: [3.8, 1.8, 1.8, 0.7] };
+    const HIT = { bench: [0.9, 1.3, 2.4, 0.5], cat: [0.6, 0.45, 0.7, 0.2], duck: [1.5, 1.1, 1.4, 0.3], lamp: [1.0, 6.8, 1.0, 3.3], bush: [3.8, 1.8, 1.8, 0.7] };
     for (const c of world.clickables) {
       const h = HIT[c.userData.kind];
       if (!h) continue;
       const box = new THREE.Mesh(new THREE.BoxGeometry(h[0], h[1], h[2]), new THREE.MeshBasicMaterial());
       box.position.y = h[3];
       box.layers.set(3);
+      box.userData.solid = c.userData.kind === 'cat';
       c.add(box);
     }
 
@@ -176,7 +184,8 @@ export class Interactions {
       return o;
     };
     // Helpers: invisible hit boxes and 1px cables/points, which would otherwise steal clicks.
-    const isHelper = (h) => h.object.layers.mask === 1 << 3 || h.object.isLine || h.object.isPoints;
+    // Sprite animals have no clickable geometry of their own, so their hit box counts as solid.
+    const isHelper = (h) => (h.object.layers.mask === 1 << 3 && !h.object.userData.solid) || h.object.isLine || h.object.isPoints;
     const isWater = (h) => h.object === this.world.water;
     const best = hits.find((h) => !isHelper(h) && !isWater(h) && owner(h))
       || hits.find((h) => isHelper(h) && owner(h))
@@ -247,6 +256,7 @@ export class Interactions {
 
   click_tree(tree, point) {
     tree.userData.shakeT = 0;
+    if (!this.visitor) this.spawnVisitorCat(tree);
     const leafCols = ['#5c9b3f', '#8bc34a', '#c7d36b', '#e0b84a'];
     for (let i = 0; i < 14; i++) {
       const p = point.clone().add(new THREE.Vector3((Math.random() - 0.5) * 2, Math.random(), (Math.random() - 0.5) * 2));
@@ -297,6 +307,13 @@ export class Interactions {
 
   click_bridge(bridge, point) {
     this.bridgeBoost = 1;
+    // Like the real footbridge, the lights change colour: each click picks the next one.
+    this.bridgeColorIndex = ((this.bridgeColorIndex ?? -1) + 1) % BRIDGE_COLORS.length;
+    this.bridgeColor = BRIDGE_COLORS[this.bridgeColorIndex];
+    if (this.state.nightTarget < 0.5 && !this.counts.bridgeHint) {
+      this.counts.bridgeHint = 1;
+      this.bubble('The bridge lights show best at night ☾', point.clone().add(new THREE.Vector3(0, 6, 0)), 2400);
+    }
     for (let i = 0; i < 16; i++) this.big.spawn(point, new THREE.Vector3((Math.random() - 0.5) * 8, Math.random() * 6, (Math.random() - 0.5) * 4), '#fff1b0', 1, -8);
     if (this.counts.bridge >= 4 && !this.found.has('love')) {
       for (let i = 0; i < 14; i++) {
@@ -349,15 +366,18 @@ export class Interactions {
   }
 
   click_cat(cat) {
-    cat.userData.wagT = 0;
+    const c = cat.userData.sprite;
+    cat.userData.happyT = 1.6;
+    c.pose('front', c.tex.happy);
     const lines = ['Mijau.', 'Mrrr…', 'Mijau!', '*purr*'];
-    this.bubble(lines[(this.counts.cat - 1) % lines.length], cat.position.clone().add(new THREE.Vector3(0, 0.8, 0)), 1600);
+    this.bubble(lines[(this.counts.cat - 1) % lines.length], cat.position.clone().add(new THREE.Vector3(0, 0.75, 0)), 1600);
     if (this.counts.cat >= 3) {
       cat.userData.jumpT = 0;
-      for (let i = 0; i < 3; i++) this.after(i * 0.3, () => this.sprite(HEART, cat.position.clone().add(new THREE.Vector3(0, 0.7, 0)), 0.22, new THREE.Vector3(0, 0.6, 0), 2));
+      for (let i = 0; i < 3; i++) this.after(i * 0.3, () => this.sprite(HEART, cat.position.clone().add(new THREE.Vector3(0, 0.75, 0)), 0.18, new THREE.Vector3(0, 0.5, 0), 2));
       this.discover('cat');
     }
   }
+
 
   fireworks() {
     this.fireworksRunning = true;
@@ -399,6 +419,269 @@ export class Interactions {
       }
     }
     col.needsUpdate = true;
+  }
+
+  /* ---------- the cat that falls out of a tree ---------- */
+  // The kitten is hand-drawn pixel art (sprites/sprites.js), not 3D: at this size a sprite
+  // is the only way to get a cute face. One texel is 2.2 cm, so she sits about 44 cm tall.
+  makeVisitorCat() {
+    const cat = makeCatSprite(KITTEN, 0.022);
+    const fly = new THREE.Sprite(new THREE.SpriteMaterial({ map: BUTTERFLY_A, transparent: true, alphaTest: 0.5 }));
+    fly.scale.set(5 * 0.022, 4 * 0.022, 1);
+    fly.layers.set(1);
+    fly.visible = false;
+    cat.g.add(fly);
+    cat.g.userData.kind = 'visitor';
+    // Generous hit box: she is small, so make her easy to pet.
+    const hit = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.55), new THREE.MeshBasicMaterial());
+    hit.position.y = 0.25;
+    hit.layers.set(3);
+    hit.userData.solid = true;
+    cat.g.add(hit);
+    return { ...cat, fly };
+  }
+
+  setKittenPose(v, pose, frame) { v.pose(pose, frame); }
+
+  spawnVisitorCat(tree) {
+    const cat = this.makeVisitorCat();
+    const top = tree.localToWorld(new THREE.Vector3(0, 5.5, 0));
+    cat.g.position.copy(top);
+    this.scene.add(cat.g);
+    this.world.clickables.push(cat.g);
+    const b = this.world.bollard.position;
+    this.visitor = { ...cat, state: 'fall', vy: 0, t: 0, st: 0, clicks: [], nextBlink: 2, squint: 0, stride: 0,
+      base: new THREE.Vector3(b.x - 0.55, 0.045, b.z + 0.1), perch: new THREE.Vector3(b.x, this.world.bollard.userData.top, b.z) };
+    this.bubble('Mijau?!', top.clone().add(new THREE.Vector3(0, 1, 0)), 1200);
+  }
+
+  // Waypoints from where she lands to the bollard that never cut through the promenade rows.
+  // Rows (see world.js): city side at x = -8.4, river side at x = 6.0, repeating every 11.8 m.
+  // City-side gaps between the two benches are at z = -14.8 - 11.8k, and both rows only start
+  // a few metres up the promenade, so near the viewer (z > -1) the way is open.
+  pathToBollard(from, base) {
+    const pts = [];
+    const z = from.z;
+    if (from.x < -9.3) {
+      pts.push(new THREE.Vector3(-13.6, 0.045, z));                     // out onto the running track
+      if (z < -6) {
+        const k = Math.max(0, Math.round((-14.8 - z) / 11.8));
+        const gap = -14.8 - 11.8 * k;
+        pts.push(new THREE.Vector3(-13.6, 0.045, gap));                 // along the track to a gap
+        pts.push(new THREE.Vector3(-3.6, 0.045, gap));                  // through it, onto the asphalt
+      }
+    }
+    pts.push(new THREE.Vector3(Math.min(2.6, Math.max(-3.6, from.x)), 0.045, Math.min(-0.2, Math.max(z, -400))));
+    pts.push(new THREE.Vector3(2.6, 0.045, 0.2));                        // along the asphalt to the open end
+    pts.push(new THREE.Vector3(base.x, 0.045, 0.2));                     // around the start of the river row
+    pts.push(base.clone());
+    // Drop points that are behind her or practically on top of each other.
+    return pts.filter((p, i) => i === pts.length - 1 || p.distanceTo(i ? pts[i - 1] : from) > 0.3);
+  }
+
+  click_bollard() {
+    if (this.visitor) return;
+    this.bubble('A perfect spot for a cat. Is one hiding in a tree?', this.world.bollard.position.clone().add(new THREE.Vector3(0, 0.9, 0)), 2600);
+  }
+
+  click_visitor() {
+    const v = this.visitor;
+    if (!v || !['play', 'loaf'].includes(v.state)) return;
+    const now = this.state.time;
+    v.clicks = v.clicks.filter((c) => now - c < 5).concat(now);
+    const top = v.g.localToWorld(new THREE.Vector3(0, 0.5, 0));
+    // Clicking fast-fast-fast is too much: she gets down and leaves.
+    if (v.clicks.filter((c) => now - c < 1.6).length >= 5) {
+      this.setVisitorState(v, 'startle');
+      this.bubble('Mijau! Too much!', top, 1500);
+      return;
+    }
+    v.squint = 0.9;
+    const lines = ['purr…', 'mrrr ♥', 'purrrr', 'mrrp!'];
+    this.bubble(lines[v.clicks.length % lines.length], top, 1200);
+    this.sprite(HEART, top.clone().add(new THREE.Vector3(0.05, 0.02, 0)), 0.12, new THREE.Vector3(0, 0.18, 0), 1.4);
+    // A few gentle pets wake her up and she plays again.
+    if (v.state === 'loaf' && v.clicks.length >= 3) this.setVisitorState(v, 'wake');
+  }
+
+  setVisitorState(v, state) {
+    v.state = state;
+    v.st = 0;
+    v.fly.visible = state === 'play';
+    v.from = v.g.position.clone();
+  }
+
+  updateVisitor(dt, t) {
+    const v = this.visitor;
+    if (!v) return;
+    const g = v.g;
+    v.t += dt;
+    v.st += dt;
+    const ease = (k) => k * k * (3 - 2 * k);
+    // Lit like the 3D things around her: a little dimmer and warmer by day, moonlit blue at night.
+    const tint = new THREE.Color('#e4dccf').lerp(new THREE.Color('#5d678f'), this.state.night);
+    v.tint(tint);
+    v.fly.material.color.copy(tint);
+    v.headSprite.material.rotation = 0;
+    g.scale.set(1, 1, 1);
+
+    const screenX = (p) => p.clone().project(this.camera).x;
+    // Trot or walk towards a ground point; steps follow the distance actually covered.
+    const moveTo = (target, speed, walk) => {
+      const d = target.clone().sub(g.position).setY(0);
+      const dist = d.length();
+      const step = Math.min(dist, speed * dt);
+      if (dist > 0.01) g.position.addScaledVector(d.normalize(), step);
+      v.stride += step;
+      const strideLen = walk ? 0.16 : 0.32;
+      const a = Math.floor(v.stride / strideLen) % 2 === 0;
+      g.position.y = 0.045 + (walk ? 0 : (a ? 0.012 : 0));
+      if (walk === 'front') {
+        v.pose('front', KITTEN.head);
+        v.bodySprite.material.map = a ? KITTEN.body : KITTEN.paw;
+      } else {
+        const right = screenX(target) > screenX(g.position);
+        v.pose('side', right ? (a ? KITTEN.runA : KITTEN.runB) : (a ? KITTEN.runAL : KITTEN.runBL));
+      }
+      return dist;
+    };
+    const arc = (from, to, dur, height) => {
+      const k = Math.min(1, v.st / dur);
+      g.position.lerpVectors(from, to, ease(k));
+      g.position.y += Math.sin(k * Math.PI) * height;
+      g.scale.y = 1.08;                                       // stretched in the air
+      v.pose('side', screenX(to) >= screenX(from) ? KITTEN.runB : KITTEN.runBL);
+      return k >= 1;
+    };
+    const crouch = (k) => { g.scale.y = 1 - 0.14 * Math.sin(Math.min(1, k) * Math.PI); };
+    const face = () => {
+      v.nextBlink -= dt;
+      if (v.nextBlink < 0) { v.blink = 0.15; v.nextBlink = 2.5 + Math.random() * 3; }
+      v.blink = Math.max(0, (v.blink || 0) - dt);
+      v.squint = Math.max(0, v.squint - dt);
+      // Curious: looks left, back at you, right, back at you.
+      const phase = Math.floor(t / 1.1) % 4;
+      const gaze = phase === 1 ? KITTEN.lookL : phase === 3 ? KITTEN.lookR : KITTEN.head;
+      v.pose('front', v.squint > 0 ? KITTEN.happy : v.blink > 0 ? KITTEN.blink : gaze);
+    };
+
+    switch (v.state) {
+      case 'fall': {
+        v.vy -= 14 * dt;
+        g.position.y += v.vy * dt;
+        v.pose('side', KITTEN.runB);
+        g.scale.y = 1.1;
+        if (g.position.y <= 0.045) {
+          g.position.y = 0.045;
+          for (let i = 0; i < 12; i++) this.small.spawn(g.position, new THREE.Vector3((Math.random() - 0.5) * 2, Math.random(), (Math.random() - 0.5) * 2), '#d9cdb5', 0.7, -4);
+          v.path = this.pathToBollard(g.position.clone(), v.base);
+          this.setVisitorState(v, 'land');
+        }
+        break;
+      }
+      case 'land':                                            // soft landing, shake it off
+        v.pose('side', KITTEN.loaf);
+        crouch(v.st / 0.5);
+        if (v.st > 0.5) this.setVisitorState(v, 'trot');
+        break;
+      case 'trot': {
+        // Follow the waypoints around the flower boxes and benches; dash when far, walk when close.
+        const wp = v.path[0];
+        const toBase = v.base.distanceTo(g.position.clone().setY(0.045));
+        const speed = toBase < 1.5 ? 1.0 : toBase < 8 ? 2.4 : toBase < 30 ? 3.6 : 5.5;
+        if (moveTo(wp, speed, toBase < 1.5) < 0.05) {
+          v.path.shift();
+          if (!v.path.length) this.setVisitorState(v, 'eye-up');
+        }
+        break;
+      }
+      case 'eye-up':                                          // stops and eyes the bollard
+        v.pose('front', KITTEN.lookR);
+        if (v.st > 0.8) this.setVisitorState(v, 'crouch-up');
+        break;
+      case 'crouch-up':
+        v.pose('side', KITTEN.loaf);
+        crouch(v.st / 0.35);
+        if (v.st > 0.35) this.setVisitorState(v, 'jump-up');
+        break;
+      case 'jump-up':
+        if (arc(v.from, v.perch, 0.55, 0.35)) this.setVisitorState(v, 'land-up');
+        break;
+      case 'land-up':
+        g.position.copy(v.perch);
+        v.pose('side', KITTEN.loaf);
+        crouch(v.st / 0.3);
+        if (v.st > 0.3) {
+          this.setVisitorState(v, 'play');
+          this.discover('treecat');
+        }
+        break;
+      case 'play': {
+        // Slow play: watches the butterfly, looks around, now and then bats at it.
+        g.position.copy(v.perch);
+        face();
+        const swipe = Math.sin(v.st * 2.0) > 0.88;
+        v.bodySprite.material.map = swipe ? KITTEN.paw : KITTEN.body;
+        const a = v.st * 1.1;
+        v.fly.position.set(Math.cos(a) * 0.26, 0.6 + Math.sin(a * 2.1) * 0.07, Math.sin(a) * 0.12);
+        v.fly.material.map = Math.floor(v.t * 8) % 2 ? BUTTERFLY_A : BUTTERFLY_B;
+        if (v.st > 8) this.setVisitorState(v, 'sleepy');
+        break;
+      }
+      case 'sleepy':                                          // heavy blinks before lying down
+        g.position.copy(v.perch);
+        v.pose('front', Math.floor(v.st / 0.35) % 2 ? KITTEN.blink : KITTEN.head);
+        if (v.st > 1.4) this.setVisitorState(v, 'settle');
+        break;
+      case 'settle':
+        g.position.copy(v.perch);
+        v.pose('side', KITTEN.loaf);
+        g.scale.y = 1.15 - 0.15 * ease(Math.min(1, v.st / 0.5));
+        if (v.st > 0.5) this.setVisitorState(v, 'loaf');
+        break;
+      case 'loaf':                                            // lying down, watching the Drava
+        g.position.copy(v.perch);
+        v.bodySprite.material.map = KITTEN.body;
+        v.pose('side', KITTEN.loaf);
+        g.scale.y = 1 + 0.02 * Math.sin(t * 1.6);              // slow breathing
+        break;
+      case 'wake':                                            // a stretch, then back to play
+        g.position.copy(v.perch);
+        v.pose('side', KITTEN.loaf);
+        g.scale.y = 0.9 + 0.22 * Math.sin(Math.min(1, v.st / 0.6) * Math.PI);
+        if (v.st > 0.6) { v.clicks = []; this.setVisitorState(v, 'play'); }
+        break;
+      case 'startle':                                         // ears back, then down she goes
+        g.position.copy(v.perch);
+        v.pose('front', KITTEN.blink);
+        g.scale.y = 0.94;
+        if (v.st > 0.35) this.setVisitorState(v, 'jump-down');
+        break;
+      case 'jump-down':
+        if (arc(v.perch, v.base.clone().add(new THREE.Vector3(-0.2, 0, 0.4)), 0.5, 0.25)) this.setVisitorState(v, 'land-down');
+        break;
+      case 'land-down':
+        v.pose('side', KITTEN.loaf);
+        crouch(v.st / 0.3);
+        if (v.st > 0.3) this.setVisitorState(v, 'leave');
+        break;
+      case 'leave': {
+        // She strolls towards the viewer and out through the bottom of the screen.
+        const fwd = new THREE.Vector3();
+        this.camera.getWorldDirection(fwd);
+        fwd.y = 0;
+        fwd.normalize();
+        const goal = this.camera.position.clone().addScaledVector(fwd, 0.4).setY(0.045);
+        if (moveTo(goal, 0.9, 'front') < 1.3 || v.st > 25) {
+          this.scene.remove(g);
+          this.world.clickables.splice(this.world.clickables.indexOf(g), 1);
+          if (this.hovered === g) this.setHover(null);
+          this.visitor = null;
+        }
+        break;
+      }
+      default:
+    }
   }
 
   /* ---------- per-frame ---------- */
@@ -451,6 +734,7 @@ export class Interactions {
       });
     }
     this.updateHotel(dt, t);
+    this.updateVisitor(dt, t);
     if (this.boat) {
       this.boat.position.z += 9 * dt;
       this.boat.position.y = WATER_Y + Math.sin(t * 1.6) * 0.08;
@@ -458,14 +742,14 @@ export class Interactions {
     }
 
     const cat = this.world.cat;
-    if (cat.userData.wagT != null) {
-      cat.userData.wagT += dt;
-      cat.userData.tail.rotation.z = Math.sin(cat.userData.wagT * 14) * 0.5 * Math.exp(-cat.userData.wagT * 1.5);
-      if (cat.userData.wagT > 3) cat.userData.wagT = null;
+    cat.userData.sprite.tint(new THREE.Color(1, 1, 1).lerp(new THREE.Color('#6b76a0'), this.state.night));
+    if (cat.userData.happyT > 0) {
+      cat.userData.happyT -= dt;
+      if (cat.userData.happyT <= 0) cat.userData.sprite.pose('side', cat.userData.sprite.tex.loaf);
     }
     if (cat.userData.jumpT != null) {
       cat.userData.jumpT += dt;
-      cat.position.y = 0.43 + Math.max(0, Math.sin(Math.min(1, cat.userData.jumpT / 0.5) * Math.PI)) * 0.5;
+      cat.position.y = cat.userData.baseY + Math.max(0, Math.sin(Math.min(1, cat.userData.jumpT / 0.5) * Math.PI)) * 0.4;
       if (cat.userData.jumpT > 0.5) cat.userData.jumpT = null;
     }
 

@@ -2,6 +2,7 @@
 // by a pedestrian, with the suspension footbridge, the park, the city skyline and the
 // cathedral spire. Units are metres; +x is towards the river, -z is upstream.
 import * as THREE from '../vendor/three-0.170.0.module.min.js';
+import { catTextures, makeCatSprite, ORANGE_TABBY } from './sprites.js';
 
 export const WATER_Y = -2.0;
 const BRIDGE_Z = -140;
@@ -553,7 +554,7 @@ export function buildWorld(scene) {
     W.trees.push(t);
   }
   W.trees.forEach((t) => { t.userData.kind = 'tree'; });
-  W.clickables.push(...W.trees.filter((t) => t.position.z > -90 && t.position.x > -30));
+  W.clickables.push(...W.trees.filter((t) => t.position.z > -230 && t.position.x > -30));
 
   // Distant trees (far bank, park depth, horizon) as instances: cheap, not clickable.
   const far = [];
@@ -735,30 +736,14 @@ export function buildWorld(scene) {
     W.clouds.push(c);
   }
 
-  /* the promenade cat, on a bench */
-  const cat2 = new THREE.Group();
-  const fur = '#e08a3c';
-  const catBody = new THREE.Mesh(new THREE.SphereGeometry(0.18, 8, 6), toon(fur));
-  catBody.scale.set(1, 1.15, 1.6);
-  catBody.position.y = 0.16;
-  cat2.add(catBody);
-  const catHead = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 6), toon(fur));
-  catHead.position.set(0, 0.36, -0.18);
-  cat2.add(catHead);
-  for (const ex of [-0.06, 0.06]) {
-    const ear = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.09, 4), toon('#c46f28'));
-    ear.position.set(ex, 0.48, -0.18);
-    cat2.add(ear);
-  }
-  const catTail = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.035, 0.42, 5), toon('#c46f28'));
-  catTail.position.set(0, 0.28, 0.3);
-  catTail.rotation.x = -0.6;
-  catTail.userData.keep = true;
-  cat2.add(catTail);
-  cat2.position.copy(W.benches.find((b) => b.position.x > 0 && b.position.z < -10).position).add(new THREE.Vector3(0, 0.46, 0.3));
-  cat2.rotation.y = 0.7;
+  /* the promenade cat: an orange tabby (pixel-art sprite) dozing on a bench */
+  const benchCat = makeCatSprite(catTextures(ORANGE_TABBY), 0.022);
+  benchCat.pose('side', benchCat.tex.loaf);
+  const cat2 = benchCat.g;
+  cat2.position.copy(W.benches.find((b) => b.position.x > 0 && b.position.z < -10).position).add(new THREE.Vector3(0, 0.46, 0.2));
   cat2.userData.kind = 'cat';
-  cat2.userData.tail = catTail;
+  cat2.userData.sprite = benchCat;
+  cat2.userData.baseY = cat2.position.y;
   scene.add(cat2);
   W.cat = cat2;
   W.clickables.push(cat2);
@@ -774,6 +759,25 @@ export function buildWorld(scene) {
   }
   W.clickables.push(...W.ducks);
 
+  /* a cast-iron mooring bollard right in front of the viewer (the kitten's favourite spot) */
+  const bollard = new THREE.Group();
+  const iron = '#c3c7cc';
+  const post = new THREE.Mesh(new THREE.CylinderGeometry(0.29, 0.32, 0.3, 14), toon(iron));
+  post.position.y = 0.15;
+  bollard.add(post);
+  const waist = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.29, 0.05, 14), toon('#b3b8be'));
+  waist.position.y = 0.32;
+  bollard.add(waist);
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.33, 0.09, 16), toon('#d3d6da'));
+  cap.position.y = 0.385;
+  bollard.add(cap);
+  bollard.position.set(8.45, 0.045, 0.8);
+  bollard.userData.kind = 'bollard';
+  bollard.userData.top = 0.045 + 0.43;
+  scene.add(bollard);
+  W.bollard = bollard;
+  W.clickables.push(bollard);
+
   /* the river itself can be clicked */
   W.water.userData.kind = 'water';
   W.clickables.push(W.water);
@@ -785,8 +789,8 @@ export function buildWorld(scene) {
   for (const d of W.ducks) bake(d);
   for (const fb of W.flowerBoxes) { bake(fb.userData.bushes); bake(fb); }
   bake(farProps);
+  bake(bollard, '#2c2e31');
   bake(hotel);
-  bake(cat2);
   bake(city);
   bake(cat);
   bake(W.bridge.group, '#7a7a74');

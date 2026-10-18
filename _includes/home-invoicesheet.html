@@ -1,0 +1,22 @@
+{%- comment -%}
+  Home grid · InvoiceSheet. E-invoice files (XML, PDF, ZIP) slide into a
+  spreadsheet whose rows fill in one by one, the tool's whole job in one loop.
+  Respects reduced motion.
+{%- endcomment -%}
+<div class="home-console home-console--invoicesheet">
+  <div class="home-console__stage inv" aria-hidden="true">
+    <div class="inv-files">
+      <span style="--i: 0">&lt;xml&gt;</span>
+      <span style="--i: 1">PDF</span>
+      <span style="--i: 2">ZIP</span>
+    </div>
+    <div class="inv-arrow">▸</div>
+    <div class="inv-sheet">
+      <div class="inv-row inv-row--head"><i></i><i></i><i></i><i></i></div>
+      {%- for r in (1..4) %}
+      <div class="inv-row" style="--r: {{ forloop.index0 }}"><i></i><i></i><i></i><i></i></div>
+      {%- endfor %}
+    </div>
+  </div>
+  <div class="retro-ui-hint home-console__hint">{{ project.label | default: "InvoiceSheet · open ▸" }}</div>
+</div>

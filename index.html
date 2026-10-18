@@ -10,12 +10,12 @@ title: Tomislav Hofman
       content="Software engineer from Osijek, Croatia. Building robust, simple software and sharing knowledge.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://hofman.tech/">
-<meta property="og:image" content="https://hofman.tech/assets/img/background/img-11.jpg">
+<meta property="og:image" content="https://hofman.tech/assets/og-home.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Tomislav Hofman">
 <meta name="twitter:description"
       content="Software engineer from Osijek, Croatia. Building robust, simple software and sharing knowledge.">
-<meta name="twitter:image" content="https://hofman.tech/assets/img/background/img-11.jpg">
+<meta name="twitter:image" content="https://hofman.tech/assets/og-home.png">
 <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
 <link rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap">
@@ -37,6 +37,10 @@ title: Tomislav Hofman
     },
     "email": "mailto:contact@hofman.tech"
 }</script>
+<section class="home-intro">
+  <h1>Tomislav Hofman</h1>
+  <p>Software engineer in Osijek, Croatia. I build small, focused tools that do one job well.</p>
+</section>
 <section class="home-grid" aria-label="Projects">
   {%- for project in site.data.projects %}
   {%- assign home_include = "home-" | append: project.id | append: ".html" -%}
@@ -47,11 +51,23 @@ title: Tomislav Hofman
      aria-label="{{ project.label | default: project.id | replace: ' ▸', '' }}"
      {%- if project.external %} target="_blank" rel="noopener noreferrer"{% endif %}>
     {% include {{ home_include }} %}
+    {%- if project.name %}
+    <div class="home-entry__meta">
+      <h2 class="home-entry__name">{{ project.name }}</h2>
+      {%- if project.desc and project.desc != "" %}<p class="home-entry__desc">{{ project.desc }}</p>{% endif %}
+    </div>
+    {%- endif %}
   </a>
   {%- else %}
   <article class="home-entry home-entry--{{ project.id }}"
            style="--entry-accent: {{ project.accent }};">
     {% include {{ home_include }} %}
+    {%- if project.name %}
+    <div class="home-entry__meta">
+      <h2 class="home-entry__name">{{ project.name }}</h2>
+      {%- if project.desc and project.desc != "" %}<p class="home-entry__desc">{{ project.desc }}</p>{% endif %}
+    </div>
+    {%- endif %}
   </article>
   {%- endif %}
   {%- endfor %}

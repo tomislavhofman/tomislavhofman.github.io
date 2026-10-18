@@ -9,18 +9,37 @@
 #   external  true when url points off-site (opens in a new tab)
 #   label     hint row text shown at the bottom of the entry
 #   accent    accent colour for the console frame and glow
-- id: game
-  accent: "#22ff55"
-  label: "Fly · tap to play"
+#   name      project name shown under the console
+#   desc      one-line description shown under the name
+- id: invoicesheet
+  url: "/invoicesheet/"
+  external: false
+  accent: "#2dd4bf"
+  label: "InvoiceSheet · open ▸"
+  name: "InvoiceSheet"
+  desc: "Turns piles of e-invoices (XRechnung, Peppol, ZUGFeRD, Factur-X, eRačun) into one Excel sheet. Runs in the browser; nothing is uploaded."
 
 - id: cardstitch
   url: "/cardstitch/"
   external: false
   accent: "#38bdf8"
   label: "CardStitch · open ▸"
+  name: "CardStitch"
+  desc: "Android app for trading card sellers: photographs both sides of a card and stitches them into one listing-ready image."
 
-- id: poster
-  url: "https://play.google.com/store/apps/details?id=app.pstr.android&hl=en"
-  external: true
-  accent: "#fbbf24"
-  label: "Poster · get it on Play ▸"
+- id: game
+  accent: "#22ff55"
+  label: "Fly · tap to play"
+  name: "Fly"
+  desc: "A tiny browser game, just for fun. Press space or tap to fly."
+
+# Poster is hidden while the Play listing is unavailable. To bring it back,
+# restore this entry (its partial _includes/home-poster.html and styles in
+# css/home.css are still in place) and the nav link in _includes/nav.html.
+# - id: poster
+#   url: "https://play.google.com/store/apps/details?id=app.pstr.android&hl=en"
+#   external: true
+#   accent: "#fbbf24"
+#   label: "Poster · get it on Play ▸"
+#   name: "Poster"
+#   desc: ""

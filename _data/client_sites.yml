@@ -1,0 +1,18 @@
+# Websites built or maintained for others, shown on the home page under "Websites for others".
+#   role     chip text ("Built", "Maintained")
+#   image    small screenshot, shown pixelated
+- name: "Sunce"
+  domain: "dppsunce.hr"
+  url: "https://dppsunce.hr"
+  role: "Built"
+  accent: "#ffd166"
+  image: "/assets/sites/dppsunce.png"
+  desc: "Website for Sunce, an association for psychological help: their counselling service, support phone line and projects."
+
+- name: "Agristar"
+  domain: "agristar.hr"
+  url: "https://agristar.hr"
+  role: "Maintained"
+  accent: "#8bc34a"
+  image: "/assets/sites/agristar.png"
+  desc: "Online shop for Agristar's herbal teas, blends and spices. I keep it running and up to date."

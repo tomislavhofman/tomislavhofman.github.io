@@ -55,16 +55,16 @@ export function start(container, opts = {}) {
     canvas.style.height = h * ps + 'px';
     const aspect = w / h;
     camera.aspect = aspect;
-    // Pedestrian by the river wall, looking upstream along the Drava towards the footbridge.
+    // Pedestrian on the promenade path, looking upstream along the Drava towards the footbridge.
     if (aspect >= 1) {
       camera.fov = aspect > 2 ? 40 : 47;
-      camera.position.set(4.2, 1.7, 6);
-      camera.lookAt(46, 14, -140);
+      camera.position.set(0.4, 1.8, 6);
+      camera.lookAt(38, 11, -140);
     } else {
       // Portrait: keep the promenade, the cathedral and the city-side pylon in view.
       camera.fov = 64;
-      camera.position.set(4.6, 1.7, 9);
-      camera.lookAt(18, 13, -140);
+      camera.position.set(0.8, 1.7, 9);
+      camera.lookAt(12, 13, -140);
     }
     camera.updateProjectionMatrix();
     render();
@@ -161,7 +161,8 @@ export function start(container, opts = {}) {
       const ph = d.userData.phase;
       d.position.x += Math.cos(ph) * dt * 0.35;
       d.position.z += Math.sin(ph * 0.7) * dt * 0.35;
-      d.position.x = Math.min(24, Math.max(12.5, d.position.x));
+      d.position.x = Math.min(34, Math.max(17, d.position.x));
+      d.position.z = Math.min(-40, Math.max(-85, d.position.z));
       d.rotation.y = -Math.atan2(Math.sin(ph * 0.7), Math.cos(ph));
       d.position.y = WATER_Y + Math.sin(t * 2 + ph * 3) * 0.03 + (d.userData.dive || 0);
     }

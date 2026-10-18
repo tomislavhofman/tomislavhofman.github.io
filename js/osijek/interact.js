@@ -17,7 +17,7 @@ export const SECRETS = {
 const LABELS = {
   tree: 'A tree on the promenade', lamp: 'Street lamp', bench: 'Bench', bridge: 'Pješački most, the footbridge (1981)',
   cathedral: 'Co-cathedral of St Peter and Paul', person: 'Someone out for a walk', duck: 'Duck', sun: 'The sun',
-  moon: 'The moon', cat: 'The promenade cat',
+  moon: 'The moon', cat: 'The promenade cat', bush: 'Flower box',
 };
 
 const GREETINGS_DAY = ['Bok!', 'Lijep dan!', 'Hi there!', 'Dobar dan!', 'Hello from Osijek!'];
@@ -44,6 +44,8 @@ function pixelTexture(rows, palette) {
 const HEART = pixelTexture(['.rr.rr.', 'rpprrrr', 'rprrrrr', 'rrrrrrr', '.rrrrr.', '..rrr..', '...r...'], { r: '#e8455a', p: '#ffb3c0' });
 const NOTE = pixelTexture(['..kkk', '..k.k', '..k.k', '..k..', 'kkk..', 'kkk..'], { k: '#fff4c8' });
 const BIRD_A = pixelTexture(['k...k', '.k.k.', '..k..'], { k: '#2a2a33' });
+const BUTTERFLY_A = pixelTexture(['y...y', 'yykyy', '.yky.', 'y.k.y'], { y: '#ffd166', k: '#3a2a1c' });
+const BUTTERFLY_B = pixelTexture(['.....', '.yky.', '.yky.', '..k..'], { y: '#ffd166', k: '#3a2a1c' });
 const BIRD_B = pixelTexture(['.....', 'kkkkk', '..k..'], { k: '#2a2a33' });
 
 class Particles {
@@ -112,7 +114,7 @@ export class Interactions {
     }
 
     // Generous invisible hit boxes (layer 3 is never rendered) for small things.
-    const HIT = { bench: [0.9, 1.3, 2.4, 0.5], cat: [0.9, 0.9, 1.3, 0.3], duck: [1.5, 1.1, 1.4, 0.3], person: [0.9, 2.0, 0.9, 1.0], lamp: [1.0, 5.4, 1.0, 2.6] };
+    const HIT = { bench: [0.9, 1.3, 2.4, 0.5], cat: [0.9, 0.9, 1.3, 0.3], duck: [1.5, 1.1, 1.4, 0.3], person: [0.9, 2.0, 0.9, 1.0], lamp: [1.0, 6.8, 1.0, 3.3], bush: [3.8, 1.8, 1.8, 0.7] };
     for (const c of world.clickables) {
       const h = HIT[c.userData.kind];
       if (!h) continue;
@@ -162,12 +164,19 @@ export class Interactions {
     const ndc = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
     this.ray.setFromCamera(ndc, this.camera);
     const hits = this.ray.intersectObjects(this.world.clickables.filter((c) => c.visible), true);
-    for (const h of hits) {
+    // The sun and moon sit far behind the bridge's hit volume, so they win when both are hit.
+    const sky = hits.find((h) => h.object === this.world.sunDisc || h.object === this.world.moonDisc);
+    if (sky) return { obj: sky.object, point: sky.point };
+    // Visible geometry wins over the invisible helper boxes (layer 3); the helpers only
+    // catch clicks that land near a small thing without touching it.
+    const owner = (h) => {
       let o = h.object;
       while (o && !this.world.clickables.includes(o)) o = o.parent;
-      if (o) return { obj: o, point: h.point };
-    }
-    return null;
+      return o;
+    };
+    const isHelper = (h) => h.object.layers.mask === 1 << 3;
+    const best = hits.find((h) => !isHelper(h) && owner(h)) || hits.find((h) => owner(h));
+    return best ? { obj: owner(best), point: best.point } : null;
   }
 
   setHover(obj) {
@@ -220,7 +229,7 @@ export class Interactions {
   click_lamp(lamp) {
     lamp.userData.broken = false;
     lamp.userData.on = !lamp.userData.on;
-    const top = lamp.localToWorld(new THREE.Vector3(0, 4.5, 0));
+    const top = lamp.localToWorld(new THREE.Vector3(0, 5.9, 0));
     for (let i = 0; i < 10; i++) this.small.spawn(top, new THREE.Vector3((Math.random() - 0.5) * 3, Math.random() * 2, (Math.random() - 0.5) * 3), '#ffd27a', 0.8, -6);
     if (this.state.nightTarget > 0.5 && this.world.lamps.every((l) => l.userData.on)) {
       if (!this.fireworksRunning) this.fireworks();
@@ -245,6 +254,19 @@ export class Interactions {
           new THREE.Vector3(3 + Math.random() * 3, 2.5 + Math.random() * 2, -6 - Math.random() * 4), 7, [BIRD_A, BIRD_B]);
       }
       this.discover('birds');
+    }
+  }
+
+  click_bush(fb, point) {
+    fb.userData.shakeT = 0;
+    const cols = ['#c62f2b', '#e3b23c', '#d9622b', '#6f9a3a'];
+    for (let i = 0; i < 12; i++) {
+      this.small.spawn(point, new THREE.Vector3((Math.random() - 0.5) * 2, 1 + Math.random(), (Math.random() - 0.5) * 2), cols[i % 4], 2.4, -2.5, 0.8, 2);
+    }
+    // Now and then a butterfly was sitting in there.
+    if (this.counts.bush % 3 === 1) {
+      this.sprite(BUTTERFLY_A, point.clone().add(new THREE.Vector3(0, 0.4, 0)), 0.32,
+        new THREE.Vector3(-0.6 - Math.random(), 0.8 + Math.random() * 0.5, -1.5 - Math.random()), 6, [BUTTERFLY_A, BUTTERFLY_B]);
     }
   }
 
@@ -371,6 +393,14 @@ export class Interactions {
       tr.userData.shake = 0.1 * Math.sin(tr.userData.shakeT * 38) * Math.exp(-tr.userData.shakeT * 4);
       if (tr.userData.shakeT > 1.5) { tr.userData.shakeT = null; tr.userData.shake = 0; }
     }
+    for (const fb of this.world.flowerBoxes) {
+      if (fb.userData.shakeT == null) continue;
+      fb.userData.shakeT += dt;
+      const k = Math.exp(-fb.userData.shakeT * 5);
+      fb.userData.bushes.rotation.z = 0.05 * Math.sin(fb.userData.shakeT * 40) * k;
+      fb.userData.bushes.scale.y = 1 + 0.06 * Math.sin(fb.userData.shakeT * 30) * k;
+      if (fb.userData.shakeT > 1.2) fb.userData.shakeT = null;
+    }
     for (const d of this.world.ducks) {
       if (d.userData.diveT == null) { d.userData.dive = 0; continue; }
       d.userData.diveT += dt;
@@ -395,7 +425,7 @@ export class Interactions {
     }
     if (cat.userData.jumpT != null) {
       cat.userData.jumpT += dt;
-      cat.position.y = 0.55 + Math.max(0, Math.sin(Math.min(1, cat.userData.jumpT / 0.5) * Math.PI)) * 0.5;
+      cat.position.y = 0.43 + Math.max(0, Math.sin(Math.min(1, cat.userData.jumpT / 0.5) * Math.PI)) * 0.5;
       if (cat.userData.jumpT > 0.5) cat.userData.jumpT = null;
     }
 

@@ -1,858 +1,404 @@
-    (function () {
-        const canvas = document.getElementById('dino-game');
-        const tracker = document.getElementById('score-tracker');
-        canvas.height = 225 * 1.3; // 30% taller
-        const ctx = canvas.getContext('2d');
-        const width = canvas.width;
-        const height = canvas.height;
-        // Ball properties
-        let ball = {x: 80, y: height / 2, r: 9, vy: 0};
-        const gravity = 0.5;
-        const maxVy = 5;
-        const minVy = -5;
-        const upHoldAccel = -0.22; // gentle upward acceleration when holding
-        const upTapBoost = -3.5; // quick boost on tap/press
-        let holdUp = false;
-        let platforms = [];
-        let frame = 0;
-        let score = 0;
-        let highscore = 0;
-        let speedBoost = 0;
-        let gameOver = false;
-        let gameStarted = false;
-        const platformMinW = 60;
-        const platformMaxW = width / 3;
-        const platformH = 8; // smaller height
-        const platformGap = 60;
+// Fly: a tiny one-button game. Hold to rise, release to fall. Touch the green side of a
+// platform to collect it (each piece speeds you up), never touch a red side, the ceiling
+// or the floor. Rendered on #dino-game, scores in #score-tracker.
+(function () {
+    'use strict';
 
-        // Parallax background layers
-        let backgroundLayers = null;
-        let backgroundOffsets = null;
+    const canvas = document.getElementById('dino-game');
+    const tracker = document.getElementById('score-tracker');
+    if (!canvas || !tracker) return;
+    const ctx = canvas.getContext('2d');
 
-        // Platform segment width
-        const PLATFORM_SEGMENT_W = 10;
+    /* ---------- constants (logical pixels; the canvas is scaled for the screen) ---------- */
+    const W = 700;
+    const H = 292;
+    const STEP = 1 / 60;                 // fixed physics step, the same on every screen
+    const GRAVITY = 0.5;                 // px per step², when not holding
+    const LIFT = -0.22;                  // px per step², while holding
+    const TAP_BOOST = -3.5;              // instant kick when a hold starts
+    const MAX_FALL = 5;
+    const MAX_RISE = -5;
+    const BALL_R = 9;
+    const BALL_X = 80;
+    const PLATFORM_H = 8;
+    const SEGMENT_W = 10;
+    const PLATFORM_GAP = 60;
+    const START_SPEED = 4;
+    const SPEED_PER_PIECE = 0.05;
+    const RESTART_DELAY = 600;           // ms after a crash before input restarts
+    const BEST_KEY = 'fly.best';
 
-        // Flying segment animation objects
-        let flyingSegments = [];
+    /* ---------- crisp on high-density screens ---------- */
+    const dpr = Math.min(3, window.devicePixelRatio || 1);
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    canvas.style.touchAction = 'none';
 
-        // High score variables
-        let greenHighScore = 0;
-        let timeHighScore = 0;
-        let gameSpeed = 4;
+    /* ---------- state ---------- */
+    let state;                            // 'ready' | 'playing' | 'over'
+    let ball;
+    let holding = false;
+    let platforms;
+    let streaks;                          // decorative speed lines
+    let pieces;                           // collected segments flying to the counter
+    let speed;
+    let time;                             // seconds survived
+    let distance;                         // logical px travelled
+    let collected;
+    let crashAt;
+    let crashAnim;                        // 0..1 red-out after a crash
+    let best = 0;
+    try { best = Number(localStorage.getItem(BEST_KEY)) || 0; } catch (_) { /* private mode */ }
 
-        // Grand total high score tracking
-        let grandTotalHighScore = 0;
-        let currentGrandTotal = 0;
-        let bestScore = 0; // single best distance (raw), shown as the BEST badge
-        let timeIntervalId = null;
-        let lastTimeUpdate = null;
+    function reset() {
+        state = 'ready';
+        ball = { x: BALL_X, y: H / 2, vy: 0 };
+        holding = false;
+        platforms = [];
+        streaks = [];
+        pieces = [];
+        speed = START_SPEED;
+        time = 0;
+        distance = 0;
+        collected = 0;
+        crashAnim = 0;
+        renderScore(true);
+    }
 
-        // Warp platforms for speed effect
-        let warpPlatforms = [];
+    const su = (px) => (px / 2000).toFixed(2);
 
-        // Ball red-out animation state
-        let gameOverRedAnim = {active: false, start: 0, progress: 0};
-
-        function generateBackgroundLayers() {
-            // Layer speeds (from farthest to nearest)
-            const speeds = [0.1, 0.2, 0.4, 0.7];
-            // Sky gradient (static)
-            // Sun (static, but can move slowly)
-            const sun = {
-                x: 60 + Math.random() * 80,
-                y: 40 + Math.random() * 20,
-                r: 18 + Math.random() * 6,
-                speed: 0.05
-            };
-            // Clouds (far and near layers)
-            const cloudsFar = [];
-            const cloudsNear = [];
-            for (let i = 0; i < 3; i++) {
-                cloudsFar.push({
-                    x: Math.random() * width,
-                    y: 20 + Math.random() * 40,
-                    w: 40 + Math.random() * 30,
-                    h: 16 + Math.random() * 8,
-                    alpha: 0.4 + Math.random() * 0.2,
-                    speed: speeds[0]
-                });
-            }
-            for (let i = 0; i < 2; i++) {
-                cloudsNear.push({
-                    x: Math.random() * width,
-                    y: 60 + Math.random() * 40,
-                    w: 50 + Math.random() * 40,
-                    h: 20 + Math.random() * 10,
-                    alpha: 0.5 + Math.random() * 0.2,
-                    speed: speeds[1]
-                });
-            }
-            // Distant hills (simple polygons)
-            const hills = [];
-            for (let i = 0; i < 2; i++) {
-                let baseY = height - 70 - i * 18;
-                let points = [];
-                let step = 60;
-                for (let x = -step; x < width + step; x += step) {
-                    let y = baseY + Math.sin((x + i * 50) * 0.02) * (12 + i * 6) + Math.random() * 6;
-                    points.push({x, y});
-                }
-                hills.push({points, color: i === 0 ? '#b6e3a1' : '#a0c98f', speed: speeds[2]});
-            }
-            // Meadow (pixelated grass, flowers, moves fastest)
-            const grassHeight = 38;
-            const meadow = [];
-            for (let y = height - grassHeight; y < height; y += 4) {
-                for (let x = 0; x < width; x += 4) {
-                    let green = 180 + Math.floor(Math.random() * 60);
-                    let color = `rgb(80,${green},60)`;
-                    let flower = null;
-                    if (Math.random() < 0.01) {
-                        flower = ['#fbbf24', '#ef4444', '#a3e635', '#f472b6'][Math.floor(Math.random() * 4)];
-                    }
-                    meadow.push({x, y, color, flower, speed: speeds[3]});
-                }
-            }
-            return {sun, cloudsFar, cloudsNear, hills, meadow, speeds};
+    /* ---------- input ---------- */
+    function press() {
+        if (state === 'over') {
+            if (performance.now() - crashAt > RESTART_DELAY) reset();
+            return;
         }
+        if (state === 'ready') state = 'playing';
+        if (!holding) ball.vy = TAP_BOOST;
+        holding = true;
+    }
+    function release() { holding = false; }
 
-        function updateBackgroundOffsets(dt) {
-            if (!backgroundOffsets) {
-                backgroundOffsets = {sun: 0, cloudsFar: 0, cloudsNear: 0, hills: [0, 0], meadow: 0};
-            }
-            // Animate each layer
-            backgroundOffsets.sun += backgroundLayers.sun.speed * dt * 60;
-            backgroundOffsets.cloudsFar += backgroundLayers.speeds[0] * dt * 60;
-            backgroundOffsets.cloudsNear += backgroundLayers.speeds[1] * dt * 60;
-            backgroundOffsets.hills[0] += backgroundLayers.speeds[2] * dt * 60;
-            backgroundOffsets.hills[1] += backgroundLayers.speeds[2] * 1.2 * dt * 60;
-            backgroundOffsets.meadow += backgroundLayers.speeds[3] * dt * 60;
-            // Loop offsets
-            backgroundOffsets.sun %= width;
-            backgroundOffsets.cloudsFar %= width;
-            backgroundOffsets.cloudsNear %= width;
-            backgroundOffsets.hills[0] %= width;
-            backgroundOffsets.hills[1] %= width;
-            backgroundOffsets.meadow %= width;
+    // Only take over the space bar while the game is on screen, so the page still scrolls.
+    let inView = false;
+    new IntersectionObserver(([entry]) => {
+        inView = entry.isIntersecting;
+        if (inView) wake();
+    }, { threshold: 0.5 }).observe(canvas);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.code !== 'Space' || !inView) return;
+        e.preventDefault();
+        if (!e.repeat) press();
+    });
+    document.addEventListener('keyup', (e) => {
+        if (e.code !== 'Space' || !inView) return;
+        e.preventDefault();
+        release();
+    });
+    // Pointer events cover mouse, touch and pen once each (no double tap from touch + mouse).
+    canvas.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        canvas.setPointerCapture(e.pointerId);
+        press();
+    });
+    canvas.addEventListener('pointerup', release);
+    canvas.addEventListener('pointercancel', release);
+
+    /* ---------- simulation ---------- */
+    function spawnPlatform() {
+        const w = 60 + Math.random() * (W / 3 - 60);
+        platforms.push({
+            x: W,
+            y: 40 + Math.random() * (H - 80),
+            w,
+            greenOnTop: Math.random() < 0.5,
+            taken: new Array(Math.ceil(w / SEGMENT_W)).fill(false),
+        });
+    }
+
+    function crash() {
+        state = 'over';
+        holding = false;
+        crashAt = performance.now();
+        if (distance > best) {
+            best = distance;
+            try { localStorage.setItem(BEST_KEY, String(Math.round(best))); } catch (_) { /* private mode */ }
         }
+    }
 
-        function drawPixelArtBackground() {
-            // Simple, clean background (no blue, no animation)
-            let grad1 = ctx.createLinearGradient(0, 0, 0, height);
-            grad1.addColorStop(0, '#f8fafc'); // very light gray
-            grad1.addColorStop(1, '#e0f2fe'); // soft light blue
-            ctx.fillStyle = grad1;
-            ctx.fillRect(0, 0, width, height);
+    // Segments of platform p under the ball, as [index, centreX].
+    function segmentsUnderBall(p) {
+        const out = [];
+        for (let i = 0; i < p.taken.length; i++) {
+            const x1 = p.x + i * SEGMENT_W;
+            const x2 = Math.min(x1 + SEGMENT_W, p.x + p.w);
+            if (ball.x + BALL_R > x1 && ball.x - BALL_R < x2) out.push([i, (x1 + x2) / 2]);
         }
+        return out;
+    }
 
-        function reset() {
-            ball.y = height / 2;
-            ball.vy = 0;
-            platforms = [];
-            frame = 0;
-            score = 0;
-            highscore = 0;
-            speedBoost = 0;
-            currentGrandTotal = 0;
-            gameOver = false;
-            gameStarted = false;
-            backgroundLayers = generateBackgroundLayers();
-            backgroundOffsets = {sun: 0, cloudsFar: 0, cloudsNear: 0, hills: [0, 0], meadow: 0};
-            flyingSegments = [];
-            greenHighScore = Math.max(greenHighScore, speedBoost);
-            timeHighScore = Math.max(timeHighScore, highscore);
-            gameSpeed = 4;
-            if (timeIntervalId) clearInterval(timeIntervalId);
-            lastTimeUpdate = null;
-            gameStarted = false;
-            gameOver = false;
-            // Reset warp platforms
-            warpPlatforms = [];
-            // Reset red-out animation
-            gameOverRedAnim.active = false;
-            gameOverRedAnim.progress = 0;
+    function touchFace(p, faceY, green) {
+        for (const [i, cx] of segmentsUnderBall(p)) {
+            if (!green) { crash(); return; }
+            if (p.taken[i]) continue;
+            p.taken[i] = true;
+            pieces.push({ x: cx, y: faceY, t: 0 });
+            speed += SPEED_PER_PIECE;
         }
+    }
 
-        function startTimer() {
-            if (timeIntervalId) clearInterval(timeIntervalId);
-            lastTimeUpdate = Date.now();
-            timeIntervalId = setInterval(() => {
-                if (!gameStarted || gameOver) return;
-                highscore += 0.1;
-                currentGrandTotal += speedBoost * 0.1;
-                grandTotalHighScore = Math.max(grandTotalHighScore, currentGrandTotal);
-            }, 100);
-        }
-
-        function drawBall() {
-            // Don't draw if game over and red-out finished
-            if (gameOverRedAnim.active && gameOverRedAnim.progress >= 1.0) {
-                return;
-            }
-            // Draw platform if game hasn't started (but not if game over)
-            if (!gameStarted && !gameOver) {
-                // Platform parameters
-                const platformY = ball.y + ball.r * 0.85;
-                const platformW = ball.r * 2.2;
-                const platformH = ball.r * 0.55;
-                // Glowing ellipse (sci-fi pad)
-                ctx.save();
-                let platGrad = ctx.createRadialGradient(ball.x, platformY, platformH * 0.2, ball.x, platformY, platformW * 0.6);
-                platGrad.addColorStop(0, 'rgba(0,255,255,0.45)');
-                platGrad.addColorStop(0.4, 'rgba(0,128,255,0.22)');
-                platGrad.addColorStop(0.7, 'rgba(128,0,255,0.13)');
-                platGrad.addColorStop(1, 'rgba(0,0,0,0)');
-                ctx.beginPath();
-                ctx.ellipse(ball.x, platformY, platformW, platformH, 0, 0, 2 * Math.PI);
-                ctx.fillStyle = platGrad;
-                ctx.shadowColor = '#0ff';
-                ctx.shadowBlur = 18;
-                ctx.fill();
-                ctx.shadowBlur = 0;
-                // Platform rim
-                ctx.beginPath();
-                ctx.ellipse(ball.x, platformY, platformW * 0.92, platformH * 0.7, 0, 0, 2 * Math.PI);
-                ctx.strokeStyle = '#172554';
-                ctx.lineWidth = 3.2;
-                ctx.globalAlpha = 0.7;
-                ctx.stroke();
-                ctx.globalAlpha = 1.0;
-                ctx.restore();
-            }
-            // --- Animated Retro Sci-Fi Core (smaller, animated, rotating arc) ---
-            // Neon magenta/blue core, dark blue rim, strong animated glow
-            const t = performance.now() * 0.002;
-            const scale = 0.75; // 25% smaller
-            const baseR = ball.r * scale;
-            // Stronger pulsing
-            const pulse = 0.85 + 0.18 * Math.sin(t * 2.2);
-            const coreRadius = baseR * pulse;
-            const haloPulse = 1 + 0.13 * Math.sin(t * 2.2 + 1.2);
-            const haloRadius = baseR * 1.8 * haloPulse;
-            // Color shift between magenta and blue, but override with green transition for both core and glow
-            let r, g, b;
-            let redOut = false;
-            if (gameOverRedAnim.active) {
-                // Animate to red on game over
-                const t = Math.min(1, gameOverRedAnim.progress);
-                r = 239;
-                g = Math.round(68 * (1 - t));
-                b = Math.round(68 * (1 - t));
-                if (t >= 0.99) redOut = true;
-            } else {
-                const greenProgress = Math.max(0, Math.min(1, speedBoost / 100));
-                const interp = (a, b, t) => Math.round(a + (b - a) * t);
-                r = interp(255, 34, greenProgress);
-                g = interp(0, 197, greenProgress);
-                b = interp(128, 94, greenProgress);
-            }
-            const coreColor = `rgb(${r},${g},${b})`;
-            // Rotating arc
-            const arcAngle = t * 1.2;
-
-            ctx.save();
-            // --- OUTER GLOW ---
-            if (gameOverRedAnim.active) {
-                // Red glow
-                let redGlow = ctx.createRadialGradient(ball.x, ball.y, coreRadius, ball.x, ball.y, haloRadius);
-                redGlow.addColorStop(0, 'rgba(239,0,0,0.32)');
-                redGlow.addColorStop(0.5, 'rgba(239,0,0,0.13)');
-                redGlow.addColorStop(1, 'rgba(0,0,0,0)');
-                ctx.beginPath();
-                ctx.arc(ball.x, ball.y, haloRadius, 0, 2 * Math.PI);
-                ctx.fillStyle = redGlow;
-                ctx.fill();
-            } else {
-                let gradient = ctx.createRadialGradient(ball.x, ball.y, coreRadius, ball.x, ball.y, haloRadius);
-                gradient.addColorStop(0, `rgba(${r},${g},${b},0.32)`);
-                gradient.addColorStop(0.5, `rgba(${r},${g},${b},0.13)`);
-                gradient.addColorStop(1, 'rgba(0,0,0,0)');
-                ctx.beginPath();
-                ctx.arc(ball.x, ball.y, haloRadius, 0, 2 * Math.PI);
-                ctx.fillStyle = gradient;
-                ctx.fill();
-            }
-
-            // --- OUTER RIM ---
-            ctx.beginPath();
-            ctx.arc(ball.x, ball.y, baseR * 1.18, 0, 2 * Math.PI);
-            if (gameOverRedAnim.active) {
-                ctx.strokeStyle = 'rgba(239,0,0,0.95)';
-            } else {
-                ctx.strokeStyle = '#172554'; // dark blue
-            }
-            ctx.lineWidth = 4.2;
-            ctx.shadowColor = gameOverRedAnim.active ? 'rgba(239,0,0,0.7)' : '#172554';
-            ctx.shadowBlur = 0;
-            ctx.stroke();
-
-            // --- Rotating arc overlay ---
-            if (!gameOverRedAnim.active) {
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(ball.x, ball.y, baseR * 1.25, arcAngle, arcAngle + Math.PI * 0.7);
-                ctx.strokeStyle = 'rgba(0,255,255,0.45)';
-                ctx.lineWidth = 2.2;
-                ctx.shadowColor = '#0ff';
-                ctx.shadowBlur = 8;
-                ctx.stroke();
-                ctx.shadowBlur = 0;
-                ctx.restore();
-            }
-
-            // --- Neon core with color shift ---
-            let coreGradient;
-            if (gameOverRedAnim.active) {
-                coreGradient = ctx.createRadialGradient(ball.x, ball.y, coreRadius * 0.18, ball.x, ball.y, coreRadius);
-                coreGradient.addColorStop(0, '#fff');
-                coreGradient.addColorStop(0.3, '#ffb3b3');
-                coreGradient.addColorStop(1, 'rgb(239,0,0)');
-            } else {
-                coreGradient = ctx.createRadialGradient(ball.x, ball.y, coreRadius * 0.18, ball.x, ball.y, coreRadius);
-                coreGradient.addColorStop(0, '#fff');
-                coreGradient.addColorStop(0.3, '#b3e6ff');
-                coreGradient.addColorStop(1, coreColor);
-            }
-            ctx.beginPath();
-            ctx.arc(ball.x, ball.y, coreRadius, 0, 2 * Math.PI);
-            ctx.fillStyle = coreGradient;
-            ctx.fill();
-
-            // --- Central dot ---
-            ctx.beginPath();
-            ctx.arc(ball.x, ball.y, coreRadius * 0.22, 0, 2 * Math.PI);
-            ctx.fillStyle = gameOverRedAnim.active ? 'rgba(255,200,200,0.95)' : 'rgba(255,255,255,0.95)';
-            ctx.shadowColor = gameOverRedAnim.active ? 'rgba(239,0,0,0.7)' : '#fff';
-            ctx.shadowBlur = 8;
-            ctx.fill();
-            ctx.shadowBlur = 0;
-
-            ctx.restore();
-        }
-
-        function drawPlatforms() {
-            platforms.forEach(p => {
-                ctx.save();
-                ctx.lineWidth = 6;
-                let segCount = Math.ceil(p.w / PLATFORM_SEGMENT_W);
-                for (let i = 0; i < segCount; i++) {
-                    let segX1 = p.x + i * PLATFORM_SEGMENT_W;
-                    let segX2 = Math.min(segX1 + PLATFORM_SEGMENT_W, p.x + p.w);
-                    let touched = p.touchedGreenSegments && p.touchedGreenSegments[i];
-                    let flying = p.flyingSegments && p.flyingSegments[i];
-                    // Draw only if not flying
-                    if (!flying) {
-                        ctx.strokeStyle = touched ? '#fff' : '#22c55e';
-                        ctx.beginPath();
-                        if (p.grassOnTop) {
-                            ctx.moveTo(segX1, p.y);
-                            ctx.lineTo(segX2, p.y);
-                        } else {
-                            ctx.moveTo(segX1, p.y + platformH);
-                            ctx.lineTo(segX2, p.y + platformH);
-                        }
-                        ctx.stroke();
-                    }
-                }
-                // Draw red side (full width, but skip touched segments)
-                ctx.strokeStyle = '#ef4444';
-                ctx.beginPath();
-                let drewRed = false;
-                for (let i = 0; i < segCount; i++) {
-                    let segX1 = p.x + i * PLATFORM_SEGMENT_W;
-                    let segX2 = Math.min(segX1 + PLATFORM_SEGMENT_W, p.x + p.w);
-                    let touched = p.touchedRedSegments && p.touchedRedSegments[i];
-                    if (!touched) {
-                        if (p.grassOnTop) {
-                            ctx.moveTo(segX1, p.y + platformH);
-                            ctx.lineTo(segX2, p.y + platformH);
-                        } else {
-                            ctx.moveTo(segX1, p.y);
-                            ctx.lineTo(segX2, p.y);
-                        }
-                        drewRed = true;
-                    }
-                }
-                if (drewRed) ctx.stroke();
-                ctx.restore();
-            });
-        }
-
-        function drawFlyingSegments() {
-            for (const seg of flyingSegments) {
-                ctx.save();
-                // Use color for animation
-                ctx.strokeStyle = seg.color === 'red' ? '#ef4444' : '#22c55e';
-                ctx.lineWidth = 6;
-                ctx.globalAlpha = 1 - seg.progress;
-                // Draw as a short horizontal line for visibility
-                ctx.beginPath();
-                ctx.moveTo(seg.x - 5, seg.y);
-                ctx.lineTo(seg.x + 5, seg.y);
-                ctx.stroke();
-                // Optional: draw a small glowing circle
-                ctx.beginPath();
-                ctx.arc(seg.x, seg.y, 6, 0, 2 * Math.PI);
-                ctx.globalAlpha = 0.18 * (1 - seg.progress);
-                ctx.fillStyle = seg.color === 'red' ? '#ef4444' : '#22c55e';
-                ctx.shadowColor = seg.color === 'red' ? '#ef4444' : '#22c55e';
-                ctx.shadowBlur = 12;
-                ctx.fill();
-                ctx.restore();
+    function step() {
+        // Decorative speed streaks run in every state.
+        const playing = state === 'playing';
+        if (Math.random() < (playing ? 0.15 * (speed / 6) : 0.04)) {
+            const n = Math.floor(2 + Math.min(speed / 2, 10));
+            for (let i = 0; i < n; i++) {
+                if (Math.random() < 0.5) continue;
+                const h = 6 + Math.random() * 8;
+                streaks.push({ x: W + Math.random() * 40, y: 10 + Math.random() * (H - 20 - h), w: 18 + Math.random() * 18, h,
+                    v: (playing ? speed + 2 : 3) + Math.random() * speed * 1.2 });
             }
         }
+        for (const s of streaks) s.x -= s.v * (playing ? 1 : 0.5);
+        streaks = streaks.filter((s) => s.x + s.w > 0);
 
-        function drawScore() {
-            tracker.style.minHeight = '';
-            const effectiveSpeedBoost = 1 + speedBoost;
-            // Calculate SU: 1 SU = 1000 km, 0.01 SU = 10 km
-            // Let's assume highscore is in seconds, and effectiveSpeedBoost is a speed factor
-            // We'll make SU increment rapidly for sci-fi feel
-            // Example: let suValue = (effectiveSpeedBoost * highscore * 0.01).toFixed(2);
-            // (tweak multiplier as needed for game feel)
-            const suValue = (effectiveSpeedBoost * highscore * 0.01).toFixed(2);
-            tracker.innerHTML = `
-              <span class="score-item" title="Distance" style="font-family: 'Fira Mono', 'Consolas', monospace; font-weight: 700; text-shadow: 0 0 6px #38bdf8, 0 0 2px #fff; background: rgba(56,189,248,0.13); border-radius: 6px; padding: 2px 8px; margin-right: 8px;">
-                <span class="score-icon">🏁</span>
-                <span class="score-label">DIST</span>
-                <span class="score-value">${suValue} <span style='font-size:0.9em;opacity:0.8;'>SU</span></span>
-              </span>
-              <span class="score-item" title="Speed Boost" style="font-family: 'Fira Mono', 'Consolas', monospace; font-weight: 700; text-shadow: 0 0 6px #22c55e, 0 0 2px #fff; background: rgba(34,197,94,0.13); border-radius: 6px; padding: 2px 8px; margin-right: 8px;">
-                <span class="score-icon">⚡</span>
-                <span class="score-label"></span>
-                <span class="score-value">${speedBoost} <span style='font-size:0.9em;opacity:0.8;'>QS</span></span>
-              </span>
-              <span class="score-item" title="Time" style="font-family: 'Fira Mono', 'Consolas', monospace; font-weight: 700; text-shadow: 0 0 6px #fbbf24, 0 0 2px #fff; background: rgba(251,191,36,0.13); border-radius: 6px; padding: 2px 8px;">
-                <span class="score-icon">⏱</span>
-                <span class="score-label"></span>
-                <span class="score-value">${Math.floor(highscore)} <span style='font-size:0.9em;opacity:0.8;'>s</span></span>
-              </span>
-              <span class="score-item home-game__best" title="Best score" style="font-family: 'Fira Mono', 'Consolas', monospace; font-weight: 700; text-shadow: 0 0 6px #f472b6, 0 0 2px #fff; background: rgba(244,114,182,0.13); border-radius: 6px; padding: 2px 8px;">
-                <span class="score-value">BEST ${(bestScore * 0.01).toFixed(2)} <span style='font-size:0.9em;opacity:0.8;'>SU</span></span>
-              </span>
-            `;
-        }
+        for (const pc of pieces) pc.t += 0.07;
+        const arrived = pieces.filter((pc) => pc.t >= 1).length;
+        if (arrived) collected += arrived;
+        pieces = pieces.filter((pc) => pc.t < 1);
 
-        function drawGameOver() {
-            ctx.save();
-            ctx.font = 'bold 4em VT323, Fira Mono, Menlo, monospace';
-            ctx.textAlign = 'center';
-            ctx.lineWidth = 2.5;
-            ctx.strokeStyle = '#22ff55'; // retro green stroke
-            ctx.strokeText('Game Over', width / 2, height / 2 - 10);
-            ctx.fillStyle = '#181c23'; // black fill
-            ctx.fillText('Game Over', width / 2, height / 2 - 10);
-            ctx.font = '2em VT323, Fira Mono, Menlo, monospace';
-            ctx.strokeStyle = '#22ff55';
-            ctx.lineWidth = 1.5;
-            ctx.strokeText('Press space or tap to restart', width / 2, height / 2 + 20);
-            ctx.fillStyle = '#181c23';
-            ctx.fillText('Press space or tap to restart', width / 2, height / 2 + 20);
-            ctx.restore();
-        }
+        if (state === 'over') { crashAnim = Math.min(1, crashAnim + STEP / 1.8); return; }
+        if (!playing) return;
 
-        // Remove Techno music variables and functions
-        // Remove mute icon creation and updateMuteIcon
-        // Remove all music-related event handlers and function calls
-        // Remove all playKick, playHiHat, playSnare, playClap, playBass, playArp, startTechnoMusic, stopTechnoMusic, technoLoop, actuallyStartTechno, and related code
-        // Remove references to musicMuted, technoGain, technoAudioCtx, technoActive, technoLoopInterval, technoTempo, technoStep
-        // Remove muteIcon DOM element and its event handler
-        // Remove all calls to startTechnoMusic() and stopTechnoMusic()
+        time += STEP;
+        distance += speed;
+        for (const p of platforms) p.x -= speed;
+        platforms = platforms.filter((p) => p.x + p.w > 0);
+        const last = platforms[platforms.length - 1];
+        if (!last || W - (last.x + last.w) > PLATFORM_GAP) spawnPlatform();
 
-        function endGameAndTrackScores() {
-            if (timeIntervalId) clearInterval(timeIntervalId);
-            greenHighScore = Math.max(greenHighScore, speedBoost);
-            timeHighScore = Math.max(timeHighScore, Math.floor(highscore));
+        ball.vy = holding ? Math.max(MAX_RISE, ball.vy + LIFT) : Math.min(MAX_FALL, ball.vy + GRAVITY);
+        let next = ball.y + ball.vy;
 
-            // Calculate distance as in drawScore
-            const effectiveSpeedBoost = 1 + speedBoost;
-            const distanceValue = Math.floor(effectiveSpeedBoost * highscore);
-            grandTotalHighScore = Math.max(grandTotalHighScore, distanceValue);
-
-            if (distanceValue > 0) {
-                bestScore = Math.max(bestScore, distanceValue);
+        // Swept collision against each platform face the ball crosses or rests on.
+        for (const p of platforms) {
+            if (ball.x + BALL_R <= p.x || ball.x - BALL_R >= p.x + p.w) continue;
+            const top = p.y;
+            const bottom = p.y + PLATFORM_H;
+            const bottomOfBall = ball.y + BALL_R;
+            const topOfBall = ball.y - BALL_R;
+            if (bottomOfBall <= top + 0.5 && next + BALL_R >= top) {          // landing on the top face
+                next = top - BALL_R;
+                ball.vy = 0;
+                touchFace(p, top, p.greenOnTop);
+            } else if (topOfBall >= bottom - 0.5 && next - BALL_R <= bottom) { // hitting the bottom face
+                next = bottom + BALL_R;
+                ball.vy = 0;
+                touchFace(p, bottom, !p.greenOnTop);
+            } else if (next + BALL_R > top && next - BALL_R < bottom) {        // platform slid into the ball
+                const above = ball.y < (top + bottom) / 2;
+                next = above ? top - BALL_R : bottom + BALL_R;
+                ball.vy = 0;
+                touchFace(p, above ? top : bottom, above ? p.greenOnTop : !p.greenOnTop);
             }
-            currentGrandTotal = 0;
-            grandTotalHighScore = 0;
-            speedBoost = 0;
-            highscore = 0;
-
-            // Start red-out animation
-            gameOverRedAnim.active = true;
-            gameOverRedAnim.start = performance.now();
-            gameOverRedAnim.progress = 0;
+            if (state !== 'playing') return;
         }
 
-        // Best score is a single value kept in `bestScore` and rendered as the
-        // BEST badge by drawScore(), so there is no separate list to update.
-
-        function drawStartScreen() {
-            ctx.save();
-            ctx.font = 'bold 32px VT323, Fira Mono, Menlo, monospace';
-            ctx.textAlign = 'center';
-            ctx.lineWidth = 2.5;
-            ctx.strokeStyle = '#22ff55'; // retro green stroke
-            ctx.strokeText('Press space or tap to start', width / 2, height / 2);
-            ctx.fillStyle = '#181c23'; // black fill
-            ctx.fillText('Press space or tap to start', width / 2, height / 2);
-            ctx.restore();
+        ball.y = next;
+        if (ball.y + BALL_R >= H || ball.y - BALL_R <= 0) {
+            ball.y = Math.min(H - BALL_R, Math.max(BALL_R, ball.y));
+            crash();
         }
+    }
 
-        function drawCeilingAndFloor() {
-            ctx.save();
+    /* ---------- drawing ---------- */
+    function drawBackground() {
+        const g = ctx.createLinearGradient(0, 0, 0, H);
+        g.addColorStop(0, '#f8fafc');
+        g.addColorStop(1, '#e0f2fe');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, H);
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 10;
+        ctx.beginPath();
+        ctx.moveTo(0, 0); ctx.lineTo(W, 0);
+        ctx.moveTo(0, H); ctx.lineTo(W, H);
+        ctx.stroke();
+        ctx.globalAlpha = 0.7;
+        ctx.fillStyle = '#fff';
+        for (const s of streaks) ctx.fillRect(s.x, s.y, s.w, s.h);
+        ctx.globalAlpha = 1;
+    }
+
+    function drawPlatforms() {
+        ctx.lineWidth = 6;
+        for (const p of platforms) {
+            const greenY = p.greenOnTop ? p.y : p.y + PLATFORM_H;
+            const redY = p.greenOnTop ? p.y + PLATFORM_H : p.y;
             ctx.strokeStyle = '#ef4444';
-            ctx.lineWidth = 10;
-            // Ceiling
             ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(width, 0);
+            ctx.moveTo(p.x, redY);
+            ctx.lineTo(p.x + p.w, redY);
             ctx.stroke();
-            // Floor
+            ctx.strokeStyle = '#22c55e';
             ctx.beginPath();
-            ctx.moveTo(0, height);
-            ctx.lineTo(width, height);
-            ctx.stroke();
-            ctx.restore();
-        }
-
-        function drawWarpPlatforms() {
-            ctx.save();
-            ctx.globalAlpha = 0.7;
-            for (const wp of warpPlatforms) {
-                ctx.fillStyle = '#fff';
-                ctx.fillRect(wp.x, wp.y, wp.w, wp.h);
-            }
-            ctx.restore();
-        }
-
-        function update(deltaTime) {
-            // Convert deltaTime from ms to seconds for physics
-            const dt = deltaTime / 1000;
-            updateBackgroundOffsets(dt);
-            // Animate flyingSegments ...
-            for (let i = flyingSegments.length - 1; i >= 0; i--) {
-                let seg = flyingSegments[i];
-                seg.progress += 0.07 * (dt * 60);
-                if (seg.progress >= 1) {
-                    let [p, idx, colorType] = seg.seg;
-                    if (colorType === 'green' && p && p.touchedGreenSegments) p.touchedGreenSegments[idx] = true;
-                    flyingSegments.splice(i, 1);
-                    if (colorType === 'green') speedBoost++;
-                } else {
-                    seg.x = seg.x + (seg.tx - seg.x) * seg.progress * 0.25;
-                    seg.y = seg.y + (seg.ty - seg.y) * seg.progress * 0.25;
-                    seg.x2 = seg.x;
-                    seg.y2 = seg.y;
-                }
-            }
-            // Warp platforms logic (visual only, not collectible)
-            let warpActive = gameStarted && !gameOver;
-            let warpMoveSpeed = warpActive ? 1 : 0.5;
-            let spawnRate = warpActive ? (0.15 * (gameSpeed / 6)) : 0.04;
-            const maxWarp = Math.floor(2 + Math.min(gameSpeed / 2, 10));
-            if (Math.random() < spawnRate * dt * 60) {
-                for (let i = 0; i < maxWarp; i++) {
-                    if (Math.random() < 0.5) continue;
-                    const warpH = 6 + Math.random() * 8;
-                    const warpW = 18 + Math.random() * 18;
-                    const y = 10 + Math.random() * (height - 20 - warpH);
-                    const baseSpeed = warpActive ? (gameSpeed + 2) : 3;
-                    const speed = baseSpeed + Math.random() * (gameSpeed * 1.2);
-                    warpPlatforms.push({
-                        x: width + Math.random() * 40,
-                        y,
-                        w: warpW,
-                        h: warpH,
-                        speed
-                    });
-                }
-            }
-            for (let i = warpPlatforms.length - 1; i >= 0; i--) {
-                let moveSpeed = warpPlatforms[i].speed * warpMoveSpeed * dt * 60;
-                warpPlatforms[i].x -= moveSpeed;
-                if (warpPlatforms[i].x + warpPlatforms[i].w < 0) {
-                    warpPlatforms.splice(i, 1);
-                }
-            }
-            let platformMoveSpeed = gameSpeed * dt * 60;
-            for (let i = platforms.length - 1; i >= 0; i--) {
-                platforms[i].x -= platformMoveSpeed;
-            }
-            for (let i = platforms.length - 1; i >= 0; i--) {
-                if (platforms[i].x + platforms[i].w < 0) {
-                    platforms.splice(i, 1);
-                }
-            }
-            if (!gameStarted || gameOver) {
-                return;
-            }
-            // Ball physics
-            if (holdUp) {
-                ball.vy += upHoldAccel * dt * 60;
-                if (ball.vy < minVy) ball.vy = minVy;
-            } else {
-                ball.vy += gravity * dt * 60;
-                if (ball.vy > maxVy) ball.vy = maxVy;
-            }
-            let nextY = ball.y + ball.vy * dt * 60;
-            let onPlatform = false;
-            let platformTouched = null;
-            for (let p of platforms) {
-                let topY = p.y;
-                let botY = p.y + platformH;
-                let left = p.x;
-                let right = p.x + p.w;
-                let collectedThisFrame = false;
-                if (ball.x + ball.r > left && ball.x - ball.r < right) {
-                    let segCount = Math.ceil(p.w / PLATFORM_SEGMENT_W);
-                    if (!p.touchedGreenSegments) p.touchedGreenSegments = Array(segCount).fill(false);
-                    if (!p.touchedRedSegments) p.touchedRedSegments = Array(segCount).fill(false);
-                    if (!p.flyingSegments) p.flyingSegments = Array(segCount).fill(null);
-                    if (p.grassOnTop) {
-                        if (Math.abs((ball.y + ball.r) - topY) < 8) {
-                            onPlatform = true;
-                            platformTouched = p;
-                            for (let i = 0; i < segCount; i++) {
-                                let segX1 = p.x + i * PLATFORM_SEGMENT_W;
-                                let segX2 = Math.min(segX1 + PLATFORM_SEGMENT_W, p.x + p.w);
-                                if (ball.x + ball.r > segX1 && ball.x - ball.r < segX2) {
-                                    if (!p.touchedGreenSegments[i] && p.flyingSegments[i] !== 'green') {
-                                        flyingSegments.push({
-                                            x: (segX1 + segX2) / 2, y: p.y, x2: (segX1 + segX2) / 2, y2: p.y,
-                                            tx: 16, ty: height - 16, progress: 0, seg: [p, i, 'green'], color: 'green'
-                                        });
-                                        p.flyingSegments[i] = 'green';
-                                        p.touchedGreenSegments[i] = true;
-                                        collectedThisFrame = true;
-                                        gameSpeed += 0.05;
-                                    }
-                                }
-                            }
-                        }
-                        if (!collectedThisFrame && Math.abs((ball.y - ball.r) - botY) < 8) {
-                            for (let i = 0; i < segCount; i++) {
-                                let segX1 = p.x + i * PLATFORM_SEGMENT_W;
-                                let segX2 = Math.min(segX1 + PLATFORM_SEGMENT_W, p.x + p.w);
-                                if (ball.x + ball.r > segX1 && ball.x - ball.r < segX2) {
-                                    gameOver = true;
-                                    gameStarted = false;
-                                    endGameAndTrackScores();
-                                }
-                            }
-                        }
-                    } else {
-                        if (Math.abs((ball.y - ball.r) - botY) < 8) {
-                            onPlatform = true;
-                            platformTouched = p;
-                            for (let i = 0; i < segCount; i++) {
-                                let segX1 = p.x + i * PLATFORM_SEGMENT_W;
-                                let segX2 = Math.min(segX1 + PLATFORM_SEGMENT_W, p.x + p.w);
-                                if (ball.x + ball.r > segX1 && ball.x - ball.r < segX2) {
-                                    if (!p.touchedGreenSegments[i] && p.flyingSegments[i] !== 'green') {
-                                        flyingSegments.push({
-                                            x: (segX1 + segX2) / 2,
-                                            y: p.y + platformH,
-                                            x2: (segX1 + segX2) / 2,
-                                            y2: p.y + platformH,
-                                            tx: 16,
-                                            ty: height - 16,
-                                            progress: 0,
-                                            seg: [p, i, 'green'],
-                                            color: 'green'
-                                        });
-                                        p.flyingSegments[i] = 'green';
-                                        p.touchedGreenSegments[i] = true;
-                                        collectedThisFrame = true;
-                                        gameSpeed += 0.05;
-                                    }
-                                }
-                            }
-                        }
-                        if (!collectedThisFrame && Math.abs((ball.y + ball.r) - topY) < 8) {
-                            for (let i = 0; i < segCount; i++) {
-                                let segX1 = p.x + i * PLATFORM_SEGMENT_W;
-                                let segX2 = Math.min(segX1 + PLATFORM_SEGMENT_W, p.x + p.w);
-                                if (ball.x + ball.r > segX1 && ball.x - ball.r < segX2) {
-                                    gameOver = true;
-                                    gameStarted = false;
-                                    endGameAndTrackScores();
-                                }
-                            }
-                        }
-                    }
-                    // Block movement as before
-                    if (p.grassOnTop) {
-                        if (ball.y + ball.r <= topY && nextY + ball.r >= topY) {
-                            nextY = topY - ball.r;
-                            ball.vy = 0;
-                        }
-                        if (ball.y - ball.r >= botY && nextY - ball.r <= botY) {
-                            nextY = botY + ball.r;
-                            ball.vy = 0;
-                        }
-                    } else {
-                        if (ball.y + ball.r <= topY && nextY + ball.r >= topY) {
-                            nextY = topY - ball.r;
-                            ball.vy = 0;
-                        }
-                        if (ball.y - ball.r >= botY && nextY - ball.r <= botY) {
-                            nextY = botY + ball.r;
-                            ball.vy = 0;
-                        }
-                    }
-                }
-            }
-            // Increase highscore for each 0.1s spent on green side
-            if (onPlatform && platformTouched) {
-                if (!platformTouched.lastScoreTime) platformTouched.lastScoreTime = performance.now();
-                const now = performance.now();
-                while (now - platformTouched.lastScoreTime >= 100) {
-                    highscore++;
-                    platformTouched.lastScoreTime += 100;
-                }
-            }
-            platforms.forEach(p => {
-                if (p !== platformTouched) p.lastScoreTime = null;
+            p.taken.forEach((taken, i) => {
+                if (taken) return;
+                const x1 = p.x + i * SEGMENT_W;
+                ctx.moveTo(x1, greenY);
+                ctx.lineTo(Math.min(x1 + SEGMENT_W, p.x + p.w), greenY);
             });
-            ball.y = nextY;
-            if (ball.y + ball.r > height) {
-                ball.y = height - ball.r;
-                ball.vy = 0;
-                gameOver = true;
-                gameStarted = false;
-                endGameAndTrackScores();
-            }
-            if (ball.y - ball.r < 0) {
-                ball.y = ball.r;
-                ball.vy = 0;
-                gameOver = true;
-                gameStarted = false;
-                endGameAndTrackScores();
-            }
-            if (frame === 0 || (platforms.length && width - (platforms[platforms.length - 1].x + platforms[platforms.length - 1].w) > platformGap)) {
-                let w = platformMinW + Math.random() * (platformMaxW - platformMinW);
-                let y = 40 + Math.random() * (height - 80);
-                let grassOnTop = Math.random() < 0.5;
-                let segCount = Math.ceil(w / PLATFORM_SEGMENT_W);
-                platforms.push({
-                    x: width,
-                    y,
-                    w,
-                    grassOnTop,
-                    touchedGreenSegments: Array(segCount).fill(false),
-                    touchedRedSegments: Array(segCount).fill(false),
-                    flyingSegments: Array(segCount).fill(null)
-                });
-            }
-            if (platforms.length && platforms[0].x + platforms[0].w < 0) platforms.shift();
-            frame++;
+            ctx.stroke();
+        }
+        // Collected pieces fly to the bottom-left corner.
+        for (const pc of pieces) {
+            const e = pc.t * pc.t;
+            const x = pc.x + (16 - pc.x) * e;
+            const y = pc.y + (H - 16 - pc.y) * e;
+            ctx.globalAlpha = 1 - pc.t;
+            ctx.strokeStyle = '#22c55e';
+            ctx.beginPath();
+            ctx.moveTo(x - 5, y);
+            ctx.lineTo(x + 5, y);
+            ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+    }
+
+    function drawBall(now) {
+        if (state === 'over' && crashAnim >= 1) return;
+        const t = now * 0.002;
+        const base = BALL_R * 0.75;
+        const core = base * (0.85 + 0.18 * Math.sin(t * 2.2));
+        const halo = base * 1.8 * (1 + 0.13 * Math.sin(t * 2.2 + 1.2));
+        const red = state === 'over';
+        let rgb;
+        if (red) {
+            const k = 1 - crashAnim;
+            rgb = [239, Math.round(68 * k), Math.round(68 * k)];
+        } else {
+            const k = Math.min(1, collected / 100);   // magenta to green as you collect
+            rgb = [255 + (34 - 255) * k, 0 + 197 * k, 128 + (94 - 128) * k].map(Math.round);
+        }
+        const c = rgb.join(',');
+
+        if (state === 'ready') {
+            const py = ball.y + BALL_R * 0.85;
+            const pad = ctx.createRadialGradient(ball.x, py, 1, ball.x, py, BALL_R * 1.3);
+            pad.addColorStop(0, 'rgba(0,255,255,0.45)');
+            pad.addColorStop(0.5, 'rgba(0,128,255,0.2)');
+            pad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = pad;
+            ctx.beginPath();
+            ctx.ellipse(ball.x, py, BALL_R * 2.2, BALL_R * 0.55, 0, 0, Math.PI * 2);
+            ctx.fill();
         }
 
-        function render() {
-            ctx.clearRect(0, 0, width, height);
-            drawPixelArtBackground();
-            drawCeilingAndFloor();
-            drawWarpPlatforms();
-            drawPlatforms();
-            drawFlyingSegments();
-            ctx.globalAlpha = 1.0;
-            drawBall();
-            drawScore();
-            if (!gameStarted && !gameOver) drawStartScreen();
-            if (gameOver) drawGameOver();
+        const glow = ctx.createRadialGradient(ball.x, ball.y, core, ball.x, ball.y, halo);
+        glow.addColorStop(0, `rgba(${c},0.32)`);
+        glow.addColorStop(0.5, `rgba(${c},0.13)`);
+        glow.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, halo, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.lineWidth = 4.2;
+        ctx.strokeStyle = red ? 'rgba(239,0,0,0.95)' : '#172554';
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, base * 1.18, 0, Math.PI * 2);
+        ctx.stroke();
+        if (!red) {
+            ctx.lineWidth = 2.2;
+            ctx.strokeStyle = 'rgba(0,255,255,0.45)';
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, base * 1.25, t * 1.2, t * 1.2 + Math.PI * 0.7);
+            ctx.stroke();
         }
+        const fill = ctx.createRadialGradient(ball.x, ball.y, core * 0.18, ball.x, ball.y, core);
+        fill.addColorStop(0, '#fff');
+        fill.addColorStop(0.3, red ? '#ffb3b3' : '#b3e6ff');
+        fill.addColorStop(1, `rgb(${c})`);
+        ctx.fillStyle = fill;
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, core, 0, Math.PI * 2);
+        ctx.fill();
+    }
 
-        function loop() {
-            const now = performance.now();
-            if (!loop.lastTime) loop.lastTime = now;
-            let deltaTime = now - loop.lastTime;
-            if (deltaTime > 100) deltaTime = 100; // clamp to avoid huge jumps
-            loop.lastTime = now;
-            // Animate red-out on game over
-            if (gameOverRedAnim.active) {
-                gameOverRedAnim.progress = (now - gameOverRedAnim.start) / 1800;
-                if (gameOverRedAnim.progress >= 1.0) {
-                    gameOverRedAnim.progress = 1.0;
-                }
-            }
-            update(deltaTime);
-            render();
-            platforms = platforms.filter(p => p.x + p.w > 0);
-            requestAnimationFrame(loop);
+    function drawMessage(big, small) {
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#181c23';
+        ctx.strokeStyle = '#22ff55';
+        ctx.font = `bold ${small ? 56 : 32}px VT323, Fira Mono, Menlo, monospace`;
+        ctx.lineWidth = 2.5;
+        ctx.strokeText(big, W / 2, H / 2 - (small ? 10 : 0));
+        ctx.fillText(big, W / 2, H / 2 - (small ? 10 : 0));
+        if (small) {
+            ctx.font = '28px VT323, Fira Mono, Menlo, monospace';
+            ctx.lineWidth = 1.5;
+            ctx.strokeText(small, W / 2, H / 2 + 24);
+            ctx.fillText(small, W / 2, H / 2 + 24);
         }
+    }
 
-        // Only take over the space bar while the game is on screen, so the page still scrolls.
-        let gameInView = false;
-        new IntersectionObserver(([entry]) => { gameInView = entry.isIntersecting; }, { threshold: 0.5 }).observe(canvas);
+    function draw(now) {
+        drawBackground();
+        drawPlatforms();
+        drawBall(now);
+        if (state === 'ready') drawMessage('Press space or tap to start');
+        if (state === 'over') drawMessage('Game Over', `${su(distance)} SU · press space or tap to retry`);
+    }
 
-        function handleKey(e) {
-            if (e.code === 'Space' && gameInView) {
-                e.preventDefault();
-                if (e.type === 'keydown') {
-                    if (gameOver) {
-                        reset();
-                        return;
-                    }
-                    if (!gameStarted && !gameOver) {
-                        gameStarted = true;
-                        gameOver = false;
-                        holdUp = true;
-                        ball.vy = upTapBoost;
-                        startTimer();
-                    } else {
-                        if (!holdUp) ball.vy = upTapBoost;
-                        holdUp = true;
-                    }
-                } else if (e.type === 'keyup') {
-                    holdUp = false;
-                }
-            }
+    /* ---------- score bar: rebuilt once, then only the numbers change ---------- */
+    let scoreEls = null;
+    let lastScore = '';
+    function renderScore(force) {
+        if (!scoreEls) {
+            const item = (cls, title, icon, unit, extra = '') => `
+              <span class="score-item ${cls}" title="${title}" ${extra}>
+                ${icon ? `<span class="score-icon">${icon}</span>` : ''}
+                ${cls === 'fly-dist' ? '<span class="score-label">DIST</span>' : ''}
+                <span class="score-value"><span class="n"></span> <span class="u">${unit}</span></span>
+              </span>`;
+            tracker.innerHTML = item('fly-dist', 'Distance', '🏁', 'SU') + item('fly-qs', 'Pieces collected', '⚡', 'QS')
+                + item('fly-time', 'Time', '⏱', 's') + item('fly-best home-game__best', 'Best distance', '', 'SU');
+            scoreEls = ['fly-dist', 'fly-qs', 'fly-time', 'fly-best'].map((c) => tracker.querySelector(`.${c} .n`));
+            scoreEls[3].insertAdjacentText('beforebegin', 'BEST ');
         }
+        const values = [su(distance), String(collected), String(Math.floor(time)), su(best)];
+        const key = values.join('|');
+        if (!force && key === lastScore) return;
+        lastScore = key;
+        values.forEach((v, i) => { scoreEls[i].textContent = v; });
+    }
 
-        document.addEventListener('keydown', handleKey);
-        document.addEventListener('keyup', handleKey);
-        canvas.addEventListener('touchstart', () => {
-            if (gameOver) {
-                reset();
-                return;
-            }
-            if (!gameStarted) {
-                gameStarted = true;
-                gameOver = false;
-                holdUp = true;
-                ball.vy = upTapBoost;
-                startTimer();
-                // Remove startTechnoMusic() call
-            } else {
-                if (!holdUp) ball.vy = upTapBoost;
-                holdUp = true;
-            }
-        });
-        canvas.addEventListener('mousedown', () => {
-            if (gameOver) {
-                reset();
-                return;
-            }
-            if (!gameStarted) {
-                gameStarted = true;
-                gameOver = false;
-                holdUp = true;
-                ball.vy = upTapBoost;
-                startTimer();
-                // Remove startTechnoMusic() call
-            } else {
-                if (!holdUp) ball.vy = upTapBoost;
-                holdUp = true;
-            }
-        });
-        canvas.addEventListener('touchend', () => {
-            holdUp = false;
-        });
-        canvas.addEventListener('mouseup', () => {
-            holdUp = false;
-        });
-        backgroundLayers = generateBackgroundLayers();
-        backgroundOffsets = {sun: 0, cloudsFar: 0, cloudsNear: 0, hills: [0, 0], meadow: 0};
-        reset();
-        loop();
-    })();
+    /* ---------- loop: runs only while visible ---------- */
+    let rafId = 0;
+    let last = 0;
+    let acc = 0;
+    function frame(now) {
+        rafId = 0;
+        if (!inView || document.hidden) return;   // sleep until the game is visible again
+        acc += Math.min(0.1, (now - last) / 1000);
+        last = now;
+        while (acc >= STEP) { step(); acc -= STEP; }
+        draw(now);
+        renderScore(false);
+        rafId = requestAnimationFrame(frame);
+    }
+    function wake() {
+        if (rafId || document.hidden) return;
+        last = performance.now();
+        acc = 0;
+        rafId = requestAnimationFrame(frame);
+    }
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) holding = false;
+        else if (inView) wake();
+    });
+
+    reset();
+    draw(performance.now());
+})();

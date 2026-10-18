@@ -3,11 +3,12 @@
 // cathedral spire. Units are metres; +x is towards the river, -z is upstream.
 import * as THREE from '../vendor/three-0.170.0.module.min.js';
 
-export const WATER_Y = -2.6;
+export const WATER_Y = -1.5;
 const BRIDGE_Z = -140;
 const PYLON_A = 10;     // city-side pylon x
 const PYLON_B = 172;    // far-side pylon x
 const PYLON_H = 35;
+const LEG = 1.8;        // half the distance between a pylon's two legs
 
 /* ---------------- helpers ---------------- */
 
@@ -237,6 +238,17 @@ function pavingTexture(r, repeatX, repeatY) {
   }, repeatX, repeatY);
 }
 
+function asphaltTexture(r, repeatX, repeatY) {
+  return tileTexture(16, (g) => {
+    g.fillStyle = '#8f9295';
+    g.fillRect(0, 0, 16, 16);
+    for (let i = 0; i < 46; i++) {
+      g.fillStyle = r() < 0.5 ? '#9a9da0' : '#84878a';
+      g.fillRect(Math.floor(r() * 16), Math.floor(r() * 16), 1, 1);
+    }
+  }, repeatX, repeatY);
+}
+
 function grassTexture(r, base, repeatX, repeatY) {
   return tileTexture(16, (g) => {
     g.fillStyle = base;
@@ -279,22 +291,60 @@ function makeTree(r, scale = 1, palette) {
 
 function makeLamp() {
   const g = new THREE.Group();
-  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.09, 4.2, 6), toon('#2f3b3a'));
-  pole.position.y = 2.1;
+  const white = '#e4e7ea';
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.11, 5.7, 6), toon(white));
+  pole.position.y = 2.85;
   g.add(pole);
-  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.2, 0.5, 6), toon('#2f3b3a'));
-  base.position.y = 0.25;
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.21, 0.6, 6), toon('#c9ccd0'));
+  base.position.y = 0.3;
   g.add(base);
-  const glass = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.44, 0.34),
+  // The glowing ring under the saucer.
+  const glass = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.22, 0.2, 10),
     toon('#f4ead2', { emissive: new THREE.Color('#ffcf7a'), emissiveIntensity: 0, unique: true }));
-  glass.position.y = 4.45;
+  glass.position.y = 5.82;
   glass.userData.keep = true;
   g.add(glass);
-  const cap = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.25, 4), toon('#2f3b3a'));
-  cap.position.y = 4.8;
-  cap.rotation.y = Math.PI / 4;
-  g.add(cap);
+  const saucer = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.42, 0.14, 12), toon(white));
+  saucer.position.y = 6.0;
+  g.add(saucer);
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(0.34, 10, 5, 0, Math.PI * 2, 0, Math.PI / 2), toon(white));
+  dome.position.y = 6.06;
+  g.add(dome);
+  const tip = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.05, 0.3, 5), toon('#9aa0a6'));
+  tip.position.y = 6.5;
+  g.add(tip);
   g.userData.glass = glass;
+  return g;
+}
+
+// Concrete flower box with rounded shrubs, the signature of the Drava promenade.
+const SHRUBS = ['#c62f2b', '#e0782a', '#e3b23c', '#6f9a3a', '#c9a23a', '#d9622b', '#8a9a3a'];
+function makeFlowerBox(r) {
+  const g = new THREE.Group();
+  box(3.6, 0.42, 1.5, '#b9b1a3', 0, 0.21, 0, g);
+  box(3.3, 0.04, 1.2, '#5a4632', 0, 0.43, 0, g);
+  const bushes = new THREE.Group();
+  const main = SHRUBS[Math.floor(r() * SHRUBS.length)];
+  // Low green foliage under the coloured shrubs.
+  for (let i = 0; i < 3; i++) {
+    const leaf = new THREE.Mesh(new THREE.IcosahedronGeometry(0.42, 1), toon(['#4f7f37', '#5c8f3c', '#3f6f33'][i]));
+    leaf.position.set(-1.2 + i * 1.2, 0.62, 0.35 * (i % 2 ? 1 : -1));
+    leaf.scale.y = 0.7;
+    bushes.add(leaf);
+  }
+  const n = 3 + Math.floor(r() * 2);
+  for (let i = 0; i < n; i++) {
+    const colour = r() < 0.75 ? main : SHRUBS[Math.floor(r() * SHRUBS.length)];
+    const c = new THREE.Color(colour).offsetHSL((r() - 0.5) * 0.02, 0, (r() - 0.5) * 0.08);
+    const rad = 0.45 + r() * 0.3;
+    const b = new THREE.Mesh(new THREE.IcosahedronGeometry(rad, 1), toon('#' + c.getHexString()));
+    b.position.set(-1.25 + (i / (n - 1)) * 2.5 + (r() - 0.5) * 0.3, 0.45 + rad * 0.65, (r() - 0.5) * 0.3);
+    b.scale.set(0.95, 0.72, 0.95);
+    bushes.add(b);
+  }
+  bushes.userData.keep = true;
+  g.add(bushes);
+  g.userData.bushes = bushes;
   return g;
 }
 
@@ -433,9 +483,14 @@ export function buildWorld(scene) {
     return m;
   };
   plane(-2500, -13, 80, -2500, 0, null, grassTexture(r, '#6fa44a', 1240, 1290));   // park and beyond
-  plane(-13, -7, 80, -2500, 0.02, null, grassTexture(r, '#7fb552', 3, 1290));      // grass strip
-  plane(-7, -4.6, 80, -2500, 0.04, '#3f86c6');                                     // blue bike lane
-  plane(-4.6, 7.3, 80, -2500, 0.04, null, pavingTexture(r, 8, 1720));              // promenade paving
+  plane(-13, -4.6, 80, -2500, 0.02, null, grassTexture(r, '#7fb552', 5, 1290));     // grass strip
+  plane(-4.6, 3.2, 80, -2500, 0.04, null, asphaltTexture(r, 5, 1290));             // asphalt path
+  plane(3.2, 7.3, 80, -2500, 0.045, null, pavingTexture(r, 3, 1720));              // paved strip by the river
+  const yellow = new THREE.Mesh(new THREE.PlaneGeometry(0.14, 2580), toon('#e9c23b'));
+  yellow.rotation.x = -Math.PI / 2;
+  yellow.position.set(-2.1, 0.05, -1210);
+  ground.add(yellow);
+  box(0.2, 0.12, 2580, '#cfc8bb', 3.2, 0.06, -1210, ground);                       // kerb
   box(0.5, 0.55, 3000, '#b7ab99', 7.55, 0.27, -1400, ground);  // low river wall
   // Stone embankment sloping down to the water.
   const slope = new THREE.Mesh(new THREE.PlaneGeometry(Math.hypot(4.4, -WATER_Y), 3000), toon('#9a917f'));
@@ -514,18 +569,18 @@ export function buildWorld(scene) {
   for (let i = 0; i < 22; i++) {
     const z = -12 - i * 20;
     const lamp = makeLamp();
-    lamp.position.set(6.1, 0, z);
+    lamp.position.set(3.6, 0, z);
     scene.add(lamp);
     const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: W.glowTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0, fog: false }));
     glow.scale.set(1.7, 1.7, 1);
-    glow.position.set(0, 4.45, 0);
+    glow.position.set(0, 5.8, 0);
     lamp.add(onLayer1(glow));
     lamp.userData.glow = glow;
     lamp.userData.on = false;
     lamp.userData.kind = 'lamp';
     if (i < 10) {
-      const light = new THREE.PointLight(0xffc06a, 0, 16, 1.6);
-      light.position.set(-0.4, 4.2, 0);
+      const light = new THREE.PointLight(0xffc06a, 0, 18, 1.5);
+      light.position.set(-0.6, 5.5, 0);
       lamp.add(light);
       lamp.userData.light = light;
     }
@@ -533,34 +588,30 @@ export function buildWorld(scene) {
     if (i < 8) W.clickables.push(lamp);
   }
 
-  /* planters */
-  const flowerCols = ['#e8505b', '#f7b538', '#f48fb1', '#ffffff', '#b06ad9'];
-  W.planters = [];
-  for (const z of [-2, -29, -69, -109, -149]) {
-    const pl = new THREE.Group();
-    W.planters.push(pl);
-    const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.75, 0.6, 8), toon('#a39a8c'));
-    pot.position.y = 0.3;
-    pl.add(pot);
-    const soil = new THREE.Mesh(new THREE.CylinderGeometry(0.78, 0.78, 0.05, 8), toon('#4a7a35'));
-    soil.position.y = 0.62;
-    pl.add(soil);
-    for (let i = 0; i < 26; i++) {
-      const a = r() * Math.PI * 2;
-      const d = Math.sqrt(r()) * 0.7;
-      const f = new THREE.Mesh(new THREE.IcosahedronGeometry(0.1 + r() * 0.06, 0), toon(i % 3 ? flowerCols[Math.floor(r() * flowerCols.length)] : '#3f8a3a'));
-      f.position.set(Math.cos(a) * d, 0.7 + r() * 0.2, Math.sin(a) * d);
-      pl.add(f);
+  /* flower boxes */
+  W.flowerBoxes = [];
+  const farBoxes = new THREE.Group();
+  scene.add(farBoxes);
+  for (let z = 3; z > -520; z -= 5.4) {
+    const fb = makeFlowerBox(r);
+    fb.position.set(5.4, 0, z);
+    if (z > -45) {
+      fb.userData.kind = 'bush';
+      scene.add(fb);
+      W.flowerBoxes.push(fb);
+    } else {
+      farBoxes.add(fb);
+      fb.userData.bushes.userData.keep = false;
     }
-    pl.position.set(-3.6, 0, z);
-    scene.add(pl);
   }
+  W.clickables.push(...W.flowerBoxes);
+  W.farBoxes = farBoxes;
 
   /* benches */
   W.benches = [];
-  for (const z of [-9, -49, -89]) {
+  for (const z of [-21, -97]) {
     const b = makeBench();
-    b.position.set(4.7, 0, z);
+    b.position.set(-4.2, 0.02, z);
     scene.add(b);
     W.benches.push(b);
   }
@@ -580,15 +631,25 @@ export function buildWorld(scene) {
   for (let i = 0; i < 70; i++) {
     const x = -55 - r() * 200;
     const z = -150 - r() * 560;
-    if (Math.hypot(x + 40, z + 420) < 45) continue;
+    if (Math.hypot(x + 108, z + 500) < 50 || Math.hypot(x + 16, z + 350) < 30) continue;
     makeBuilding(r, x, z, 10 + r() * 14, 10 + r() * 14, 8 + r() * 12, walls[Math.floor(r() * walls.length)], roofs[Math.floor(r() * roofs.length)], city, windows);
   }
   // Riverside blocks near the bridge, and the blue glass hotel tower.
   for (let i = 0; i < 6; i++) makeBuilding(r, -34 - i * 2, -190 - i * 26, 12, 18, 14 + r() * 8, walls[i % walls.length], roofs[i % roofs.length], city, windows);
-  const tower = new THREE.Mesh(new THREE.BoxGeometry(16, 58, 16), toon('#5f93c4'));
-  tower.position.set(-70, 29, -470);
-  city.add(tower);
-  for (let f = 0; f < 16; f++) for (let c = 0; c < 4; c++) if (r() < 0.6) windows.push(new THREE.Vector3(-61.9, 3 + f * 3.4, -476 + c * 4));
+  // Hotel Osijek: the glass tower at the end of the promenade, with its white fins and mast.
+  const hotel = new THREE.Group();
+  box(20, 64, 17, '#79a5d2', 0, 32, 0, hotel);
+  for (const [fx, fz] of [[-10.2, -8.7], [10.2, -8.7], [-10.2, 8.7], [10.2, 8.7], [0, 8.7]]) box(1.3, 66, 1.3, '#eef0f2', fx, 33, fz, hotel);
+  box(15, 4, 12, '#eef0f2', 0, 66, 0, hotel);
+  box(6, 7, 5, '#dfe3e6', 0, 71, 0, hotel);
+  const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.4, 16, 5), toon('#d4d8dc'));
+  mast.position.set(0, 82, 0);
+  hotel.add(mast);
+  box(26, 8, 22, '#e9e4da', 4, 4, 2, hotel);
+  hotel.position.set(-16, 0, -350);
+  hotel.rotation.y = 0.12;
+  city.add(hotel);
+  for (let f = 1; f < 18; f++) for (let c = 0; c < 5; c++) if (r() < 0.55) windows.push(new THREE.Vector3(-24 + c * 3.6, 3 + f * 3.4, -340.6));
 
   // Co-cathedral of St Peter and Paul: red brick nave, 90 m tower and spire.
   const cat = new THREE.Group();
@@ -607,8 +668,8 @@ export function buildWorld(scene) {
     pin.position.set(px, 66, pz);
     cat.add(pin);
   }
-  cat.position.set(-40, 0, -420);
-  cat.scale.setScalar(1.15);
+  cat.position.set(-108, 0, -500);
+  cat.scale.setScalar(1.3);
   cat.rotation.y = 0.2;
   scene.add(cat);
   W.cathedral = cat;
@@ -640,9 +701,9 @@ export function buildWorld(scene) {
 
   /* people */
   const walkers = [
-    { x: 1.5, z: -14, dir: 1, speed: 1.2 }, { x: 3.2, z: -45, dir: -1, speed: 1.0 },
-    { x: -0.5, z: -70, dir: 1, speed: 1.3 }, { x: 2.4, z: -110, dir: -1, speed: 1.1 },
-    { x: 0.6, z: -160, dir: 1, speed: 1.0 }, { x: 4.0, z: -25, dir: -1, speed: 0.9 },
+    { x: 1.4, z: -14, dir: 1, speed: 1.2 }, { x: -1.0, z: -45, dir: -1, speed: 1.0 },
+    { x: -3.2, z: -70, dir: 1, speed: 1.3 }, { x: 2.2, z: -110, dir: -1, speed: 1.1 },
+    { x: 0.4, z: -160, dir: 1, speed: 1.0 }, { x: -2.6, z: -25, dir: -1, speed: 0.9 },
   ];
   for (const w of walkers) {
     const p = makePerson(r);
@@ -674,8 +735,8 @@ export function buildWorld(scene) {
   catTail.rotation.x = -0.6;
   catTail.userData.keep = true;
   cat2.add(catTail);
-  cat2.position.set(7.55, 0.55, -13);
-  cat2.rotation.y = -2.2;
+  cat2.position.set(4.8, 0.43, -6.4);   // on the rim of a flower box, by the path
+  cat2.rotation.y = -0.9;
   cat2.userData.kind = 'cat';
   cat2.userData.tail = catTail;
   scene.add(cat2);
@@ -685,7 +746,7 @@ export function buildWorld(scene) {
   /* ducks */
   for (let i = 0; i < 4; i++) {
     const d = makeDuck(r, i % 2 ? 'hen' : 'mallard');
-    d.position.set(14 + r() * 6, WATER_Y, -10 - i * 5 - r() * 3);
+    d.position.set(20 + r() * 8, WATER_Y, -48 - i * 6 - r() * 3);
     d.rotation.y = r() * Math.PI * 2;
     d.userData.kind = 'duck';
     scene.add(d);
@@ -695,11 +756,12 @@ export function buildWorld(scene) {
 
   /* bake static groups into single meshes */
   for (const t of W.trees) { bake(t.userData.canopy); bake(t); }
-  for (const l of W.lamps) bake(l);
+  for (const l of W.lamps) bake(l, '#5a5c60');
   for (const b of W.benches) bake(b);
   for (const p of W.people) bake(p);
   for (const d of W.ducks) bake(d);
-  for (const pl of W.planters) bake(pl);
+  for (const fb of W.flowerBoxes) { bake(fb.userData.bushes); bake(fb); }
+  bake(W.farBoxes);
   bake(cat2);
   bake(city);
   bake(cat);
@@ -725,12 +787,19 @@ function buildBridge(scene) {
     seg.rotation.z = Math.atan2(y1 - y0, x1 - x0);
     g.add(seg);
   }
-  // Pylons: slender white masts.
+  // Pylons: two white legs tied by cross beams.
   for (const px of [PYLON_A, PYLON_B]) {
     const base = px === PYLON_A ? 0 : 0.5;
-    const pylon = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.85, PYLON_H - base, 6), toon(white));
-    pylon.position.set(px, base + (PYLON_H - base) / 2, BRIDGE_Z);
-    g.add(pylon);
+    for (const s of [-1, 1]) {
+      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.5, PYLON_H - base, 6), toon(white));
+      leg.position.set(px, base + (PYLON_H - base) / 2, BRIDGE_Z + s * LEG);
+      g.add(leg);
+    }
+    for (const hy of [deckY(px) + 3.2, PYLON_H * 0.62, PYLON_H - 0.5]) {
+      const beam = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.6, LEG * 2 + 0.4), toon(white));
+      beam.position.set(px, hy, BRIDGE_Z);
+      g.add(beam);
+    }
   }
   // Cables: two main cables, hangers and back stays as 1px lines.
   const pts = [];
@@ -741,7 +810,7 @@ function buildBridge(scene) {
     return low + (PYLON_H - low) * Math.pow(2 * t - 1, 2);
   };
   for (const side of [-1, 1]) {
-    const zOff = (x) => side * 2.1 * Math.sin(Math.PI * (x - PYLON_A) / (PYLON_B - PYLON_A)) ** 0.35;
+    const zOff = (x) => side * (LEG + 0.3 * Math.sin(Math.PI * (x - PYLON_A) / (PYLON_B - PYLON_A)));
     let prev = null;
     for (let x = PYLON_A; x <= PYLON_B + 0.01; x += 2) {
       const p = [x, cableY(x), BRIDGE_Z + zOff(x)];
@@ -750,8 +819,8 @@ function buildBridge(scene) {
       lightPts.push(...p);
       if (x > PYLON_A + 3 && x < PYLON_B - 3 && Math.round(x) % 6 === 0) pts.push(...p, x, deckY(x) + 0.35, BRIDGE_Z + side * 2.1);
     }
-    pts.push(PYLON_A, PYLON_H, BRIDGE_Z, -22, 0.2, BRIDGE_Z + side * 3);
-    pts.push(PYLON_B, PYLON_H, BRIDGE_Z, 194, 0.7, BRIDGE_Z + side * 3);
+    pts.push(PYLON_A, PYLON_H, BRIDGE_Z + side * LEG, -22, 0.2, BRIDGE_Z + side * 3);
+    pts.push(PYLON_B, PYLON_H, BRIDGE_Z + side * LEG, 194, 0.7, BRIDGE_Z + side * 3);
     // Handrails.
     for (let i = 0; i < segs; i++) {
       const x0 = -6 + (i / segs) * 192;

@@ -92,11 +92,11 @@ body.oh header.oh-hero {
 .oh-fallback {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  background: #86bce8 url('/assets/osijek-day.png') center / cover no-repeat;
   image-rendering: pixelated;
 }
+html.oh-night .oh-fallback { background-color: #0a1530; background-image: url('/assets/osijek-night.png'); }
+html.oh-night body.oh header.oh-hero { background: #0a1530; }
 .oh-hero.is-live .oh-fallback { display: none; }
 .osijek-canvas {
   position: absolute;
@@ -252,6 +252,31 @@ body.oh main.oh-main {
   background: var(--entry-accent, #2dd4bf);
   box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
 }
+
+.oh-site-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 22px;
+}
+.oh-site { padding: 0; }
+.oh-site__link { display: block; padding: 16px 18px 18px; color: inherit; text-decoration: none; }
+.oh-site__link:hover { text-decoration: none; background: #fff8e8; }
+.oh-site__shot {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 8 / 5;
+  image-rendering: pixelated;
+  border: 3px solid var(--oh-wood);
+  margin-bottom: 12px;
+  background: #ddd;
+}
+.oh-site h3 { font: 700 1.6rem/1.1 var(--oh-pixel); margin: 10px 0 6px; }
+.oh-site p { margin: 0 0 10px; font-size: 0.98rem; color: var(--oh-ink-soft); }
+.oh-site__domain { font: 600 1rem/1 var(--oh-pixel); color: var(--oh-accent); }
 
 .oh-value-list {
   list-style: none;

@@ -8,18 +8,28 @@ title: Tomislav Hofman
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tomislav Hofman · small tools from Osijek</title>
-<meta name="description" content="Tomislav Hofman, software engineer from Osijek, Croatia. Small, useful tools made with care. Come say hi on the Drava promenade.">
+<meta name="description" content="Tomislav Hofman, a dreamer from Osijek, Croatia, making small, quirky tools with care. Come say hi on the Drava promenade.">
 <meta name="author" content="Tomislav Hofman">
 <meta name="theme-color" content="#2f78c8">
 <meta property="og:title" content="Tomislav Hofman · small tools from Osijek">
-<meta property="og:description" content="Software engineer from Osijek, Croatia. Small, useful tools made with care.">
+<meta property="og:description" content="A dreamer from Osijek, Croatia, making small, quirky tools with care.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://hofman.tech/">
 <meta property="og:image" content="https://hofman.tech/assets/og-home.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Tomislav Hofman · small tools from Osijek">
-<meta name="twitter:description" content="Software engineer from Osijek, Croatia. Small, useful tools made with care.">
+<meta name="twitter:description" content="A dreamer from Osijek, Croatia, making small, quirky tools with care.">
 <meta name="twitter:image" content="https://hofman.tech/assets/og-home.png">
+<script>
+  // Pick day or night before the first paint, so the page never flashes the wrong time of day.
+  (function () {
+    try {
+      var p = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Zagreb', hour: 'numeric', minute: 'numeric', hourCycle: 'h23' }).formatToParts(new Date());
+      var h = +p.find(function (x) { return x.type === 'hour'; }).value + +p.find(function (x) { return x.type === 'minute'; }).value / 60;
+      if (h < 6.5 || h >= 19.5) document.documentElement.classList.add('oh-night');
+    } catch (e) { /* stay on day */ }
+  })();
+</script>
 <link rel="icon" href="{{ '/favicon.ico' | relative_url }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,21 +44,21 @@ title: Tomislav Hofman
   "name": "Tomislav Hofman",
   "url": "https://hofman.tech/",
   "sameAs": ["https://github.com/tomislavhofman", "https://www.linkedin.com/in/tomislav-hofman/"],
-  "jobTitle": "Software Engineer",
+  "description": "A dreamer from Osijek, Croatia, making small, quirky tools with care.",
   "address": { "@type": "PostalAddress", "addressLocality": "Osijek", "addressCountry": "Croatia" },
-  "email": "mailto:contact@hofman.tech"
+  "email": "mailto:tomislav@hofman.tech"
 }</script>
 </head>
 <body class="oh">
 <a href="#work" class="visually-hidden focusable">Skip to projects</a>
 
 <header class="oh-hero" id="hero">
-  <img class="oh-fallback" src="{{ '/assets/osijek-day.png' | relative_url }}" alt="Pixel-art view of the Drava promenade in Osijek with the white suspension footbridge, trees, street lamps and the cathedral spire.">
+  <div class="oh-fallback" role="img" aria-label="Pixel-art view of the Drava promenade in Osijek with flower boxes, street lamps, Hotel Osijek and the white suspension footbridge."></div>
   <div class="oh-ui">
     <div class="oh-top">
       <div class="oh-panel oh-sign">
         <h1>Tomislav Hofman</h1>
-        <p>Software engineer from Osijek, Croatia. I make small, useful tools, with care.</p>
+        <p>A dreamer from Osijek. I make small, quirky tools with care, and hide ducks in them.</p>
       </div>
       <nav class="oh-nav" aria-label="Main">
         <a class="oh-chip oh-navlink" href="#work">Work</a>
@@ -96,6 +106,26 @@ title: Tomislav Hofman
     </div>
   </section>
 
+  <section class="oh-section oh-sites" id="sites" aria-labelledby="sites-title">
+    <div class="oh-wrap">
+      <h2 id="sites-title" class="oh-h2">Websites for others</h2>
+      <p class="oh-lead">Besides my own tools, I build and look after websites for people and organisations I like.</p>
+      <ul class="oh-site-list">
+        {%- for site_item in site.data.client_sites %}
+        <li class="oh-panel oh-site">
+          <a class="oh-site__link" href="{{ site_item.url }}" target="_blank" rel="noopener noreferrer">
+            <img class="oh-site__shot" src="{{ site_item.image | relative_url }}" alt="" width="200" height="125" loading="lazy">
+            <span class="oh-status" style="--entry-accent: {{ site_item.accent }};">{{ site_item.role }}</span>
+            <h3>{{ site_item.name }}</h3>
+            <p>{{ site_item.desc }}</p>
+            <span class="oh-site__domain">{{ site_item.domain }} <span aria-hidden="true">↗</span></span>
+          </a>
+        </li>
+        {%- endfor %}
+      </ul>
+    </div>
+  </section>
+
   <section class="oh-section oh-values" id="values" aria-labelledby="values-title">
     <div class="oh-wrap">
       <h2 id="values-title" class="oh-h2">What I care about</h2>
@@ -116,7 +146,7 @@ title: Tomislav Hofman
         <h2 id="contact-title" class="oh-h2">Say hi</h2>
         <p>Have a problem a small tool could solve, or just want to talk? I read everything.</p>
         <p class="oh-contact__links">
-          <a class="oh-button" href="mailto:contact@hofman.tech">contact@hofman.tech</a>
+          <a class="oh-button" href="mailto:tomislav@hofman.tech">tomislav@hofman.tech</a>
           <a class="oh-chip" href="https://github.com/tomislavhofman" target="_blank" rel="noopener noreferrer">GitHub</a>
           <a class="oh-chip" href="https://www.linkedin.com/in/tomislav-hofman/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
         </p>

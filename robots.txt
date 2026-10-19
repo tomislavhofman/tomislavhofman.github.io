@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://hofman.tech/invoicesheet/sitemap.xml
+Sitemap: https://hofman.tech/statementsheet/sitemap.xml

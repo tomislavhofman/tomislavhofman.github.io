@@ -136,6 +136,32 @@ body.oh nav.oh-bar a.oh-bar__name { padding: 0; background: none; font: 700 1.35
 body.oh nav.oh-bar a.oh-chip { font: 600 1rem/1 var(--oh-pixel); color: var(--oh-ink); background: var(--oh-cream); padding: 6px 10px 7px; box-shadow: 0 2px 0 var(--oh-wood-dark); }
 body.oh nav.oh-bar a.oh-chip:hover { background: #fff8e8; }
 
+/* Overlay elements created by the scene script. */
+.osijek-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+.osijek-bubble {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font: 600 1.05rem/1.2 var(--oh-pixel);
+  color: var(--oh-ink);
+  background: #fffaf0;
+  border: 3px solid var(--oh-ink);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.35);
+  padding: 3px 9px 4px;
+  white-space: nowrap;
+  margin-top: -8px;
+}
+.osijek-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font: 500 0.95rem/1.2 var(--oh-pixel);
+  color: #fff3d6;
+  background: rgba(30, 22, 34, 0.88);
+  padding: 3px 8px;
+  white-space: nowrap;
+}
+
 /* ---------- intro, first thing under the scene ---------- */
 .oh-intro { padding-bottom: 8px; }
 .oh-intro__name { font: 700 clamp(2.4rem, 6vw, 4.2rem)/1 var(--oh-pixel); color: var(--oh-ink); }

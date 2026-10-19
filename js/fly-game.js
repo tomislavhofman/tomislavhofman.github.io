@@ -21,6 +21,8 @@
     const BALL_R = 9;
     const BALL_X = 80;
     const PLATFORM_H = 8;
+    const FACE = 4;                      // drawn thickness of a platform's coloured faces
+    const BORDER = 5;                    // drawn thickness of the red ceiling and floor
     const SEGMENT_W = 10;
     const PLATFORM_GAP = 60;
     const START_SPEED = 4;
@@ -182,24 +184,28 @@
         ball.vy = holding ? Math.max(MAX_RISE, ball.vy + LIFT) : Math.min(MAX_FALL, ball.vy + GRAVITY);
         let next = ball.y + ball.vy;
 
-        // Swept collision against each platform face the ball crosses or rests on.
+        // Swept collision against each platform face the ball crosses or rests on. The ball is
+        // a circle: past a platform's end only the part of the ball that actually reaches over
+        // it counts (r), so passing close to a corner is not a hit.
         for (const p of platforms) {
-            if (ball.x + BALL_R <= p.x || ball.x - BALL_R >= p.x + p.w) continue;
+            const dx = Math.max(p.x - ball.x, 0, ball.x - (p.x + p.w));
+            if (dx >= BALL_R) continue;
+            const r = Math.sqrt(BALL_R * BALL_R - dx * dx);
             const top = p.y;
             const bottom = p.y + PLATFORM_H;
-            const bottomOfBall = ball.y + BALL_R;
-            const topOfBall = ball.y - BALL_R;
-            if (bottomOfBall <= top + 0.5 && next + BALL_R >= top) {          // landing on the top face
-                next = top - BALL_R;
+            const bottomOfBall = ball.y + r;
+            const topOfBall = ball.y - r;
+            if (bottomOfBall <= top + 0.5 && next + r >= top) {               // landing on the top face
+                next = top - r;
                 ball.vy = 0;
                 touchFace(p, top, p.greenOnTop);
-            } else if (topOfBall >= bottom - 0.5 && next - BALL_R <= bottom) { // hitting the bottom face
-                next = bottom + BALL_R;
+            } else if (topOfBall >= bottom - 0.5 && next - r <= bottom) {      // hitting the bottom face
+                next = bottom + r;
                 ball.vy = 0;
                 touchFace(p, bottom, !p.greenOnTop);
-            } else if (next + BALL_R > top && next - BALL_R < bottom) {        // platform slid into the ball
+            } else if (next + r > top && next - r < bottom) {                  // platform slid into the ball
                 const above = ball.y < (top + bottom) / 2;
-                next = above ? top - BALL_R : bottom + BALL_R;
+                next = above ? top - r : bottom + r;
                 ball.vy = 0;
                 touchFace(p, above ? top : bottom, above ? p.greenOnTop : !p.greenOnTop);
             }
@@ -207,8 +213,9 @@
         }
 
         ball.y = next;
-        if (ball.y + BALL_R >= H || ball.y - BALL_R <= 0) {
-            ball.y = Math.min(H - BALL_R, Math.max(BALL_R, ball.y));
+        // The red ceiling and floor are BORDER px thick; touching their inner edge ends the run.
+        if (ball.y + BALL_R >= H - BORDER || ball.y - BALL_R <= BORDER) {
+            ball.y = Math.min(H - BORDER - BALL_R, Math.max(BORDER + BALL_R, ball.y));
             crash();
         }
     }
@@ -221,7 +228,7 @@
         ctx.fillStyle = g;
         ctx.fillRect(0, 0, W, H);
         ctx.strokeStyle = '#ef4444';
-        ctx.lineWidth = 10;
+        ctx.lineWidth = BORDER * 2;
         ctx.beginPath();
         ctx.moveTo(0, 0); ctx.lineTo(W, 0);
         ctx.moveTo(0, H); ctx.lineTo(W, H);
@@ -233,10 +240,13 @@
     }
 
     function drawPlatforms() {
-        ctx.lineWidth = 6;
+        // Both faces are drawn inside the platform's box, so what you see is what you hit.
+        ctx.lineWidth = FACE;
         for (const p of platforms) {
-            const greenY = p.greenOnTop ? p.y : p.y + PLATFORM_H;
-            const redY = p.greenOnTop ? p.y + PLATFORM_H : p.y;
+            const upper = p.y + FACE / 2;
+            const lower = p.y + PLATFORM_H - FACE / 2;
+            const greenY = p.greenOnTop ? upper : lower;
+            const redY = p.greenOnTop ? lower : upper;
             ctx.strokeStyle = '#ef4444';
             ctx.beginPath();
             ctx.moveTo(p.x, redY);

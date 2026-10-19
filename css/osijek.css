@@ -108,79 +108,39 @@ html.oh-night body.oh header.oh-hero { background: #0a1530; }
   touch-action: manipulation;
 }
 
-.oh-ui {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 18px 20px 22px;
-}
-.oh-ui > *, .oh-top > * { pointer-events: auto; }
-.oh-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; pointer-events: none; }
-.oh-sign { max-width: 21rem; padding: 10px 14px 11px; }
-.oh-sign h1 {
-  font: 700 clamp(1.5rem, 2.5vw, 2.1rem)/1 var(--oh-pixel);
-  color: var(--oh-ink);
-  margin-bottom: 5px;
-}
-.oh-sign p { margin: 0; font-size: 0.9rem; line-height: 1.4; color: var(--oh-ink-soft); }
-
-body.oh nav.oh-nav {
+/* ---------- the bar that appears below the scene ---------- */
+body.oh nav.oh-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
-  gap: 10px;
-  padding: 0;
+  gap: 12px;
+  padding: 10px max(16px, calc((100vw - 1100px) / 2 + 16px));
+  background: var(--oh-cream);
+  border-bottom: 4px solid var(--oh-wood);
+  box-shadow: 0 3px 0 var(--oh-wood-dark);
   font-size: inherit;
-  background: none;
+  transform: translateY(calc(-100% - 8px));
+  transition: transform 0.3s steps(4);
 }
-.oh-toggle { font-family: var(--oh-pixel); }
+body.oh nav.oh-bar.is-shown, body.oh nav.oh-bar:focus-within { transform: none; }
+/* custom.css styles every nav link; the bar resets that */
+body.oh nav.oh-bar a { border-radius: 0; transition: none; }
+body.oh nav.oh-bar a.oh-bar__name { padding: 0; background: none; font: 700 1.35rem/1 var(--oh-pixel); color: var(--oh-ink); text-decoration: none; white-space: nowrap; }
+.oh-bar__links { display: flex; gap: 8px; }
+body.oh nav.oh-bar a.oh-chip { font: 600 1rem/1 var(--oh-pixel); color: var(--oh-ink); background: var(--oh-cream); padding: 6px 10px 7px; box-shadow: 0 2px 0 var(--oh-wood-dark); }
+body.oh nav.oh-bar a.oh-chip:hover { background: #fff8e8; }
 
-.oh-scroll {
-  align-self: center;
-  margin-top: auto;
-  font: 700 1.25rem/1 var(--oh-pixel);
-  color: #fff;
-  text-decoration: none;
-  text-shadow: 2px 2px 0 rgba(30, 20, 10, 0.8);
-  padding: 8px 12px;
-  animation: oh-bob 2s ease-in-out infinite;
-}
-.oh-scroll:hover { color: #fff; text-decoration: none; }
+/* ---------- intro, first thing under the scene ---------- */
+.oh-intro { padding-bottom: 8px; }
+.oh-intro__name { font: 700 clamp(2.4rem, 6vw, 4.2rem)/1 var(--oh-pixel); color: var(--oh-ink); }
+.oh-intro__line { font-size: clamp(1.15rem, 2.2vw, 1.45rem); color: var(--oh-ink-soft); margin: 14px 0 0; max-width: 36rem; }
 
-/* Overlay elements created by the scene script. */
-.osijek-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
-.osijek-bubble {
-  position: absolute;
-  left: 0;
-  top: 0;
-  font: 600 1.05rem/1.2 var(--oh-pixel);
-  color: var(--oh-ink);
-  background: #fffaf0;
-  border: 3px solid var(--oh-ink);
-  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.35);
-  padding: 3px 9px 4px;
-  white-space: nowrap;
-  margin-top: -8px;
-}
-.osijek-label {
-  position: absolute;
-  left: 0;
-  top: 0;
-  font: 500 0.95rem/1.2 var(--oh-pixel);
-  color: #fff3d6;
-  background: rgba(30, 22, 34, 0.88);
-  padding: 3px 8px;
-  white-space: nowrap;
-}
-
-@keyframes oh-bob { 50% { transform: translateY(-4px); } }
-@keyframes oh-pop { from { transform: translate(-50%, 12px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
 
 /* ---------- content ---------- */
 body.oh main.oh-main {
@@ -194,7 +154,7 @@ body.oh main.oh-main {
 }
 .oh-section { padding: 72px 0; position: relative; }
 .oh-section + .oh-section { padding-top: 24px; }
-#work::before {
+#intro::before {
   /* a dithered strip that hands the scene over to the page */
   content: '';
   position: absolute;
@@ -286,26 +246,28 @@ body.oh footer.oh-footer {
 
 @media (prefers-color-scheme: dark) {
   body.oh { color: #e8dcc4; }
-  .oh-h2, .oh-project__text h3 { color: #f6ead2; }
-  .oh-lead, .oh-project__text p, body.oh footer.oh-footer { color: #b9ad97; }
-  #work::before { opacity: 0.6; }
+  .oh-h2, .oh-project__text h3, .oh-intro__name { color: #f6ead2; }
+  .oh-lead, .oh-intro__line, .oh-project__text p, body.oh footer.oh-footer { color: #b9ad97; }
+  #intro::before { opacity: 0.6; }
 }
 
 /* ---------- small screens ---------- */
 @media (max-width: 720px) {
-  .oh-ui { padding: 12px 12px 16px; }
-  .oh-top { flex-direction: column; align-items: stretch; gap: 10px; }
-  .oh-sign { max-width: none; padding: 8px 12px; }
-  .oh-sign h1 { font-size: 1.45rem; margin-bottom: 3px; }
-  .oh-sign p { font-size: 0.85rem; }
-  body.oh nav.oh-nav { justify-content: flex-start; gap: 8px; }
-  .oh-navlink { display: none; }
-  .oh-chip { font-size: 1rem; padding: 6px 10px 7px; }
   .oh-section { padding: 48px 0; }
+  body.oh nav.oh-bar { padding: 8px 12px; }
+  body.oh nav.oh-bar a.oh-bar__name { font-size: 1.05rem; }
+  body.oh nav.oh-bar a.oh-chip { font-size: 0.88rem; padding: 5px 6px 6px; }
+  .oh-bar__links { gap: 5px; }
   .oh-project { grid-template-columns: 1fr; gap: 18px; }
   .oh-project:nth-child(even) .oh-project__visual { order: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .oh-scroll { animation: none; }
+  body.oh nav.oh-bar { transition: none; }
+}
+
+/* very narrow phones: the links are what matter in the bar */
+@media (max-width: 370px) {
+  body.oh nav.oh-bar { justify-content: center; }
+  body.oh nav.oh-bar a.oh-bar__name { display: none; }
 }

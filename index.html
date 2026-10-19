@@ -50,28 +50,30 @@ title: Tomislav Hofman
 }</script>
 </head>
 <body class="oh">
-<a href="#work" class="visually-hidden focusable">Skip to projects</a>
+<a href="#intro" class="visually-hidden focusable">Skip to content</a>
+
+<!-- The scene is shown on its own; this bar slides in once you scroll below it. -->
+<nav class="oh-bar" aria-label="Main">
+  <a class="oh-bar__name" href="#hero">Tomislav Hofman</a>
+  <span class="oh-bar__links">
+    <a class="oh-chip" href="#work">Work</a>
+    <a class="oh-chip" href="#values">About</a>
+    <a class="oh-chip" href="#contact">Contact</a>
+  </span>
+</nav>
 
 <header class="oh-hero" id="hero">
   <div class="oh-fallback" role="img" aria-label="Pixel-art view of the Drava promenade in Osijek with flower boxes, street lamps, Hotel Osijek and the white suspension footbridge."></div>
-  <div class="oh-ui">
-    <div class="oh-top">
-      <div class="oh-panel oh-sign">
-        <h1>Tomislav Hofman</h1>
-        <p>I make small, quirky tools with care, and hide ducks in them.</p>
-      </div>
-      <nav class="oh-nav" aria-label="Main">
-        <a class="oh-chip oh-navlink" href="#work">Work</a>
-        <a class="oh-chip oh-navlink" href="#values">About</a>
-        <a class="oh-chip oh-navlink" href="#contact">Contact</a>
-        <button class="oh-chip oh-toggle" type="button" aria-pressed="false" hidden><span class="oh-toggle__icon" aria-hidden="true">☾</span> <span class="oh-toggle__text">Night</span></button>
-      </nav>
-    </div>
-    <a class="oh-scroll" href="#work">What I make <span aria-hidden="true">↓</span></a>
-  </div>
 </header>
 
 <main class="oh-main">
+  <section class="oh-section oh-intro" id="intro">
+    <div class="oh-wrap">
+      <h1 class="oh-intro__name">Tomislav Hofman</h1>
+      <p class="oh-intro__line">I make small, quirky tools with care, and hide ducks in them.</p>
+    </div>
+  </section>
+
   <section class="oh-section" id="work" aria-labelledby="work-title">
     <div class="oh-wrap">
       <h2 id="work-title" class="oh-h2">Things I make</h2>
@@ -161,24 +163,16 @@ title: Tomislav Hofman
   import { start, osijekNightNow } from '{{ "/js/osijek/main.js" | relative_url }}';
 
   const hero = document.getElementById('hero');
-  const toggle = hero.querySelector('.oh-toggle');
+  const bar = document.querySelector('.oh-bar');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const setToggle = (night) => {
-    toggle.setAttribute('aria-pressed', String(night));
-    toggle.querySelector('.oh-toggle__icon').textContent = night ? '☀' : '☾';
-    toggle.querySelector('.oh-toggle__text').textContent = night ? 'Day' : 'Night';
-  };
-
-  hero.addEventListener('osijek:night', (e) => setToggle(e.detail.night));
+  // The bar appears once the scene has scrolled out of view (behind the bar itself).
+  new IntersectionObserver(([e]) => bar.classList.toggle('is-shown', !e.isIntersecting), { rootMargin: '-64px 0px 0px 0px' })
+    .observe(hero);
 
   try {
-    const night = osijekNightNow();
-    const scene = start(hero, { night, reducedMotion: reduced });
+    start(hero, { night: osijekNightNow(), reducedMotion: reduced });
     hero.classList.add('is-live');
-    setToggle(night);
-    toggle.hidden = false;
-    toggle.addEventListener('click', () => scene.setNight(!scene.isNight()));
   } catch (err) {
     // No WebGL: the static picture stays, the page still works.
     console.warn('Scene unavailable:', err);

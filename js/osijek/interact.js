@@ -190,7 +190,17 @@ export class Interactions {
     const best = hits.find((h) => !isHelper(h) && !isWater(h) && owner(h))
       || hits.find((h) => isHelper(h) && owner(h))
       || hits.find((h) => owner(h));
+    if (best && isWater(best) && this.waterHidden(best.distance)) return null;
     return best ? { obj: owner(best), point: best.point } : null;
+  }
+
+  // The water plane runs on under the promenade and the far bank, so it only counts where
+  // nothing solid (ground, embankment, trees, buildings) is in front of it along the ray.
+  waterHidden(distance) {
+    this.solidRay = this.solidRay || new THREE.Raycaster();
+    this.solidRay.ray.copy(this.ray.ray);
+    this.solidRay.far = distance - 0.05;
+    return this.solidRay.intersectObjects(this.scene.children, true).some((h) => h.object !== this.world.water && h.object.isMesh && !h.object.isSprite);
   }
 
   setHover(obj) {

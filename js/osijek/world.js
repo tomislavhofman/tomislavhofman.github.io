@@ -3,6 +3,7 @@
 // cathedral spire. Units are metres; +x is towards the river, -z is upstream.
 import * as THREE from '../vendor/three-0.170.0.module.min.js';
 import { catTextures, makeCatSprite, ORANGE_TABBY } from './sprites.js';
+import { bend, bendGeometry, bendRigid, bendInstances } from './bend.js';
 
 export const WATER_Y = -2.0;
 const BRIDGE_Z = -140;
@@ -10,6 +11,8 @@ const PYLON_A = 13.6;   // city-side pylon x, on the lower walkway
 const PYLON_B = 172;    // far-side pylon x
 const PYLON_H = 35;
 const LEG = 1.8;        // half the distance between a pylon's two legs
+export const TRACK_Y = 0.5;     // the running track and the park sit half a metre above the promenade
+const SEG = 6;          // long strips are cut every few metres so they can follow the curve
 
 /* ---------------- helpers ---------------- */
 
@@ -81,6 +84,14 @@ export function bake(group, emissive = null) {
 function box(w, h, d, color, x, y, z, parent) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), toon(color));
   m.position.set(x, y, z);
+  parent.add(m);
+  return m;
+}
+
+// A long box running the whole length of the promenade, cut into short pieces along its length.
+function longBox(w, h, x, y, color, parent) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, 2580, 1, 1, Math.ceil(2580 / SEG)), toon(color));
+  m.position.set(x, y, -1210);
   parent.add(m);
   return m;
 }
@@ -488,7 +499,7 @@ export function buildWorld(scene) {
   const ground = new THREE.Group();
   scene.add(ground);
   const plane = (x0, x1, z0, z1, y, color, map) => {
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0, z0 - z1), map ? new THREE.MeshToonMaterial({ color: 0xffffff, map, gradientMap: toonRamp }) : toon(color));
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0, z0 - z1, 1, Math.ceil((z0 - z1) / SEG)), map ? new THREE.MeshToonMaterial({ color: 0xffffff, map, gradientMap: toonRamp }) : toon(color));
     m.rotation.x = -Math.PI / 2;
     m.position.set((x0 + x1) / 2, y, (z0 + z1) / 2);
     ground.add(m);
@@ -496,19 +507,28 @@ export function buildWorld(scene) {
   };
   // Cross-section from the park to the river: blue running track, cobbled strip with flower
   // boxes and benches, asphalt path, river-side cobbled strip, then the embankment.
-  plane(-2500, -15.5, 80, -2500, 0, null, grassTexture(r, '#6fa44a', 1240, 1290));   // park and beyond
-  plane(-15.5, -13, 80, -2500, 0.03, '#3d84c8');                                   // blue running track
-  plane(-13, -12.2, 80, -2500, 0.02, null, grassTexture(r, '#7fb552', 1, 1290));   // grass edge
+  // The park and the blue running track are raised half a metre above the promenade, held
+  // by a low concrete wall. Past 450 m to the left a flat, unbent ground fills the horizon
+  // (bending that far out on the inside of the curve would fold the ground over itself).
+  const base = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), toon('#6fa44a'));
+  base.rotation.x = -Math.PI / 2;
+  base.position.set(0, WATER_Y - 0.6, -1500);
+  base.userData.unbent = true;
+  scene.add(base);
+  plane(-450, -15.5, 80, -2500, TRACK_Y, null, grassTexture(r, '#6fa44a', 224, 1290));   // park
+  plane(-15.5, -13, 80, -2500, TRACK_Y + 0.03, '#3d84c8');                           // blue running track
+  longBox(0.28, TRACK_Y + 0.05, -12.86, (TRACK_Y + 0.05) / 2, '#c9c2b5', ground);       // retaining wall
+  plane(-12.72, -12.2, 80, -2500, 0.02, null, grassTexture(r, '#7fb552', 1, 1290));  // grass edge
   plane(-12.2, -4.6, 80, -2500, 0.045, null, pavingTexture(r, 5, 1720));          // cobbles, city side
   plane(-4.6, 3.4, 80, -2500, 0.04, null, asphaltTexture(r, 5, 1290));            // asphalt path
   plane(3.4, 9.2, 80, -2500, 0.045, null, pavingTexture(r, 4, 1720));             // cobbles, river side
-  const line = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 2580), toon('#f2f2ee'));
+  const line = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 2580, 1, Math.ceil(2580 / SEG)), toon('#f2f2ee'));
   line.rotation.x = -Math.PI / 2;
   line.position.set(-1.0, 0.05, -1210);
   ground.add(line);
-  for (const kx of [-4.6, 3.4]) box(0.2, 0.1, 2580, '#cfc8bb', kx, 0.05, -1210, ground);   // kerbs
+  for (const kx of [-4.6, 3.4]) longBox(0.2, 0.1, kx, 0.05, '#cfc8bb', ground);   // kerbs
   const slopeStrip = (x0, y0, x1, y1, color) => {
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(Math.hypot(x1 - x0, y1 - y0), 3000), toon(color));
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(Math.hypot(x1 - x0, y1 - y0), 3000, 1, 3000 / SEG), toon(color));
     m.rotation.x = -Math.PI / 2;
     m.rotation.y = Math.atan2(y0 - y1, x1 - x0);
     m.position.set((x0 + x1) / 2, (y0 + y1) / 2, -1400);
@@ -517,15 +537,15 @@ export function buildWorld(scene) {
   slopeStrip(9.2, 0.045, 12.6, -1.1, '#6f6b66');        // dark stepped revetment
   plane(12.6, 14.6, 80, -2500, -1.1, '#cbc5ba');        // lower walkway
   slopeStrip(14.6, -1.1, 16.8, WATER_Y - 0.1, '#968a76'); // rocks down to the water
-  const farSlope = new THREE.Mesh(new THREE.PlaneGeometry(Math.hypot(6, 0.5 - WATER_Y), 3000), toon('#8a9a62'));
+  const farSlope = new THREE.Mesh(new THREE.PlaneGeometry(Math.hypot(6, 0.5 - WATER_Y), 3000, 1, 3000 / SEG), toon('#8a9a62'));
   farSlope.rotation.x = -Math.PI / 2;
   farSlope.rotation.y = -Math.atan2(0.5 - WATER_Y, 6);
   farSlope.position.set(175, (WATER_Y + 0.5) / 2, -1400);
   ground.add(farSlope);
-  plane(178, 2500, 80, -2500, 0.5, null, grassTexture(r, '#79ab4f', 1160, 1290));
+  plane(178, 1400, 80, -2500, 0.5, null, grassTexture(r, '#79ab4f', 570, 1290));
 
   /* water */
-  const water = new THREE.Mesh(new THREE.PlaneGeometry(200, 3000), new THREE.ShaderMaterial({
+  const water = new THREE.Mesh(new THREE.PlaneGeometry(200, 3000, 1, 3000 / SEG), new THREE.ShaderMaterial({
     vertexShader: WATER_VERT, fragmentShader: WATER_FRAG,
     uniforms: {
       tReflect: { value: null }, textureMatrix: { value: null }, time: { value: 0 },
@@ -543,13 +563,13 @@ export function buildWorld(scene) {
   const greens = ['#4f8f3a', '#5c9b3f', '#447f37', '#6aa548', '#3f7a3f'];
   for (let z = 22; z > -260; z -= 8 + r() * 4) {
     const t = makeTree(r, 1.15 + r() * 0.35, greens);
-    t.position.set(-17.5 + (r() - 0.5) * 1.5, 0, z);
+    t.position.set(-17.5 + (r() - 0.5) * 1.5, TRACK_Y, z);
     scene.add(t);
     W.trees.push(t);
   }
   for (let i = 0; i < 70; i++) {
     const t = makeTree(r, 1.1 + r() * 0.6, greens);
-    t.position.set(-23 - r() * 55, 0, 25 - r() * 230);
+    t.position.set(-23 - r() * 55, TRACK_Y, 25 - r() * 230);
     scene.add(t);
     W.trees.push(t);
   }
@@ -559,7 +579,7 @@ export function buildWorld(scene) {
   // Distant trees (far bank, park depth, horizon) as instances: cheap, not clickable.
   const far = [];
   for (let i = 0; i < 520; i++) far.push([180 + r() * 260, 0.5, 60 - r() * 1300, 1 + r() * 0.8]);
-  for (let i = 0; i < 260; i++) far.push([-40 - r() * 220, 0, -230 - r() * 900, 1.1 + r() * 0.8]);
+  for (let i = 0; i < 260; i++) far.push([-40 - r() * 220, TRACK_Y, -230 - r() * 900, 1.1 + r() * 0.8]);
   for (let i = 0; i < 160; i++) far.push([-60 + r() * 360, 0.5, -1000 - r() * 500, 1.6 + r()]);
   const canopyGeo = new THREE.IcosahedronGeometry(2.4, 1);
   const trunkGeo = new THREE.CylinderGeometry(0.25, 0.3, 3, 5);
@@ -796,6 +816,18 @@ export function buildWorld(scene) {
   bake(city);
   bake(cat);
   bake(W.bridge.group, '#7a7a74');
+
+  /* bend everything along the curve of the promenade */
+  for (const t of W.trees) t.userData.straight = t.position.clone();
+  W.canopies = canopies;
+  const still = new Set([sky, W.sunDisc, W.moonDisc, W.stars, W.hemi, W.sun, W.sun.target, base, ...W.clouds, ...W.ducks, bollard]);
+  const shaped = new Set([ground, water, farProps, city, W.windows, W.bridge.group]);
+  for (const o of [...scene.children]) {
+    if (still.has(o)) continue;
+    if (shaped.has(o)) bendGeometry(o);
+    else if (o.isInstancedMesh) bendInstances(o);
+    else bendRigid(o);
+  }
 
   return W;
 }

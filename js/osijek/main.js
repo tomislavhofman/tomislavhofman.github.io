@@ -59,12 +59,12 @@ export function start(container, opts = {}) {
     if (aspect >= 1) {
       camera.fov = aspect > 2 ? 40 : 47;
       camera.position.set(8.1, 1.7, 6);
-      camera.lookAt(40, 9, -140);
+      camera.lookAt(22, 9, -140);
     } else {
       // Portrait: keep the promenade, the cathedral and the city-side pylon in view.
       camera.fov = 64;
       camera.position.set(8.4, 1.7, 9);
-      camera.lookAt(13, 12, -140);
+      camera.lookAt(7, 12, -140);
     }
     camera.updateProjectionMatrix();
     render();

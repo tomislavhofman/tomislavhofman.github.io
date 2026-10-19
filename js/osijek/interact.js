@@ -1,6 +1,7 @@
 // Clicks, hover labels, speech bubbles, particles and the hidden secrets of the scene.
 import * as THREE from '../vendor/three-0.170.0.module.min.js';
-import { WATER_Y, makeDuck, makeBoat, rng } from './world.js';
+import { WATER_Y, TRACK_Y, makeDuck, makeBoat, rng } from './world.js';
+import { bend, heading } from './bend.js';
 import { catTextures, makeCatSprite, GREY_TABBY } from './sprites.js';
 
 export const SECRETS = {
@@ -328,7 +329,7 @@ export class Interactions {
     if (this.counts.bridge >= 4 && !this.found.has('love')) {
       for (let i = 0; i < 14; i++) {
         const x = 20 + Math.random() * 140;
-        const p = new THREE.Vector3(x, this.world.bridge.deckY(x) + 2, this.world.bridge.z + (Math.random() - 0.5) * 3);
+        const p = bend(new THREE.Vector3(x, this.world.bridge.deckY(x) + 2, this.world.bridge.z + (Math.random() - 0.5) * 3));
         this.after(i * 0.18, () => this.sprite(HEART, p, 3.2, new THREE.Vector3((Math.random() - 0.5), 3 + Math.random() * 2, 0), 5));
       }
       this.bubble('♥', point.clone().add(new THREE.Vector3(0, 6, 0)), 2600);
@@ -358,7 +359,9 @@ export class Interactions {
     }
     if (this.counts.water >= 3 && !this.boat) {
       this.boat = makeBoat();
-      this.boat.position.set(70 + Math.random() * 30, WATER_Y, -330);
+      // It sails in straight coordinates and is placed on the bent river every frame.
+      this.boat.userData.straight = new THREE.Vector3(70 + Math.random() * 30, WATER_Y, -330);
+      this.boat.position.copy(bend(this.boat.userData.straight));
       this.scene.add(this.boat);
       this.discover('boat');
     }
@@ -458,8 +461,10 @@ export class Interactions {
     const top = tree.localToWorld(new THREE.Vector3(0, 5.5, 0));
     cat.g.position.copy(top);
     this.scene.add(cat.g);
+    // Her walk is worked out on the straight promenade and bent onto the curve when drawn.
+    cat.straight = tree.userData.straight.clone().add(new THREE.Vector3(0, 5.5, 0));
     this.world.clickables.push(cat.g);
-    const b = this.world.bollard.position;
+    const b = this.world.bollard.position;   // near the viewer, where the path is not bent yet
     this.visitor = { ...cat, state: 'fall', vy: 0, t: 0, st: 0, clicks: [], nextBlink: 2, squint: 0, stride: 0,
       base: new THREE.Vector3(b.x - 0.55, 0.045, b.z + 0.1), perch: new THREE.Vector3(b.x, this.world.bollard.userData.top, b.z) };
     this.bubble('Mijau?!', top.clone().add(new THREE.Vector3(0, 1, 0)), 1200);
@@ -518,7 +523,14 @@ export class Interactions {
     v.state = state;
     v.st = 0;
     v.fly.visible = state === 'play';
-    v.from = v.g.position.clone();
+    v.from = (this.inVisitor ? v.g.position : v.straight).clone();
+  }
+
+  // Ground height under a straight-coordinate x: the park and running track are raised,
+  // with a short drop over the retaining wall.
+  groundY(x) {
+    const k = Math.min(1, Math.max(0, (x + 12.6) / -0.5));
+    return 0.045 + (TRACK_Y - 0.045 + 0.03) * k;
   }
 
   updateVisitor(dt, t) {
@@ -527,6 +539,16 @@ export class Interactions {
     const g = v.g;
     v.t += dt;
     v.st += dt;
+    g.position.copy(v.straight);
+    this.inVisitor = true;
+    this.stepVisitor(v, g, dt, t);
+    this.inVisitor = false;
+    if (this.visitor !== v) return;
+    v.straight.copy(g.position);
+    g.position.copy(bend(v.straight));
+  }
+
+  stepVisitor(v, g, dt, t) {
     const ease = (k) => k * k * (3 - 2 * k);
     // Lit like the 3D things around her: a little dimmer and warmer by day, moonlit blue at night.
     const tint = new THREE.Color('#e4dccf').lerp(new THREE.Color('#5d678f'), this.state.night);
@@ -535,7 +557,7 @@ export class Interactions {
     v.headSprite.material.rotation = 0;
     g.scale.set(1, 1, 1);
 
-    const screenX = (p) => p.clone().project(this.camera).x;
+    const screenX = (p) => bend(p).project(this.camera).x;
     // Trot or walk towards a ground point; steps follow the distance actually covered.
     const moveTo = (target, speed, walk) => {
       const d = target.clone().sub(g.position).setY(0);
@@ -545,7 +567,7 @@ export class Interactions {
       v.stride += step;
       const strideLen = walk ? 0.16 : 0.32;
       const a = Math.floor(v.stride / strideLen) % 2 === 0;
-      g.position.y = 0.045 + (walk ? 0 : (a ? 0.012 : 0));
+      g.position.y = this.groundY(g.position.x) + (walk ? 0 : (a ? 0.012 : 0));
       if (walk === 'front') {
         v.pose('front', KITTEN.head);
         v.bodySprite.material.map = a ? KITTEN.body : KITTEN.paw;
@@ -581,8 +603,9 @@ export class Interactions {
         g.position.y += v.vy * dt;
         v.pose('side', KITTEN.runB);
         g.scale.y = 1.1;
-        if (g.position.y <= 0.045) {
-          g.position.y = 0.045;
+        const floor = this.groundY(g.position.x);
+        if (g.position.y <= floor) {
+          g.position.y = floor;
           for (let i = 0; i < 12; i++) this.small.spawn(g.position, new THREE.Vector3((Math.random() - 0.5) * 2, Math.random(), (Math.random() - 0.5) * 2), '#d9cdb5', 0.7, -4);
           v.path = this.pathToBollard(g.position.clone(), v.base);
           this.setVisitorState(v, 'land');
@@ -746,9 +769,12 @@ export class Interactions {
     this.updateHotel(dt, t);
     this.updateVisitor(dt, t);
     if (this.boat) {
-      this.boat.position.z += 9 * dt;
-      this.boat.position.y = WATER_Y + Math.sin(t * 1.6) * 0.08;
-      if (this.boat.position.z > 40) { this.scene.remove(this.boat); this.boat = null; this.counts.water = 0; }
+      const sp = this.boat.userData.straight;
+      sp.z += 9 * dt;
+      sp.y = WATER_Y + Math.sin(t * 1.6) * 0.08;
+      this.boat.position.copy(bend(sp));
+      this.boat.rotation.y = heading(-sp.z);
+      if (sp.z > 40) { this.scene.remove(this.boat); this.boat = null; this.counts.water = 0; }
     }
 
     const cat = this.world.cat;

@@ -65,13 +65,10 @@ title: Tomislav Hofman
         <a class="oh-chip oh-navlink" href="#values">About</a>
         <a class="oh-chip oh-navlink" href="#contact">Contact</a>
         <button class="oh-chip oh-toggle" type="button" aria-pressed="false" hidden><span class="oh-toggle__icon" aria-hidden="true">☾</span> <span class="oh-toggle__text">Night</span></button>
-        <span class="oh-chip oh-count" title="Secrets found in the scene" hidden>✦ <span class="oh-count__n">0</span>/<span class="oh-count__t">9</span></span>
       </nav>
     </div>
-    <p class="oh-panel oh-hint" hidden>Click around. The city reacts, and ten little things are hidden.</p>
     <a class="oh-scroll" href="#work">What I make <span aria-hidden="true">↓</span></a>
   </div>
-  <div class="oh-toast oh-panel" role="status" aria-live="polite" hidden></div>
 </header>
 
 <main class="oh-main">
@@ -132,7 +129,7 @@ title: Tomislav Hofman
       <p class="oh-lead">I grew up by this river. The things I build try to feel like an evening walk on it.</p>
       <ul class="oh-value-list">
         <li class="oh-panel oh-value">{% include oh-icons/warmth.svg %}<h3>Warmth</h3><p>Software made by a person, for people. Every email gets a human reply.</p></li>
-        <li class="oh-panel oh-value">{% include oh-icons/fun.svg %}<h3>Fun</h3><p>If something can make you smile, it should. This page has ten secrets.</p></li>
+        <li class="oh-panel oh-value">{% include oh-icons/fun.svg %}<h3>Fun</h3><p>If something can make you smile, it should.</p></li>
         <li class="oh-panel oh-value">{% include oh-icons/love.svg %}<h3>Love</h3><p>For Osijek, for the craft, and for the small details nobody asked for.</p></li>
         <li class="oh-panel oh-value">{% include oh-icons/creativity.svg %}<h3>Creativity</h3><p>Small, specific tools for real problems beat big, generic ones.</p></li>
         <li class="oh-panel oh-value">{% include oh-icons/ideas.svg %}<h3>Ideas</h3><p>Every lamp on the promenade is an idea. Some are still waiting to be switched on.</p></li>
@@ -165,9 +162,6 @@ title: Tomislav Hofman
 
   const hero = document.getElementById('hero');
   const toggle = hero.querySelector('.oh-toggle');
-  const count = hero.querySelector('.oh-count');
-  const hint = hero.querySelector('.oh-hint');
-  const toast = hero.querySelector('.oh-toast');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const setToggle = (night) => {
@@ -176,18 +170,6 @@ title: Tomislav Hofman
     toggle.querySelector('.oh-toggle__text').textContent = night ? 'Day' : 'Night';
   };
 
-  let toastTimer;
-  hero.addEventListener('osijek:secret', (e) => {
-    const { id, label, found, total } = e.detail;
-    count.querySelector('.oh-count__n').textContent = found;
-    count.querySelector('.oh-count__t').textContent = total;
-    if (!id) return;
-    hint.hidden = true;
-    toast.textContent = found === total ? `✦ ${label}. You found all ${total}. Thank you for playing!` : `✦ Secret found: ${label} (${found}/${total})`;
-    toast.hidden = false;
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => { toast.hidden = true; }, 4200);
-  });
   hero.addEventListener('osijek:night', (e) => setToggle(e.detail.night));
 
   try {
@@ -196,10 +178,7 @@ title: Tomislav Hofman
     hero.classList.add('is-live');
     setToggle(night);
     toggle.hidden = false;
-    count.hidden = false;
-    hint.hidden = false;
     toggle.addEventListener('click', () => scene.setNight(!scene.isNight()));
-    hero.addEventListener('pointerdown', () => { hint.hidden = true; }, { once: true });
   } catch (err) {
     // No WebGL: the static picture stays, the page still works.
     console.warn('Scene unavailable:', err);

@@ -140,17 +140,10 @@ body.oh nav.oh-nav {
   background: none;
 }
 .oh-toggle { font-family: var(--oh-pixel); }
-.oh-count { cursor: default; color: var(--oh-wood); }
 
-.oh-hint {
-  align-self: flex-start;
-  margin: auto 0 12px;
-  font: 500 1.05rem/1.3 var(--oh-pixel);
-  max-width: 24rem;
-  animation: oh-bob 2.4s ease-in-out infinite;
-}
 .oh-scroll {
   align-self: center;
+  margin-top: auto;
   font: 700 1.25rem/1 var(--oh-pixel);
   color: #fff;
   text-decoration: none;
@@ -159,18 +152,6 @@ body.oh nav.oh-nav {
   animation: oh-bob 2s ease-in-out infinite;
 }
 .oh-scroll:hover { color: #fff; text-decoration: none; }
-
-.oh-toast {
-  position: absolute;
-  left: 50%;
-  top: 168px;
-  transform: translateX(-50%);
-  z-index: 3;
-  font: 700 1.15rem/1.3 var(--oh-pixel);
-  white-space: nowrap;
-  max-width: calc(100vw - 32px);
-  animation: oh-pop 0.25s steps(3) both;
-}
 
 /* Overlay elements created by the scene script. */
 .osijek-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
@@ -320,13 +301,11 @@ body.oh footer.oh-footer {
   body.oh nav.oh-nav { justify-content: flex-start; gap: 8px; }
   .oh-navlink { display: none; }
   .oh-chip { font-size: 1rem; padding: 6px 10px 7px; }
-  .oh-hint { font-size: 0.95rem; margin-bottom: 8px; }
-  .oh-toast { white-space: normal; width: calc(100vw - 32px); text-align: center; font-size: 1rem; top: 172px; }
   .oh-section { padding: 48px 0; }
   .oh-project { grid-template-columns: 1fr; gap: 18px; }
   .oh-project:nth-child(even) .oh-project__visual { order: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .oh-hint, .oh-scroll, .oh-toast { animation: none; }
+  .oh-scroll { animation: none; }
 }

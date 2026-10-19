@@ -259,9 +259,6 @@ export class Interactions {
     if (this.state.nightTarget > 0.5 && this.world.lamps.every((l) => l.userData.on)) {
       if (!this.fireworksRunning) this.fireworks();
       this.discover('lights');
-    } else if (this.state.nightTarget < 0.5 && lamp.userData.on && !this.counts.lampHint) {
-      this.counts.lampHint = 1;
-      this.bubble('It looks better at night ☾', top.clone().add(new THREE.Vector3(0, 0.8, 0)));
     }
   }
 
@@ -321,10 +318,6 @@ export class Interactions {
     // Like the real footbridge, the lights change colour: each click picks the next one.
     this.bridgeColorIndex = ((this.bridgeColorIndex ?? -1) + 1) % BRIDGE_COLORS.length;
     this.bridgeColor = BRIDGE_COLORS[this.bridgeColorIndex];
-    if (this.state.nightTarget < 0.5 && !this.counts.bridgeHint) {
-      this.counts.bridgeHint = 1;
-      this.bubble('The bridge lights show best at night ☾', point.clone().add(new THREE.Vector3(0, 6, 0)), 2400);
-    }
     for (let i = 0; i < 16; i++) this.big.spawn(point, new THREE.Vector3((Math.random() - 0.5) * 8, Math.random() * 6, (Math.random() - 0.5) * 4), '#fff1b0', 1, -8);
     if (this.counts.bridge >= 4 && !this.found.has('love')) {
       for (let i = 0; i < 14; i++) {
@@ -496,7 +489,8 @@ export class Interactions {
 
   click_bollard() {
     if (this.visitor) return;
-    this.bubble('A perfect spot for a cat. Is one hiding in a tree?', this.world.bollard.position.clone().add(new THREE.Vector3(0, 0.9, 0)), 2600);
+    // Just cast iron: a dull knock, nothing more.
+    this.bubble('*tonk*', this.world.bollard.position.clone().add(new THREE.Vector3(0, 0.75, 0)), 900);
   }
 
   click_visitor() {

@@ -1,0 +1,22 @@
+{%- comment -%}
+  Home grid · StatementSheet. Bank statement files (camt, MT940, ZIP) slide into a
+  spreadsheet whose rows fill in one by one, the tool's whole job in one loop.
+  Respects reduced motion.
+{%- endcomment -%}
+<div class="home-console home-console--statementsheet">
+  <div class="home-console__stage inv" aria-hidden="true">
+    <div class="inv-files">
+      <span style="--i: 0">camt</span>
+      <span style="--i: 1">MT940</span>
+      <span style="--i: 2">ZIP</span>
+    </div>
+    <div class="inv-arrow">▸</div>
+    <div class="inv-sheet">
+      <div class="inv-row inv-row--head"><i></i><i></i><i></i><i></i></div>
+      {%- for r in (1..4) %}
+      <div class="inv-row" style="--r: {{ forloop.index0 }}"><i></i><i></i><i></i><i></i></div>
+      {%- endfor %}
+    </div>
+  </div>
+  <div class="retro-ui-hint home-console__hint">{{ project.label | default: "StatementSheet · open ▸" }}</div>
+</div>

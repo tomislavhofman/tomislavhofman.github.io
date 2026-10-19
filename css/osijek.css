@@ -264,16 +264,17 @@ body.oh main.oh-main {
 .oh-site { padding: 0; }
 .oh-site__link { display: block; padding: 16px 18px 18px; color: inherit; text-decoration: none; }
 .oh-site__link:hover { text-decoration: none; background: #fff8e8; }
-.oh-site__shot {
+.oh-site__plate {
+  position: relative;
   display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: 8 / 5;
-  image-rendering: pixelated;
-  border: 3px solid var(--oh-wood);
+  aspect-ratio: 5 / 2;
   margin-bottom: 12px;
-  background: #ddd;
+  background: var(--plate, #fff1c9);
+  border: 3px solid var(--oh-wood);
+  box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.12), inset 0 3px 0 rgba(255, 255, 255, 0.18);
 }
+.oh-site__logo { position: absolute; inset: 0; margin: auto; width: 70%; height: 62%; object-fit: contain; transition: transform 0.25s ease; }
+.oh-site__link:hover .oh-site__logo { transform: scale(1.06) rotate(-2deg); }
 .oh-site h3 { font: 700 1.6rem/1.1 var(--oh-pixel); margin: 10px 0 6px; }
 .oh-site p { margin: 0 0 10px; font-size: 0.98rem; color: var(--oh-ink-soft); }
 .oh-site__domain { font: 600 1rem/1 var(--oh-pixel); color: var(--oh-accent); }

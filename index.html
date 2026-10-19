@@ -114,7 +114,7 @@ title: Tomislav Hofman
         {%- for site_item in site.data.client_sites %}
         <li class="oh-panel oh-site">
           <a class="oh-site__link" href="{{ site_item.url }}" target="_blank" rel="noopener noreferrer">
-            <img class="oh-site__shot" src="{{ site_item.image | relative_url }}" alt="" width="200" height="125" loading="lazy">
+            <span class="oh-site__plate" style="--plate: {{ site_item.logo_bg }};"><img class="oh-site__logo" src="{{ site_item.logo | relative_url }}" alt="{{ site_item.name }} logo" loading="lazy"></span>
             <span class="oh-status" style="--entry-accent: {{ site_item.accent }};">{{ site_item.role }}</span>
             <h3>{{ site_item.name }}</h3>
             <p>{{ site_item.desc }}</p>

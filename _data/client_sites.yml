@@ -1,12 +1,13 @@
 # Websites built or maintained for others, shown on the home page under "Websites for others".
 #   role     chip text ("Built", "Maintained")
-#   image    small screenshot, shown pixelated
+#   logo     the client's own logo mark, shown on a plate in their brand colour (logo_bg)
 - name: "Sunce"
   domain: "dppsunce.hr"
   url: "https://dppsunce.hr"
   role: "Built"
   accent: "#ffd166"
-  image: "/assets/sites/dppsunce.png"
+  logo: "/assets/sites/sunce-logo.webp"
+  logo_bg: "#fff1c9"
   desc: "Website for Sunce, an association for psychological help: their counselling service, support phone line and projects."
 
 - name: "Agristar"
@@ -14,5 +15,6 @@
   url: "https://agristar.hr"
   role: "Maintained"
   accent: "#8bc34a"
-  image: "/assets/sites/agristar.png"
+  logo: "/assets/sites/agristar-logo.svg"
+  logo_bg: "#00321e"
   desc: "Online shop for Agristar's herbal teas, blends and spices. I keep it running and up to date."

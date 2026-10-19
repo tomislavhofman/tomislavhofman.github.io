@@ -62,9 +62,9 @@ export function start(container, opts = {}) {
       camera.lookAt(22, 9, -140);
     } else {
       // Portrait: keep the promenade, the cathedral and the city-side pylon in view.
-      camera.fov = 64;
-      camera.position.set(8.4, 1.7, 9);
-      camera.lookAt(7, 12, -140);
+      camera.fov = 58;
+      camera.position.set(8.4, 1.7, 5.6);
+      camera.lookAt(7, 4, -140);
     }
     camera.updateProjectionMatrix();
     render();

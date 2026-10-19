@@ -1,7 +1,7 @@
 // Clicks, hover labels, speech bubbles, particles and the hidden secrets of the scene.
 import * as THREE from '../vendor/three-0.170.0.module.min.js';
 import { WATER_Y, makeDuck, makeBoat, rng } from './world.js';
-import { catTextures, makeCatSprite, GREY_KITTEN } from './sprites.js';
+import { catTextures, makeCatSprite, GREY_TABBY } from './sprites.js';
 
 export const SECRETS = {
   daynight: 'Day and night',
@@ -19,7 +19,7 @@ export const SECRETS = {
 const LABELS = {
   tree: 'A tree in the park', lamp: 'Street lamp', bench: 'Bench', bridge: 'Pješački most, the footbridge (1981)',
   cathedral: 'Co-cathedral of St Peter and Paul', duck: 'Duck', sun: 'The sun',
-  moon: 'The moon', cat: 'The promenade cat', bush: 'Flower box', hotel: 'Hotel Osijek', water: 'Drava', visitor: 'A curious kitten', bollard: 'Mooring bollard',
+  moon: 'The moon', cat: 'The promenade cat', bush: 'Flower box', hotel: 'Hotel Osijek', water: 'Drava', visitor: 'A curious cat', bollard: 'Mooring bollard',
 };
 
 // Footbridge illumination colours, cycled by clicking the bridge ('rainbow' animates).
@@ -49,7 +49,7 @@ function pixelTexture(rows, palette) {
 const HEART = pixelTexture(['.rr.rr.', 'rpprrrr', 'rprrrrr', 'rrrrrrr', '.rrrrr.', '..rrr..', '...r...'], { r: '#e8455a', p: '#ffb3c0' });
 const NOTE = pixelTexture(['..kkk', '..k.k', '..k.k', '..k..', 'kkk..', 'kkk..'], { k: '#fff4c8' });
 const BIRD_A = pixelTexture(['k...k', '.k.k.', '..k..'], { k: '#2a2a33' });
-const KITTEN = catTextures(GREY_KITTEN);
+const KITTEN = catTextures(GREY_TABBY);
 
 const BUTTERFLY_A = pixelTexture(['y...y', 'yykyy', '.yky.', 'y.k.y'], { y: '#ffd166', k: '#3a2a1c' });
 const BUTTERFLY_B = pixelTexture(['.....', '.yky.', '.yky.', '..k..'], { y: '#ffd166', k: '#3a2a1c' });
@@ -422,10 +422,10 @@ export class Interactions {
   }
 
   /* ---------- the cat that falls out of a tree ---------- */
-  // The kitten is hand-drawn pixel art (sprites/sprites.js), not 3D: at this size a sprite
-  // is the only way to get a cute face. One texel is 2.2 cm, so she sits about 44 cm tall.
+  // The cat is pixel art (sprites.js), not 3D: at this size a sprite is the only way to get
+  // a readable face. One texel is 2.3 cm, so she sits about 43 cm tall, like a real cat.
   makeVisitorCat() {
-    const cat = makeCatSprite(KITTEN, 0.022);
+    const cat = makeCatSprite(KITTEN, 0.023);
     const fly = new THREE.Sprite(new THREE.SpriteMaterial({ map: BUTTERFLY_A, transparent: true, alphaTest: 0.5 }));
     fly.scale.set(5 * 0.022, 4 * 0.022, 1);
     fly.layers.set(1);

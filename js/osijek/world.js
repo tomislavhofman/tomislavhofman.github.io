@@ -723,7 +723,9 @@ export function buildWorld(scene) {
     const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: 0.5, depthWrite: false, fog: false });
     const c = new THREE.Mesh(new THREE.PlaneGeometry(64 * 7, 28 * 7), mat);
     let a = -0.9 + r() * 1.7;
-    const e = 0.12 + r() * 0.22;
+    // Always above the bridge: the pylon tops are about 12 degrees up from the promenade,
+    // and the lowest cloud pixels sit about 2 degrees below a cloud's centre.
+    const e = 0.27 + r() * 0.12;
     if (Math.abs(a - 0.44) < 0.22 && e < 0.34) a += 0.45;   // keep the sun clear
     const R = 1350;
     c.position.set(Math.sin(a) * Math.cos(e) * R, Math.sin(e) * R, -Math.cos(a) * Math.cos(e) * R);
@@ -737,7 +739,7 @@ export function buildWorld(scene) {
   }
 
   /* the promenade cat: an orange tabby (pixel-art sprite) dozing on a bench */
-  const benchCat = makeCatSprite(catTextures(ORANGE_TABBY), 0.022);
+  const benchCat = makeCatSprite(catTextures(ORANGE_TABBY), 0.023);
   benchCat.pose('side', benchCat.tex.loaf);
   const cat2 = benchCat.g;
   cat2.position.copy(W.benches.find((b) => b.position.x > 0 && b.position.z < -10).position).add(new THREE.Vector3(0, 0.46, 0.2));

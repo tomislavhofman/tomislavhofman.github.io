@@ -69,6 +69,6 @@ this page. Continued use after an update means you accept the updated terms to
 the extent permitted by law.
 
 Questions can be sent to
-[contact@hofman.tech](mailto:contact@hofman.tech).
+[tomislav@hofman.tech](mailto:tomislav@hofman.tech).
 
 See also the [Privacy Policy]({{ '/cardstitch/privacy/' | relative_url }}).

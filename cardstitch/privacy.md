@@ -146,6 +146,6 @@ This policy may be updated when CardStitch's data practices change. The current
 version will be published on this page, with a short note on what changed.
 
 Questions about this policy can be sent to
-[contact@hofman.tech](mailto:contact@hofman.tech).
+[tomislav@hofman.tech](mailto:tomislav@hofman.tech).
 
 See also the [Terms of Use]({{ '/cardstitch/terms/' | relative_url }}).

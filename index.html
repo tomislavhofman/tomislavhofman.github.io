@@ -31,9 +31,7 @@ title: Tomislav Hofman
   })();
 </script>
 <link rel="icon" href="{{ '/favicon.ico' | relative_url }}">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Pixelify+Sans:wght@500;700&family=VT323&display=swap">
+<link rel="stylesheet" href="{{ '/css/fonts.css' | relative_url }}">
 <link rel="stylesheet" href="{{ '/css/custom.css' | relative_url }}">
 <link rel="stylesheet" href="{{ '/css/home.css' | relative_url }}">
 <link rel="stylesheet" href="{{ '/css/osijek.css' | relative_url }}">
@@ -156,6 +154,7 @@ title: Tomislav Hofman
 
 <footer class="oh-footer">
   <p>© {{ site.time | date: '%Y' }} Tomislav Hofman · Made in Osijek. The promenade above is drawn in code, pixel by pixel.</p>
+  <p><a href="{{ '/privacy/' | relative_url }}">Privacy</a> · <a href="{{ '/legal/' | relative_url }}">Legal</a></p>
 </footer>
 
 <script src="{{ '/js/fly-game.js' | relative_url }}" defer></script>

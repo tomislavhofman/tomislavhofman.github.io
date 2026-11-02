@@ -15,9 +15,6 @@ Crkvena ulica 61, 31000 Osijek, Croatia
 - Matični broj obrta (MBO): 98043838
 - Email: [tomislav@hofman.tech](mailto:tomislav@hofman.tech)
 
-Paid products are sold through [Polar Software, Inc.](https://polar.sh), which acts as merchant of record: it is
-the seller on your invoice and handles payment, VAT and refunds.
-
 ## Terms and privacy
 
 - This website: [privacy policy](/privacy/)

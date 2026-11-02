@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: oh-page
 title: Privacy
 permalink: /privacy/
 description: "How hofman.tech handles your data: no cookies, no analytics, no third-party requests on this site."

@@ -277,6 +277,35 @@ body.oh footer.oh-footer {
   #intro::before { opacity: 0.6; }
 }
 
+/* ---------- text pages (privacy, legal) on the same look ---------- */
+.oh-page .oh-doc-section { padding-top: 104px; }
+.oh-doc-section::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 64px;
+  height: 12px;
+  background:
+    linear-gradient(45deg, var(--oh-wood) 25%, transparent 25%, transparent 75%, var(--oh-wood) 75%) 0 0 / 8px 8px,
+    linear-gradient(45deg, var(--oh-wood) 25%, transparent 25%, transparent 75%, var(--oh-wood) 75%) 4px 4px / 8px 8px;
+  opacity: 0.35;
+}
+.oh-doc { max-width: 46rem; margin: 0 auto; padding: 30px 32px 30px; font-size: 1.04rem; }
+body.oh .oh-doc h1 { font: 700 clamp(2.2rem, 5vw, 3.2rem)/1.05 var(--oh-pixel); margin-bottom: 8px; }
+body.oh .oh-doc h2 { font: 700 clamp(1.5rem, 3vw, 1.9rem)/1.1 var(--oh-pixel); margin: 30px 0 10px; }
+.oh-doc p, .oh-doc ul { margin: 0 0 14px; }
+.oh-doc ul { padding-left: 1.3em; }
+.oh-doc li { margin-bottom: 6px; }
+.oh-doc li::marker { color: var(--oh-wood); }
+.oh-doc em { color: var(--oh-ink-soft); }
+.oh-doc a, body.oh footer.oh-footer a { color: var(--oh-accent); text-decoration: underline; text-underline-offset: 2px; }
+@media (prefers-color-scheme: dark) { body.oh footer.oh-footer a { color: #8fbff0; } }
+@media (max-width: 720px) {
+  .oh-page .oh-doc-section { padding-top: 84px; }
+  .oh-doc { padding: 22px 18px; }
+}
+
 /* ---------- small screens ---------- */
 @media (max-width: 720px) {
   .oh-section { padding: 48px 0; }

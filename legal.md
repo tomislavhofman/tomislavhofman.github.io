@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: oh-page
 title: Legal
 permalink: /legal/
 description: "Company details for hofman.tech and its products."
